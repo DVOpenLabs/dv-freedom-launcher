@@ -49,6 +49,25 @@ public final class LauncherSettingsActivity extends Activity {
         setContentView(R.layout.activity_launcher_settings);
         Config config = Config.load(this);
         choices = ProfileStore.preferences(this);
+        View themes = findViewById(R.id.themesChoice);
+        if (ThemeLibrary.enabled()) {
+            themes.setVisibility(View.VISIBLE);
+            themes.setOnClickListener(v -> ThemePicker.show(this));
+        }
+        TextView live = findViewById(R.id.liveWallpaperChoice);
+        if (ThemeLibrary.liveAllowed()) {
+            live.setVisibility(View.VISIBLE);
+            ThemeLibrary.Entry theme = ThemeLibrary.active();
+            boolean available = theme != null && new File(theme.directory, "video.mp4").isFile()
+                    && config.wallpaperEnabled && LiveVideo.supported(this, config.reducedMotion);
+            live.setText(available ? getString(R.string.live_wallpaper_state, getString(choices.getBoolean(ThemeLibrary.LIVE, false)
+                    ? R.string.live_on : R.string.live_off)) : getString(R.string.live_wallpaper_unavailable));
+            live.setOnClickListener(v -> {
+                if (!available) { Toast.makeText(this, R.string.live_wallpaper_help, Toast.LENGTH_LONG).show(); return; }
+                choices.edit().putBoolean(ThemeLibrary.LIVE, !choices.getBoolean(ThemeLibrary.LIVE, false)).apply();
+                changed(); finish();
+            });
+        }
         View profiles = findViewById(R.id.profilesChoice);
         if (ProfileStore.enabled()) {
             profiles.setVisibility(View.VISIBLE);
@@ -189,7 +208,7 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private void showWallpaperPicker() {
-        File dir = Config.dir(this);
+        File dir = ThemeLibrary.active() == null ? Config.dir(this) : ThemeLibrary.active().directory;
         List<File> images = new java.util.ArrayList<>(WallpaperRotation.images(
                 dir == null ? null : new File(dir, "wallpapers")));
         // A theme with a single wallpaper.jpg offers that picture too (Config maps the choice back to it).
@@ -340,5 +359,6 @@ public final class LauncherSettingsActivity extends Activity {
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
         if (request == ProfilePicker.IMPORT && ProfileStore.enabled()) ProfilePicker.imported(this, result, data);
+        if (request == ThemePicker.IMPORT && ThemeLibrary.enabled()) ThemePicker.imported(this, result, data);
     }
 }

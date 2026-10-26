@@ -34,6 +34,10 @@
             android:layout_marginTop="16dp" android:text="@string/local_profiles" android:visibility="gone" />
         <TextView android:id="@+id/styleUndoChoice" style="@style/SettingsRow"
             android:layout_marginTop="10dp" android:text="@string/style_undo" android:visibility="gone" />
+        <TextView android:id="@+id/themesChoice" style="@style/SettingsRow"
+            android:layout_marginTop="16dp" android:text="@string/theme_library" android:visibility="gone" />
+        <TextView android:id="@+id/liveWallpaperChoice" style="@style/SettingsRow"
+            android:layout_marginTop="10dp" android:visibility="gone" />
 
         <TextView
             android:layout_width="match_parent"

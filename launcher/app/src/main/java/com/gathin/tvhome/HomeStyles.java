@@ -4,7 +4,7 @@ package com.gathin.tvhome;
 final class HomeStyles {
     static final String CHOICE = "home_style_choice";
     static final String UNDO = "home_style_undo";
-    static final String[] IDS = {"minimal", "tv_grid", "cinematic", "easy_view"};
+    static final String[] IDS = {"minimal", "tv_grid", "cinematic", "easy_view", "carousel"};
     static final long PREVIEW_MS = 20_000;
 
     static boolean valid(String id) {

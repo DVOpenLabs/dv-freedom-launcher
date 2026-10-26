@@ -69,4 +69,17 @@ public class ProfilePreferencesTest {
         assertEquals("adult",memory.getString("product_active_profile","")); assertEquals(1,memory.getLong("settings_revision",0));
         int commits=memory.commits; assertFalse(ProfileStore.saveSelection(memory,"../other")); assertEquals(commits,memory.commits);
     }
+    @Test public void themesAndLiveChoicesAreScopedAndFailedSaveRepairsSelection() {
+        Memory memory=new Memory(); SharedPreferences adult=new ProfilePreferences(memory,"adult");
+        String old="p-00000000-0000-0000-0000-000000000001", next="p-00000000-0000-0000-0000-000000000002";
+        assertTrue(ThemeLibrary.saveChoice(adult,old));
+        adult.edit().putBoolean(ThemeLibrary.LIVE,true).apply();
+        assertEquals("",new ProfilePreferences(memory,"child").getString(ThemeLibrary.CHOICE,""));
+        assertFalse(new ProfilePreferences(memory,"child").getBoolean(ThemeLibrary.LIVE,false));
+        long revision=memory.getLong(Config.SETTINGS_REVISION_KEY,0);
+        memory.failNext=true; assertFalse(ThemeLibrary.saveChoice(adult,next));
+        assertEquals(old,adult.getString(ThemeLibrary.CHOICE,""));
+        assertEquals(revision,memory.getLong(Config.SETTINGS_REVISION_KEY,0));
+        assertFalse(ThemeLibrary.saveChoice(adult,"../bad"));
+    }
 }

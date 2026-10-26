@@ -55,7 +55,7 @@ final class StyleSession {
     }
     static void choose(Activity activity) {
         String[] names = {activity.getString(R.string.style_minimal), activity.getString(R.string.style_grid),
-                activity.getString(R.string.style_cinematic), activity.getString(R.string.style_easy)};
+                activity.getString(R.string.style_cinematic), activity.getString(R.string.style_easy), activity.getString(R.string.style_carousel)};
         new AlertDialog.Builder(activity).setTitle(R.string.home_styles)
                 .setItems(names, (dialog, which) -> {
                     PREVIEW.begin(HomeStyles.IDS[which], SystemClock.elapsedRealtime());

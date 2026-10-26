@@ -14,7 +14,7 @@ final class LocalProfiles {
     static final int MAX_BYTES = 64 * 1024;
     static final Set<String> SCOPED = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "columns", "rows_below_dock", "dock_opacity", "animations", "advanced_effects",
-            "wallpaper_choice", "home_style_choice", "home_style_undo", "theme_signature")));
+            "wallpaper_choice", "home_style_choice", "home_style_undo", "theme_signature", "theme_pack_id", "live_wallpaper")));
 
     static final class Profile {
         final String id, name;

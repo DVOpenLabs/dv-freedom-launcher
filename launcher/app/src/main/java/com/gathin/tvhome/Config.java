@@ -173,6 +173,7 @@ final class Config {
     /** Home at every power-on, whatever the firmware put in front: an input, Live TV or an app (power_on_home_always). */
     final boolean powerOnHomeAlways;
     final boolean homeStylePicker;
+    boolean carousel;
     /** The Settings button opens the quick settings panel instead of the TV's Settings (settings_key_panel). */
     final boolean settingsKeyPanel;
     /** Home puts the remote's accessibility helpers back after a force stop (restore_key_services; ServiceRepair). */
@@ -504,6 +505,12 @@ final class Config {
         File file = dir != null ? new File(dir, FILE_NAME) : null;
         boolean mounted = Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
         JSONObject json = readOverlay(ctx, file, mounted);
+        File baseDir=dir;
+        LocalProfiles.Profile profile=ProfileStore.configure(ctx,json==null?res.getBoolean(R.bool.local_profiles):bool(json,"local_profiles",res.getBoolean(R.bool.local_profiles)));
+        JSONObject visual=ThemeLibrary.configure(ctx,
+                json==null?res.getBoolean(R.bool.theme_library):bool(json,"theme_library",res.getBoolean(R.bool.theme_library)),
+                json==null?res.getBoolean(R.bool.live_wallpapers):bool(json,"live_wallpapers",res.getBoolean(R.bool.live_wallpapers)));
+        if(visual!=null){json=ThemeLibrary.merge(json,visual);dir=ThemeLibrary.active().directory;}
         if (json != null) {
             applied = true;
             dock = stringList(json, "dock_apps", dock);
@@ -605,8 +612,6 @@ final class Config {
             glowStyle = string(json, "glow_style", glowStyle);
             glassStyle = string(json, "glass_style", glassStyle);
         }
-        LocalProfiles.Profile profile = ProfileStore.configure(ctx,
-                json == null ? res.getBoolean(R.bool.local_profiles) : bool(json, "local_profiles", res.getBoolean(R.bool.local_profiles)));
         if (profile != null) {
             dock = new ArrayList<>(profile.favorites);
             fillDock = false; // A profile's favorites are explicit; other apps stay in the library/grid.
@@ -619,7 +624,7 @@ final class Config {
         // current theme without clearing choices from an older launcher version.
         SharedPreferences choices = ProfileStore.preferences(ctx);
         // Unmounted storage looks like a theme reset; compare only once the file is readable.
-        if (mounted) syncThemeChoices(choices, dir, file);
+        if (mounted) syncThemeChoices(choices, baseDir, file);
         int chosenColumns = choices.getInt("columns", columns);
         if (chosenColumns >= 4 && chosenColumns <= 7) columns = chosenColumns;
         int chosenRows = choices.getInt(ROWS_BELOW_DOCK_KEY, rowsBelow);
@@ -661,15 +666,18 @@ final class Config {
 
         // Styles replace presentation only. Explicit later adjustments still win after Keep;
         // preview ignores those three overrides without writing them to disk.
+        boolean carousel=false;
         if (homeStylePicker) {
             String previewStyle = StyleSession.preview();
-            String style = previewStyle != null ? previewStyle : choices.getString(HomeStyles.CHOICE, null);
+            String style = previewStyle != null ? previewStyle : choices.getString(HomeStyles.CHOICE, json==null?null:string(json,"home_style",null));
             if (HomeStyles.valid(style)) {
                 boolean gridStyle = "tv_grid".equals(style) || "easy_view".equals(style);
-                columns = gridStyle ? 4 : 6;
+                carousel="carousel".equals(style);
+                columns = gridStyle ? 4 : carousel?5:6;
                 rowsBelow = 0;
                 dockRow = !gridStyle; dockTitle = !gridStyle;
-                cinematic = "cinematic".equals(style);
+                cinematic = "cinematic".equals(style)||carousel;
+                if (carousel) cinematicDots = false; // The whole app row can exceed the original dock's dot count.
                 singleRow = !gridStyle; dockBandAll = !gridStyle;
                 alwaysShowNames = gridStyle;
                 dockOpacity = gridStyle ? 100 : 50;
@@ -688,7 +696,7 @@ final class Config {
                 }
             }
         }
-        return new Config(dock, fillDock, hidden, libraryApps, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
+        Config result=new Config(dock, fillDock, hidden, libraryApps, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
                 packageMap(appBanners), panelService, panelAction, panelExtra, coocaaSources, inputAction, inputSources, inputUriScheme, Math.max(1, columns),
                 Math.max(0, rowsBelow), animations, advancedEffects, shamsi, greetingName, moduleCards, reducedMotion, bootToLiveTv,
                 openOnStartChoice, dockTitle, dockRow, topMenu, launcherSettingsButton, reorderButton, showNetworkPill, showInputsPill,
@@ -702,6 +710,7 @@ final class Config {
                 consumeVolumeKeys, powerOnHome, homeLongPressHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
                 dateBelowClock, vpnPill, locale, powerOnHomeAlways, homeStylePicker);
+        result.carousel=carousel;return result;
     }
 
     /**

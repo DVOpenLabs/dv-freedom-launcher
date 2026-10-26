@@ -143,6 +143,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private RecyclerView grid;
     private FrameLayout root;
     private WallpaperPlayer wallpaperPlayer;
+    private LiveVideo liveVideo;
+    private boolean carousel;
     private GlassView glass;
     private View ambient;
     private TextView heroName;
@@ -411,6 +413,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         reducedMotion = cfg.reducedMotion;
         dockRow = cfg.dockRow;
         singleRow = cfg.singleRow;
+        carousel = cfg.carousel;
         focusOvershoot = cfg.focusOvershoot;
         festival = cfg.festival;
         festive = festival.active(LocalDate.now());
@@ -437,6 +440,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // the theme's background, so launch looks the same.
         getWindow().setBackgroundDrawable(null);
         wallpaperPlayer = new WallpaperPlayer(this, root, cfg);
+        ThemeLibrary.Entry theme = ThemeLibrary.active();
+        if (ThemeLibrary.liveAllowed() && theme != null && cfg.wallpaperEnabled
+                && ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE, false)
+                && new java.io.File(theme.directory, "video.mp4").isFile()
+                && LiveVideo.supported(this, cfg.reducedMotion)) {
+            liveVideo = new LiveVideo(this, new java.io.File(theme.directory, "video.mp4"), cfg.wallpaperDim);
+            root.addView(liveVideo.view(), 1, new android.widget.FrameLayout.LayoutParams(-1, -1));
+        }
         sky = findViewById(R.id.sky);
         sky.setIntensity(cfg.skyIntensity);
         glass = findViewById(R.id.glass);
@@ -551,7 +562,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     int left = child.getLeft();
                     int right = child.getRight();
                     int dx;
-                    if (left < getPaddingLeft()) dx = left - getPaddingLeft();
+                    if (carousel) dx = CarouselGeometry.delta(left, child.getWidth(), getPaddingLeft(), getWidth() - getPaddingRight());
+                    else if (left < getPaddingLeft()) dx = left - getPaddingLeft();
                     else if (right > getWidth() - getPaddingRight()) dx = right - (getWidth() - getPaddingRight());
                     else dx = 0;
                     if (dx == 0) return false;
@@ -581,6 +593,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
         grid.setHasFixedSize(true);
         grid.setItemAnimator(null);
+        if (carousel) grid.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override public void getItemOffsets(@NonNull Rect out, @NonNull View view,
+                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                int position = parent.getChildAdapterPosition(view);
+                int available = parent.getWidth() - parent.getPaddingLeft() - parent.getPaddingRight();
+                int edge = CarouselGeometry.edgeSpace(available, available / COLUMNS);
+                if (position == 0) { if (rtlAppGrid) out.right += edge; else out.left += edge; }
+                if (position == state.getItemCount() - 1) { if (rtlAppGrid) out.left += edge; else out.right += edge; }
+            }
+        });
         // Tiles that scroll out while one is carried come back from the view cache without a rebind; set their
         // dimming again whenever one attaches, so none stays dim after the drop.
         grid.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
@@ -993,6 +1015,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (showStats) startStats();
         sky.update();
         wallpaperPlayer.start();
+        if (liveVideo != null) liveVideo.start();
         handler.postDelayed(minuteTick, MINUTE_MS);
         if (festive && diya != null) {
             diya.start();
@@ -1173,6 +1196,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         root.removeCallbacks(showIdleClock);
         endReorder();   // Home or another app while reordering keeps the order so far
         wallpaperPlayer.stop();
+        if (liveVideo != null) liveVideo.stop();
         stopAmbientAnimation();
         hero.animate().cancel();
         ambient.animate().cancel();
@@ -1220,6 +1244,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         heroArtCache.clear();
         heroArtKey = null;
         wallpaperPlayer.releaseForMemoryPressure();
+        if (liveVideo != null) liveVideo.stop();
         tileRefresh.invalidate();
     }
 
@@ -1238,6 +1263,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onDestroy();
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
+        if (liveVideo != null) liveVideo.close();
         ConnectivityManager cm = getSystemService(ConnectivityManager.class);
         TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
         if (tim != null) tim.unregisterCallback(inputCallback);

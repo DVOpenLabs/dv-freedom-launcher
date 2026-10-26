@@ -9,6 +9,8 @@
     <!-- Local Home-style previews and scoped Undo; opt-in from a theme. -->
     <bool name="home_style_picker">false</bool>
     <bool name="local_profiles">false</bool>
+    <bool name="theme_library">false</bool>
+    <bool name="live_wallpapers">false</bool>
 
     <!-- Tried in order when no standard settings handler is usable; each package must also be visible
          through <queries> in the manifest. -->

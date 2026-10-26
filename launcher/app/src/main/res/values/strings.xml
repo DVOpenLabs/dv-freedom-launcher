@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="style_carousel">Bottom carousel</string>
+    <string name="theme_library">Offline themes</string>
+    <string name="theme_original">Original theme</string>
+    <string name="theme_import">Import theme ZIP</string>
+    <string name="theme_remove">Remove unused theme</string>
+    <string name="theme_remove_confirm">Remove %1$s and its local media?</string>
+    <string name="theme_removed">Theme removed</string>
+    <string name="theme_remove_used">Theme is still used by a profile, or could not be removed.</string>
+    <string name="theme_save_failed">Could not save the theme selection.</string>
+    <string name="theme_import_confirm">Import a local theme? Only appearance settings, pictures and optional silent video are accepted. Imported themes are not selected automatically.</string>
+    <string name="theme_import_busy">Importing theme…</string>
+    <string name="theme_import_done">Theme imported. Open Offline themes to select it.</string>
+    <string name="theme_import_failed">Import failed. Check the theme format and storage limits.</string>
+    <string name="live_wallpaper_state">Silent live wallpaper: %1$s</string>
+    <string name="live_on">On</string>
+    <string name="live_off">Off</string>
+    <string name="live_wallpaper_unavailable">Silent live wallpaper: unavailable</string>
+    <string name="live_wallpaper_help">Choose an offline theme containing video.mp4 and enable wallpaper. Live video requires at least 2 GB reported RAM, a device without low-RAM mode, and reduced motion off.</string>
+    <string name="live_wallpaper_failed">Video unavailable. Keeping the still wallpaper.</string>
     <string name="local_profiles">Launcher profiles</string>
     <string name="profile_current">Current layout</string>
     <string name="profile_import">Import profile library…</string>
