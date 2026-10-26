@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "apps": {
+    "video": {"android": "org.example.video", "webos": "example.video"},
+    "music": {"android": "org.example.music", "webos": "example.music"}
+  },
+  "profiles": [
+    {"id": "adult", "name": "Adult", "favorites": ["video", "music"], "hiddenApps": [], "columns": 4},
+    {"id": "child", "name": "Child", "favorites": ["video"], "hiddenApps": ["music"], "columns": 4}
+  ]
+}
