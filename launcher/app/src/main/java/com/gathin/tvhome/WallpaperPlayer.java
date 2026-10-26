@@ -71,7 +71,7 @@ final class WallpaperPlayer {
         // The dim is painted into the picture (decode), so no full-screen shade layer is drawn on every frame.
         dimColor = config.wallpaperDim > 0 ? (config.wallpaperDim * 255 / 100) << 24 : 0;
         order = config.wallpaperOrder;
-        preferences = context.getSharedPreferences("wallpaper_rotation", Context.MODE_PRIVATE);
+        preferences = context.getSharedPreferences(LocalProfiles.filename(ProfileStore.id(), "wallpaper_rotation"), Context.MODE_PRIVATE);
         moods = config.wallpaperMoods;
         latitude = moods.isEmpty() ? "" : context.getString(R.string.latitude);
         longitude = moods.isEmpty() ? "" : context.getString(R.string.longitude);

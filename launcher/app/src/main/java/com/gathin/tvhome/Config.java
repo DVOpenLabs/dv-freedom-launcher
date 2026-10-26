@@ -605,11 +605,19 @@ final class Config {
             glowStyle = string(json, "glow_style", glowStyle);
             glassStyle = string(json, "glass_style", glassStyle);
         }
+        LocalProfiles.Profile profile = ProfileStore.configure(ctx,
+                json == null ? res.getBoolean(R.bool.local_profiles) : bool(json, "local_profiles", res.getBoolean(R.bool.local_profiles)));
+        if (profile != null) {
+            dock = new ArrayList<>(profile.favorites);
+            fillDock = false; // A profile's favorites are explicit; other apps stay in the library/grid.
+            hidden = new ArrayList<>(profile.hidden);
+            columns = profile.columns;
+        }
         // A top-bar app is moved there, not copied: it leaves the grid.
         for (String pkg : topBarApps) if (!hidden.contains(pkg)) hidden.add(pkg);
         // A theme push or reset invalidates choices made on the TV. On first use, remember the
         // current theme without clearing choices from an older launcher version.
-        SharedPreferences choices = ctx.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences choices = ProfileStore.preferences(ctx);
         // Unmounted storage looks like a theme reset; compare only once the file is readable.
         if (mounted) syncThemeChoices(choices, dir, file);
         int chosenColumns = choices.getInt("columns", columns);

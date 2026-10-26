@@ -12,7 +12,7 @@ import android.widget.Toast;
 /** Preview lives only in this process. Process death implicitly restores the saved appearance. */
 final class StyleSession {
     static final HomeStyles.Preview PREVIEW = new HomeStyles.Preview();
-    private static SharedPreferences prefs(Context context) { return context.getSharedPreferences(Config.SETTINGS_NAME, Context.MODE_PRIVATE); }
+    private static SharedPreferences prefs(Context context) { return ProfileStore.preferences(context); }
     static String preview() { return PREVIEW.active(SystemClock.elapsedRealtime()); }
     private static HomeStyles.Snapshot snapshot(SharedPreferences p) {
         return new HomeStyles.Snapshot(p.getString(HomeStyles.CHOICE, null),

@@ -47,8 +47,13 @@ public final class LauncherSettingsActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_launcher_settings);
-        choices = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
         Config config = Config.load(this);
+        choices = ProfileStore.preferences(this);
+        View profiles = findViewById(R.id.profilesChoice);
+        if (ProfileStore.enabled()) {
+            profiles.setVisibility(View.VISIBLE);
+            profiles.setOnClickListener(v -> ProfilePicker.show(this));
+        }
         View styles = findViewById(R.id.stylesChoice);
         View undoStyle = findViewById(R.id.styleUndoChoice);
         if (config.homeStylePicker) {
@@ -151,10 +156,12 @@ public final class LauncherSettingsActivity extends Activity {
         followThemeChoice = findViewById(R.id.followThemeChoice);
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
-            choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
+            SharedPreferences.Editor reset = choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO)
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
-                    .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY).commit();
+                    .remove(Config.DOCK_OPACITY_KEY);
+            if (ProfileStore.id().isEmpty()) reset.remove(OpenOnStart.KEY);
+            reset.commit();
             Config current = Config.load(this);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
@@ -319,7 +326,7 @@ public final class LauncherSettingsActivity extends Activity {
         return choices.contains(HomeStyles.CHOICE) || choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
-                || choices.contains(OpenOnStart.KEY);
+                || (ProfileStore.id().isEmpty() && choices.contains(OpenOnStart.KEY));
     }
 
     private void open(Intent intent) {
@@ -328,5 +335,10 @@ public final class LauncherSettingsActivity extends Activity {
         } catch (ActivityNotFoundException | SecurityException e) {
             Toast.makeText(this, R.string.not_available, Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override protected void onActivityResult(int request, int result, Intent data) {
+        super.onActivityResult(request, result, data);
+        if (request == ProfilePicker.IMPORT && ProfileStore.enabled()) ProfilePicker.imported(this, result, data);
     }
 }

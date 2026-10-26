@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="local_profiles">Launcher profiles</string>
+    <string name="profile_current">Current layout</string>
+    <string name="profile_import">Import profile library…</string>
+    <string name="profile_import_action">Import</string>
+    <string name="profile_import_confirm">Import %1$d launcher profiles? This replaces the profile library. Profiles keep their own app order and appearance; streaming accounts stay unchanged.</string>
+    <string name="profile_import_current">Switch to Current layout before importing another library.</string>
+    <string name="profile_import_done">Profiles imported. Open Launcher profiles to choose one.</string>
+    <string name="profile_import_failed">Couldn’t import this profile library. Check the file and try again.</string>
+    <string name="profile_save_failed">Couldn’t switch profiles. Please try again.</string>
     <string name="app_name">Home</string>
     <string name="inputs">Inputs</string>
     <string name="wifi">Wi-Fi</string>
