@@ -151,4 +151,15 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
+    <string name="home_styles">Preview Home style</string>
+    <string name="style_minimal">Minimal · compact bottom row</string>
+    <string name="style_grid">TV grid · labelled apps</string>
+    <string name="style_cinematic">Cinematic · bottom shelf, your wallpaper</string>
+    <string name="style_easy">Easy View · labelled grid, reduced motion</string>
+    <string name="style_keep_title">Keep this appearance?</string>
+    <string name="style_countdown">Reverting in %1$d seconds. Your apps, order and wallpaper are preserved. Nothing is saved until you choose Keep.</string>
+    <string name="style_revert">Revert</string>
+    <string name="style_keep">Keep</string>
+    <string name="style_undo">Undo last Home style</string>
+    <string name="style_save_failed">Could not save this appearance. Your previous style is restored.</string>
 </resources>

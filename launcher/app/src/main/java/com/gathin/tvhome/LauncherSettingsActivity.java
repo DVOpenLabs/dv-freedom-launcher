@@ -49,6 +49,19 @@ public final class LauncherSettingsActivity extends Activity {
         setContentView(R.layout.activity_launcher_settings);
         choices = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
         Config config = Config.load(this);
+        View styles = findViewById(R.id.stylesChoice);
+        View undoStyle = findViewById(R.id.styleUndoChoice);
+        if (config.homeStylePicker) {
+            styles.setVisibility(View.VISIBLE);
+            styles.setOnClickListener(v -> StyleSession.choose(this));
+            undoStyle.setVisibility(View.VISIBLE);
+            undoStyle.setEnabled(StyleSession.hasUndo(this));
+            undoStyle.setAlpha(undoStyle.isEnabled() ? 1f : .5f);
+            undoStyle.setOnClickListener(v -> {
+                if (StyleSession.undo(this)) finish();
+                else Toast.makeText(this, R.string.style_save_failed, Toast.LENGTH_LONG).show();
+            });
+        }
         View reorderChoice = findViewById(R.id.reorderChoice);
         reorderChoice.setVisibility(config.launcherSettingsButton ? View.VISIBLE : View.GONE);
         reorderChoice.setOnClickListener(v -> {
@@ -139,6 +152,7 @@ public final class LauncherSettingsActivity extends Activity {
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
             choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
+                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO)
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
                     .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY).commit();
             Config current = Config.load(this);
@@ -302,7 +316,7 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private boolean hasOnTvChoices() {
-        return choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
+        return choices.contains(HomeStyles.CHOICE) || choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
                 || choices.contains(OpenOnStart.KEY);

@@ -119,6 +119,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private String liveTvPkg;
     /** Launcher settings' change count this Home was built with (see onResume). */
     private long settingsRevision;
+    private long styleRevision;
+    private boolean stylePickerEnabled;
+    private android.app.AlertDialog stylePrompt;
     /** Idle time on Home before ClockActivity; 0 is off (config.xml, home_idle_clock_minutes). */
     private long idleClockMs;
     private final Runnable showIdleClock = () -> startActivity(new Intent(this, ClockActivity.class));
@@ -390,6 +393,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         density = getResources().getDisplayMetrics().density;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
+        stylePickerEnabled = cfg.homeStylePicker;
+        if (stylePickerEnabled) styleRevision = StyleSession.PREVIEW.revision();
         homeAppKeys = RemoteKeys.parseAppKeys(cfg.appKeys);
         appLibrarySelection = cfg.appLibrarySelection;
         libraryOkOpens = cfg.libraryOkOpens;
@@ -911,6 +916,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;
+        if (stylePickerEnabled && StyleSession.PREVIEW.cancel() && stylePrompt != null) stylePrompt.dismiss();
         grid.scrollToPosition(0);
         lastFocused = 0;
         lastFocusedKey = adapter.getItemCount() > 0 ? adapter.keyAt(0) : null;
@@ -948,7 +954,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // Something changed in Launcher settings: rebuild with it, however the settings were left. Only Back
         // delivered their RESULT_OK; Home (the remote's button) clears them off this task and the result comes
         // back cancelled, so a new wallpaper or layout waited for the next process start.
-        if (Config.settingsChanged(settingsRevision, settingsRevision())) {
+        if (Config.settingsChanged(settingsRevision, settingsRevision())
+                || (stylePickerEnabled && styleRevision != StyleSession.PREVIEW.revision())) {
+            if (stylePickerEnabled) settingsRecreationPending = true;
             recreate();
             return;
         }
@@ -999,6 +1007,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** Launcher settings' change count (Config.SETTINGS_REVISION_KEY); onResume rebuilds Home when it moved. */
     private long settingsRevision() {
         return getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE).getLong(Config.SETTINGS_REVISION_KEY, 0);
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if (stylePickerEnabled && !settingsRecreationPending && !isFinishing()) {
+            String preview = StyleSession.preview();
+            if (styleRevision != StyleSession.PREVIEW.revision()) {
+                settingsRecreationPending = true; recreate();
+            } else if (preview != null) stylePrompt = StyleSession.prompt(this);
+        }
     }
 
     /**
@@ -1171,6 +1190,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onStop() {
         super.onStop();
+        if (stylePickerEnabled) {
+            if (!isChangingConfigurations()) StyleSession.PREVIEW.cancel();
+            if (stylePrompt != null) { stylePrompt.dismiss(); stylePrompt = null; }
+        }
         started = false;
         unregisterReceiver(timeReceiver);
         handler.removeCallbacks(clockCheck);

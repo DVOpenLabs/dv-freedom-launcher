@@ -172,6 +172,7 @@ final class Config {
     final boolean homeLongPressHome;
     /** Home at every power-on, whatever the firmware put in front: an input, Live TV or an app (power_on_home_always). */
     final boolean powerOnHomeAlways;
+    final boolean homeStylePicker;
     /** The Settings button opens the quick settings panel instead of the TV's Settings (settings_key_panel). */
     final boolean settingsKeyPanel;
     /** Home puts the remote's accessibility helpers back after a force stop (restore_key_services; ServiceRepair). */
@@ -270,7 +271,7 @@ final class Config {
                    List<RaceWeekend.Race> raceCalendar, boolean cinematicHome, boolean ambientGlow, boolean appGlow, boolean fadeRows, int homeIdleClockMinutes,
                    boolean keyFilter, boolean dockGlass, String glowStyle, boolean wallpaperCaptions,
                    boolean handleViewInputs, boolean tileMenu, boolean dockEvenPadding, boolean dockBand, boolean cinematicDots, boolean cinematicWhiteFocus, boolean wifiStatusColor, int cinematicScrim, int cinematicArt,
-                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean homeLongPressHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean vpnPill, String locale, boolean powerOnHomeAlways) {
+                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean homeLongPressHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean vpnPill, String locale, boolean powerOnHomeAlways, boolean homeStylePicker) {
         this.handleViewInputs = handleViewInputs;
         this.tileMenu = tileMenu;
         this.inputKeycodes = inputKeycodes;
@@ -365,6 +366,7 @@ final class Config {
         this.powerOnHome = powerOnHome;
         this.homeLongPressHome = homeLongPressHome;
         this.powerOnHomeAlways = powerOnHomeAlways;
+        this.homeStylePicker = homeStylePicker;
         this.wifiStatusWarnings = wifiStatusWarnings;
         this.topBarApps = Collections.unmodifiableList(topBarApps);
         this.showGreeting = showGreeting;
@@ -472,6 +474,7 @@ final class Config {
         boolean powerOnHome = res.getBoolean(R.bool.power_on_home);
         boolean homeLongPressHome = res.getBoolean(R.bool.home_long_press_home);
         boolean powerOnHomeAlways = res.getBoolean(R.bool.power_on_home_always);
+        boolean homeStylePicker = res.getBoolean(R.bool.home_style_picker);
         boolean dockGlass = res.getBoolean(R.bool.dock_glass);
         boolean dockEvenPadding = res.getBoolean(R.bool.dock_even_padding);
         boolean dockBand = res.getBoolean(R.bool.dock_band);
@@ -576,6 +579,7 @@ final class Config {
             powerOnHome = bool(json, "power_on_home", powerOnHome);
             homeLongPressHome = bool(json, "home_long_press_home", homeLongPressHome);
             powerOnHomeAlways = bool(json, "power_on_home_always", powerOnHomeAlways);
+            homeStylePicker = bool(json, "home_style_picker", homeStylePicker);
             dockGlass = bool(json, "dock_glass", dockGlass);
             dockEvenPadding = bool(json, "dock_even_padding", dockEvenPadding);
             dockBand = bool(json, "dock_band", dockBand);
@@ -647,6 +651,35 @@ final class Config {
         Festival festival = json == null ? Festival.NONE : Festival.parse(string(json, "festival", ""),
                 string(json, "festival_until", ""), string(json, "greeting", ""), string(json, "accent_color", ""));
 
+        // Styles replace presentation only. Explicit later adjustments still win after Keep;
+        // preview ignores those three overrides without writing them to disk.
+        if (homeStylePicker) {
+            String previewStyle = StyleSession.preview();
+            String style = previewStyle != null ? previewStyle : choices.getString(HomeStyles.CHOICE, null);
+            if (HomeStyles.valid(style)) {
+                boolean gridStyle = "tv_grid".equals(style) || "easy_view".equals(style);
+                columns = gridStyle ? 4 : 6;
+                rowsBelow = 0;
+                dockRow = !gridStyle; dockTitle = !gridStyle;
+                cinematic = "cinematic".equals(style);
+                singleRow = !gridStyle; dockBandAll = !gridStyle;
+                alwaysShowNames = gridStyle;
+                dockOpacity = gridStyle ? 100 : 50;
+                dockGlass = !gridStyle;
+                cinematicArt = 0;
+                cinematicWhiteFocus = true;
+                ambientGlow = false; appGlow = false; focusOvershoot = false;
+                glassStyle = "rim";
+                if ("easy_view".equals(style)) reducedMotion = true;
+                if (previewStyle == null) {
+                    int manualColumns = choices.getInt("columns", columns);
+                    if (manualColumns >= 4 && manualColumns <= 7) columns = manualColumns;
+                    int manualRows = choices.getInt(ROWS_BELOW_DOCK_KEY, rowsBelow);
+                    if (manualRows >= 0 && manualRows <= 3) rowsBelow = manualRows;
+                    dockOpacity = chosenDockOpacity(choices.getInt(DOCK_OPACITY_KEY, dockOpacity), dockOpacity);
+                }
+            }
+        }
         return new Config(dock, fillDock, hidden, libraryApps, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
                 packageMap(appBanners), panelService, panelAction, panelExtra, coocaaSources, inputAction, inputSources, inputUriScheme, Math.max(1, columns),
                 Math.max(0, rowsBelow), animations, advancedEffects, shamsi, greetingName, moduleCards, reducedMotion, bootToLiveTv,
@@ -660,7 +693,7 @@ final class Config {
                 dockBand, cinematicDots, cinematicWhiteFocus, wifiStatusColor, cinematicScrim, cinematicArt, wallpaperMoods, gamepadPassthrough,
                 consumeVolumeKeys, powerOnHome, homeLongPressHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
-                dateBelowClock, vpnPill, locale, powerOnHomeAlways);
+                dateBelowClock, vpnPill, locale, powerOnHomeAlways, homeStylePicker);
     }
 
     /**
@@ -703,11 +736,13 @@ final class Config {
             // explicit theme push or reset by the updated tools.
             SharedPreferences.Editor editor = choices.edit();
             if (!"absent".equals(token)) editor.remove("columns").remove("animations")
+                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO)
                     .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
                     .remove(DOCK_OPACITY_KEY);
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
             choices.edit().remove("columns").remove("animations").remove("advanced_effects")
+                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO)
                     .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY).remove(DOCK_OPACITY_KEY)
                     .putString(THEME_SIGNATURE_KEY, signature).commit();
         }
