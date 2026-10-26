@@ -38,6 +38,17 @@
             android:layout_marginTop="16dp" android:text="@string/theme_library" android:visibility="gone" />
         <TextView android:id="@+id/liveWallpaperChoice" style="@style/SettingsRow"
             android:layout_marginTop="10dp" android:visibility="gone" />
+        <TextView android:id="@+id/focusOutlineChoice" style="@style/SettingsRow"
+            android:layout_marginTop="16dp" android:visibility="gone" />
+        <TextView android:id="@+id/tileSpacingChoice" style="@style/SettingsRow"
+            android:layout_marginTop="10dp" android:visibility="gone" />
+        <TextView android:id="@+id/inputVisibilityChoice" style="@style/SettingsRow"
+            android:layout_marginTop="16dp" android:visibility="gone" />
+        <TextView android:id="@+id/tvButtonChoice" style="@style/SettingsRow"
+            android:layout_marginTop="16dp" android:text="@string/tv_button" android:visibility="gone" />
+        <TextView android:id="@+id/tvButtonHelper" style="@style/SettingsRow"
+            android:layout_marginTop="10dp" android:layout_height="wrap_content" android:minHeight="52dp"
+            android:paddingTop="12dp" android:paddingBottom="12dp" android:textSize="16sp" android:visibility="gone" />
 
         <TextView
             android:layout_width="match_parent"

@@ -145,6 +145,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private WallpaperPlayer wallpaperPlayer;
     private LiveVideo liveVideo;
     private boolean carousel;
+    private boolean hideInactiveHdmi;
+    private TvButtonController tvButton;
     private GlassView glass;
     private View ambient;
     private TextView heroName;
@@ -414,6 +416,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         dockRow = cfg.dockRow;
         singleRow = cfg.singleRow;
         carousel = cfg.carousel;
+        hideInactiveHdmi = cfg.hideInactiveHdmi;
+        tvButton = cfg.tvButtonPicker ? new TvButtonController(this, cfg) : null;
         focusOvershoot = cfg.focusOvershoot;
         festival = cfg.festival;
         festive = festival.active(LocalDate.now());
@@ -593,6 +597,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
         grid.setHasFixedSize(true);
         grid.setItemAnimator(null);
+        if (cfg.tileGap > 0 && !singleRow) grid.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override public void getItemOffsets(@NonNull Rect out, @NonNull View view,
+                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                int count = adapter == null ? 0 : adapter.appCount();
+                if (TileSpacing.beforeAnotherRow(parent.getChildAdapterPosition(view), count, COLUMNS, false))
+                    out.bottom = TileSpacing.pixels(cfg.tileGap, density);
+            }
+        });
         if (carousel) grid.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override public void getItemOffsets(@NonNull Rect out, @NonNull View view,
                     @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
@@ -637,10 +649,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             int h = b - t;
             // Item height follows the tile size, which follows the columns and the rows that must fit (AppAdapter.tileWidthPx).
             int inner = (r - l) - grid.getPaddingLeft() - grid.getPaddingRight();
-            int tileW = AppAdapter.tileWidthPx(inner, h, COLUMNS, rowsBelowDock, cfg.dockTitle, cfg.dockRow, density);
+            int tileW = TileSpacing.width(AppAdapter.tileWidthPx(inner, h, COLUMNS, rowsBelowDock, cfg.dockTitle, cfg.dockRow, density), cfg.tileGap, density);
             int itemH = AppAdapter.itemHeightPx(AppAdapter.tileHeightPx(tileW), density);
             int dockRow = itemH + (int) (AppAdapter.DOCK_EXTRA_DP * density);   // item height plus DockDecoration offsets
-            int gridRows = itemH * rowsBelowDock;
+            int gridRows = (itemH + (singleRow ? 0 : TileSpacing.pixels(cfg.tileGap, density))) * rowsBelowDock;
             // Keep the hero below the header when the library is enabled on a short screen,
             // even when the theme requests an extra visible row below the dock.
             int shelfClearance = cfg.appLibrary ? hero.getMeasuredHeight() + (int) (40 * density) : 0;
@@ -1305,6 +1317,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        if (tvButton != null && tvButton.handle(event)) return true;
         // Vendor keys (TCL Netflix button, 4062) never reach the key services, only the focused window.
         if (event.getKeyCode() >= 1000 && RemoteKeys.handle(this, event, homeAppKeys.get(event.getKeyCode()), null)) return true;
         if (handleSettingsKey(event)) return true;
@@ -3036,6 +3049,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     /** Dropdown menu under the Inputs pill: HDMI ports (with connection state), AV and Live TV. */
     private void showInputs() {
+        showInputs(false);
+    }
+
+    private void showInputs(boolean showAll) {
         // A configured source panel and no Live TV row to offer next to it: the panel is the whole menu.
         // The BYINTEK U4 needs this, as its TvInputManager lists three HDMI ports and an AV input it doesn't have.
         List<CoocaaSources.Source> coocaa = coocaaSources ? CoocaaSources.list(this) : Collections.emptyList();
@@ -3060,6 +3077,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         String tunerId = null;
         boolean tunerIsHw = false;
         boolean tunerIsAnalog = false;
+        int hiddenHdmi = 0;
         if (tim != null) {
             List<TvInputInfo> inputs = new ArrayList<>(tim.getTvInputList());
             // HDMI ports first in port order, then AV and the rest.
@@ -3090,7 +3108,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 if (!info.isPassthroughInput() || info.getType() != TvInputInfo.TYPE_HDMI) continue;
                 if (info.getParentId() != null && inputIds.contains(info.getParentId())) continue;
                 hdmiPorts++;
-                if (tim.getInputState(info.getId()) == TvInputManager.INPUT_STATE_CONNECTED) hdmiConnected++;
+                if (inputState(tim, info.getId()) == TvInputManager.INPUT_STATE_CONNECTED) hdmiConnected++;
             }
             boolean hdmiStateBogus = hdmiPorts > 1 && hdmiConnected == hdmiPorts;
             for (TvInputInfo info : inputs) {
@@ -3139,7 +3157,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                         if (name == null || name.length() == 0) name = named ? custom : device.loadLabel(this);
                         String deviceLabel = name == null || name.length() == 0 ? label : name + " \u00B7 " + label;
                         final String deviceId = device.getId();
-                        int state = hdmiStateBogus ? -1 : tim.getInputState(deviceId);
+                        int state = hdmiStateBogus ? -1 : inputState(tim, deviceId);
                         addInputRow(rows, popup, R.drawable.ic_input, deviceLabel, state, () -> openInput(deviceId));
                     }
                     continue;
@@ -3149,13 +3167,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 final String id = info.getId();
                 // Analog AV jacks have no hotplug detection, and some TVs report them as always connected
                 // (TCL Smart TV Pro G03 says "Connected" with nothing plugged in), so AV rows show no state.
-                int state = !hdmi || hdmiStateBogus ? -1 : tim.getInputState(id);
+                int state = !hdmi || hdmiStateBogus ? -1 : inputState(tim, id);
+                if (hdmi && !HdmiVisibility.visible(hideInactiveHdmi && !showAll, state)) {
+                    hiddenHdmi++;
+                    continue;
+                }
                 addInputRow(rows, popup, hdmi ? R.drawable.ic_input : R.drawable.ic_av, label, state,
                         () -> openInput(id));
             }
         }
         // Coocaa OS registers nothing with TvInputManager; com.skyworth.tv lists its sources instead.
-        if (rows.getChildCount() == 0) {
+        if (rows.getChildCount() == 0 && hiddenHdmi == 0) {
             for (CoocaaSources.Source s : coocaa) {
                 int icon = "HDMI".equals(s.name) ? R.drawable.ic_input
                         : "VOD".equals(s.name) ? R.drawable.ic_livetv : R.drawable.ic_av;
@@ -3193,6 +3215,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             final Intent liveTvIntent = liveTv;
             addInputRow(rows, popup, R.drawable.ic_livetv, getString(R.string.live_tv), -1, () -> open(liveTvIntent));
         }
+        if (hiddenHdmi > 0) {
+            if (rows.getChildCount() > 0) addSeparator(rows);
+            addInputRow(rows, popup, R.drawable.ic_input, getString(R.string.inputs_show_all, hiddenHdmi), -1,
+                    () -> root.post(() -> showInputs(true)));
+        }
         if (rows.getChildCount() == 0) {
             Toast.makeText(this, R.string.no_inputs, Toast.LENGTH_SHORT).show();
             return;
@@ -3205,6 +3232,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         int alignment = getResources().getBoolean(R.bool.rtl_menu_bar) != underGear ? Gravity.END : Gravity.START;
         dropIn(popup, panel, anchor, alignment);
         rows.getChildAt(0).requestFocus();
+    }
+
+    /** Input hotplug can remove an id while a popup is being built. Unknown state stays visible. */
+    private int inputState(TvInputManager manager, String id) {
+        try { return manager.getInputState(id); }
+        catch (IllegalArgumentException | SecurityException unavailable) { return -1; }
     }
 
     private PopupWindow glassPopup(View panel, int width) {

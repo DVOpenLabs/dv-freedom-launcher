@@ -81,9 +81,10 @@ final class ThemeArchive {
             String key=setting.getKey();Object value=setting.getValue();
             if(BOOLEAN.contains(key)){if(!(value instanceof Boolean))throw fail("Boolean required");continue;}
             if("home_style".equals(key)){if(!(value instanceof String)||!HomeStyles.valid((String)value))throw fail("Invalid Home style");continue;}
+            if("glass_style".equals(key)){if(!(value instanceof String)||!Arrays.asList("glass","rim","halo","double").contains(value))throw fail("Invalid focus style");continue;}
             if("background_color".equals(key)){if(!(value instanceof String)||!((String)value).matches("#[A-Fa-f0-9]{6}"))throw fail("Invalid color");continue;}
             int min=0,max;
-            switch(key){case "columns":min=4;max=7;break;case "rows_below_dock":max=3;break;
+            switch(key){case "columns":min=4;max=7;break;case "rows_below_dock":max=3;break;case "tile_gap":max=32;break;
                 case "dock_opacity":min=30;max=100;break;case "wallpaper_dim":max=90;break;
                 case "wallpaper_rotation_minutes":max=1440;break;default:throw fail("Unsupported or non-visual setting: "+key);}
             if(!(value instanceof Long)||((Long)value)<min||((Long)value)>max)throw fail("Invalid visual value");

@@ -17,6 +17,7 @@ import java.util.Map;
  * Opt-in: INPUT_KEY_SERVICE=1 build-and-install.sh (or -InputKeyService on Windows) enables it.
  */
 public class InputKeyService extends AccessibilityService {
+    private TvButtonController tvButton;
 
     private static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
 
@@ -37,6 +38,7 @@ public class InputKeyService extends AccessibilityService {
         super.onServiceConnected();
         // From config.xml or a theme's config.json; theme.sh rebinds this service after a push.
         Config config = Config.load(this);
+        tvButton = config.tvButtonPicker && config.keyFilter ? new TvButtonController(this, config) : null;
         // restore_key_services: note that this helper runs, so Home can put it back after a force stop.
         repairRecord = config.restoreKeyServices;
         if (repairRecord) ServiceRepair.connected(this, getClass());
@@ -62,6 +64,7 @@ public class InputKeyService extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
+        if (tvButton != null && tvButton.handle(event)) return true;
         if (consumeVolumeKeys && VolumeKeys.handle(this, event)) return true;
         // A scancode entry is more specific than any keycode, so it goes first.
         if (RemoteKeys.handle(this, event, appScancodes.get(event.getScanCode()),

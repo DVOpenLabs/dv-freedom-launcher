@@ -61,6 +61,7 @@ public class HomeKeyService extends AccessibilityService {
     private boolean consumeVolumeKeys;
     /** app_keys, the same maps InputKeyService reads, for setups that run only this service. */
     private Map<Integer, String> appKeys = Collections.emptyMap();
+    private TvButtonController tvButton;
     private Map<Integer, String> appScancodes = Collections.emptyMap();
     private Map<Integer, String> holdAppKeys = Collections.emptyMap();
     private Map<Integer, String> holdAppScancodes = Collections.emptyMap();
@@ -184,6 +185,7 @@ public class HomeKeyService extends AccessibilityService {
     private void loadConfig() {
         // Keycodes and the panel choice can also come from a theme; theme.sh restarts this service.
         Config config = Config.load(this);
+        tvButton = config.tvButtonPicker && config.keyFilter ? new TvButtonController(this, config) : null;
         // restore_key_services: note that this helper runs, so Home can put it back after a force stop. Here, not
         // in onServiceConnected: the note is in credential-protected storage too, readable only after the unlock.
         repairRecord = config.restoreKeyServices;
@@ -253,6 +255,7 @@ public class HomeKeyService extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
+        if (tvButton != null && tvButton.handle(event)) return true;
         // power_on_home: the first key after power-on hands the TV to the user (power and wake keys don't count).
         if (powerOnUntil != 0 && event.getAction() == KeyEvent.ACTION_DOWN
                 && event.getKeyCode() != KeyEvent.KEYCODE_POWER && event.getKeyCode() != KeyEvent.KEYCODE_WAKEUP) {

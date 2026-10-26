@@ -11,6 +11,11 @@
     <bool name="local_profiles">false</bool>
     <bool name="theme_library">false</bool>
     <bool name="live_wallpapers">false</bool>
+    <bool name="appearance_controls">false</bool>
+    <integer name="tile_gap">0</integer>
+    <bool name="input_visibility_choice">false</bool>
+    <bool name="hide_inactive_hdmi">false</bool>
+    <bool name="tv_button_picker">false</bool>
 
     <!-- Tried in order when no standard settings handler is usable; each package must also be visible
          through <queries> in the manifest. -->

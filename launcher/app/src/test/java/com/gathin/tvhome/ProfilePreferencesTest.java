@@ -82,4 +82,22 @@ public class ProfilePreferencesTest {
         assertEquals(revision,memory.getLong(Config.SETTINGS_REVISION_KEY,0));
         assertFalse(ThemeLibrary.saveChoice(adult,"../bad"));
     }
+    @Test public void focusAndSpacingAreScopedButRemoteAndInputControlsStayGlobal() {
+        Memory memory=new Memory(); SharedPreferences adult=new ProfilePreferences(memory,"adult"), child=new ProfilePreferences(memory,"child");
+        adult.edit().putString(TileSpacing.FOCUS,"double").putInt(TileSpacing.CHOICE,16)
+                .putString("tv_button_choice","inputs").putBoolean("hide_inactive_hdmi_choice",true).apply();
+        assertEquals("double",adult.getString(TileSpacing.FOCUS,"")); assertEquals(16,adult.getInt(TileSpacing.CHOICE,0));
+        assertEquals("",child.getString(TileSpacing.FOCUS,"")); assertEquals(0,child.getInt(TileSpacing.CHOICE,0));
+        assertEquals("inputs",child.getString("tv_button_choice","")); assertTrue(child.getBoolean("hide_inactive_hdmi_choice",false));
+        adult.edit().clear().apply(); assertFalse(adult.contains(TileSpacing.FOCUS));
+        assertEquals("inputs",memory.getString("tv_button_choice","")); assertTrue(memory.getBoolean("hide_inactive_hdmi_choice",false));
+    }
+    @Test public void failedRemoteSaveRepairsGlobalChoiceAndRevisionWithoutTouchingAppearance() {
+        Memory memory=new Memory();new ProfilePreferences(memory,"adult").edit().putString(TileSpacing.FOCUS,"double").apply();
+        assertTrue(TvButtonChoice.save(memory,"inputs"));long before=memory.getLong(Config.SETTINGS_REVISION_KEY,0);
+        memory.failNext=true;assertFalse(TvButtonChoice.save(memory,"live"));
+        assertEquals("inputs",memory.getString(TvButtonChoice.KEY,""));assertEquals(before,memory.getLong(Config.SETTINGS_REVISION_KEY,0));
+        assertEquals("double",new ProfilePreferences(memory,"adult").getString(TileSpacing.FOCUS,""));
+        int commits=memory.commits;assertFalse(TvButtonChoice.save(memory,"settings"));assertEquals(commits,memory.commits);
+    }
 }

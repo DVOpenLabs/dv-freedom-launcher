@@ -29,6 +29,10 @@ public class GlassView extends View {
     /** glass_style rim or halo: no sheen and no fill, only the crisp rim (and, for halo, a lighter outer glow). */
     private boolean flat;
     private boolean halo;
+    /** Header Grid's dual-contrast frame, adapted without its optional glow. */
+    private boolean doubleFrame;
+    private final Paint black = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint white = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     public GlassView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -38,6 +42,12 @@ public class GlassView extends View {
         rim.setStrokeWidth(1.5f * density);
         rim.setColor(0xCCFFFFFF);
         glow.setStyle(Paint.Style.STROKE);
+        black.setStyle(Paint.Style.STROKE);
+        black.setStrokeWidth(2.5f * density);
+        black.setColor(0xFF000000);
+        white.setStyle(Paint.Style.STROKE);
+        white.setStrokeWidth(2.5f * density);
+        white.setColor(0xFFFFFFFF);
         // Cache the slab as a texture. The spring only changes translation, so the GPU can
         // move it without replaying clipPath and the glow on every frame. That path is
         // software-rendered on the MT5895 and is what makes the highlight crawl.
@@ -63,7 +73,8 @@ public class GlassView extends View {
 
     /** One of Config's GLASS_* styles. */
     void setStyle(String style) {
-        flat = Config.GLASS_RIM.equals(style) || Config.GLASS_HALO.equals(style);
+        doubleFrame = Config.GLASS_DOUBLE.equals(style);
+        flat = Config.GLASS_RIM.equals(style) || Config.GLASS_HALO.equals(style) || doubleFrame;
         halo = Config.GLASS_HALO.equals(style);
         rim.setStrokeWidth((flat ? 2f : 1.5f) * density);
         invalidate();
@@ -100,6 +111,14 @@ public class GlassView extends View {
                 glow.setColor(Math.round(alpha * t) << 24 | glowRgb);
                 canvas.drawRoundRect(rect.left - o, rect.top - o, rect.right + o, rect.bottom + o, radius + o, radius + o, glow);
             }
+        }
+        if (doubleFrame) {
+            float b = black.getStrokeWidth() / 2, w = white.getStrokeWidth() / 2;
+            canvas.drawRoundRect(rect.left - w, rect.top - w, rect.right + w, rect.bottom + w,
+                    radius + w, radius + w, white);
+            canvas.drawRoundRect(rect.left + b, rect.top + b, rect.right - b, rect.bottom - b,
+                    Math.max(0f, radius - b), Math.max(0f, radius - b), black);
+            return;
         }
         if (flat) {
             canvas.drawRoundRect(rect, radius, radius, rim);

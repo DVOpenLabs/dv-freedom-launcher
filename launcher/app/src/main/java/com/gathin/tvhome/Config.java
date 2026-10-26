@@ -174,6 +174,11 @@ final class Config {
     final boolean powerOnHomeAlways;
     final boolean homeStylePicker;
     boolean carousel;
+    boolean appearanceControls;
+    int tileGap;
+    boolean inputVisibilityChoice;
+    boolean hideInactiveHdmi;
+    boolean tvButtonPicker;
     /** The Settings button opens the quick settings panel instead of the TV's Settings (settings_key_panel). */
     final boolean settingsKeyPanel;
     /** Home puts the remote's accessibility helpers back after a force stop (restore_key_services; ServiceRepair). */
@@ -233,7 +238,7 @@ final class Config {
     final String glassStyle;
 
     static final String GLOW_RADIAL = "radial", GLOW_HORIZON = "horizon";
-    static final String GLASS_DEFAULT = "glass", GLASS_RIM = "rim", GLASS_HALO = "halo";
+    static final String GLASS_DEFAULT = "glass", GLASS_RIM = "rim", GLASS_HALO = "halo", GLASS_DOUBLE = "double";
     /** Show each rotating wallpaper's name from wallpapers/captions.txt (config.xml / theme wallpaper_captions). */
     final boolean wallpaperCaptions;
     /** Answer VIEW_INPUTS with the Inputs menu (handle_view_inputs); see InputsRequestActivity. */
@@ -391,6 +396,7 @@ final class Config {
     static String glassStyle(String value) {
         if (value == null) return GLASS_DEFAULT;
         String v = value.trim();
+        if (GLASS_DOUBLE.equalsIgnoreCase(v)) return GLASS_DOUBLE;
         if (GLASS_RIM.equalsIgnoreCase(v)) return GLASS_RIM;
         return GLASS_HALO.equalsIgnoreCase(v) ? GLASS_HALO : GLASS_DEFAULT;
     }
@@ -505,6 +511,15 @@ final class Config {
         File file = dir != null ? new File(dir, FILE_NAME) : null;
         boolean mounted = Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
         JSONObject json = readOverlay(ctx, file, mounted);
+        boolean appearanceControls = json == null ? res.getBoolean(R.bool.appearance_controls)
+                : bool(json, "appearance_controls", res.getBoolean(R.bool.appearance_controls));
+        boolean inputVisibilityChoice = json == null ? res.getBoolean(R.bool.input_visibility_choice)
+                : bool(json, "input_visibility_choice", res.getBoolean(R.bool.input_visibility_choice));
+        boolean hideInactiveHdmi = json == null ? res.getBoolean(R.bool.hide_inactive_hdmi)
+                : bool(json, "hide_inactive_hdmi", res.getBoolean(R.bool.hide_inactive_hdmi));
+        boolean tvButtonPicker = json == null ? res.getBoolean(R.bool.tv_button_picker)
+                : bool(json, "tv_button_picker", res.getBoolean(R.bool.tv_button_picker));
+        int tileGap = res.getInteger(R.integer.tile_gap);
         File baseDir=dir;
         LocalProfiles.Profile profile=ProfileStore.configure(ctx,json==null?res.getBoolean(R.bool.local_profiles):bool(json,"local_profiles",res.getBoolean(R.bool.local_profiles)));
         JSONObject visual=ThemeLibrary.configure(ctx,
@@ -611,6 +626,7 @@ final class Config {
             dockBandAll = bool(json, "dock_band_all", dockBandAll);
             glowStyle = string(json, "glow_style", glowStyle);
             glassStyle = string(json, "glass_style", glassStyle);
+            tileGap = integer(json, "tile_gap", tileGap, 0, 32);
         }
         if (profile != null) {
             dock = new ArrayList<>(profile.favorites);
@@ -623,6 +639,7 @@ final class Config {
         // A theme push or reset invalidates choices made on the TV. On first use, remember the
         // current theme without clearing choices from an older launcher version.
         SharedPreferences choices = ProfileStore.preferences(ctx);
+        if (inputVisibilityChoice) hideInactiveHdmi = choices.getBoolean(HdmiVisibility.CHOICE, hideInactiveHdmi);
         // Unmounted storage looks like a theme reset; compare only once the file is readable.
         if (mounted) syncThemeChoices(choices, baseDir, file);
         int chosenColumns = choices.getInt("columns", columns);
@@ -666,6 +683,7 @@ final class Config {
 
         // Styles replace presentation only. Explicit later adjustments still win after Keep;
         // preview ignores those three overrides without writing them to disk.
+        String themedGlassStyle = glassStyle;
         boolean carousel=false;
         if (homeStylePicker) {
             String previewStyle = StyleSession.preview();
@@ -696,6 +714,14 @@ final class Config {
                 }
             }
         }
+        // Keep an explicitly requested dual-contrast frame across style presets. Manual appearance is scoped.
+        if (GLASS_DOUBLE.equals(glassStyle(themedGlassStyle))) glassStyle = GLASS_DOUBLE;
+        if (appearanceControls) {
+            String focus = choices.getString(TileSpacing.FOCUS, "");
+            if (GLASS_DOUBLE.equals(focus) || GLASS_RIM.equals(focus)) glassStyle = focus;
+            int gap = choices.getInt(TileSpacing.CHOICE, tileGap);
+            if (TileSpacing.valid(gap)) tileGap = gap;
+        }
         Config result=new Config(dock, fillDock, hidden, libraryApps, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
                 packageMap(appBanners), panelService, panelAction, panelExtra, coocaaSources, inputAction, inputSources, inputUriScheme, Math.max(1, columns),
                 Math.max(0, rowsBelow), animations, advancedEffects, shamsi, greetingName, moduleCards, reducedMotion, bootToLiveTv,
@@ -710,7 +736,9 @@ final class Config {
                 consumeVolumeKeys, powerOnHome, homeLongPressHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
                 dateBelowClock, vpnPill, locale, powerOnHomeAlways, homeStylePicker);
-        result.carousel=carousel;return result;
+        result.carousel=carousel; result.appearanceControls=appearanceControls; result.tileGap=tileGap;
+        result.inputVisibilityChoice=inputVisibilityChoice; result.hideInactiveHdmi=hideInactiveHdmi;
+        result.tvButtonPicker=tvButtonPicker; return result;
     }
 
     /**
@@ -753,12 +781,14 @@ final class Config {
             // explicit theme push or reset by the updated tools.
             SharedPreferences.Editor editor = choices.edit();
             if (!"absent".equals(token)) editor.remove("columns").remove("animations")
+                    .remove(TileSpacing.FOCUS).remove(TileSpacing.CHOICE)
                     .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO)
                     .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
                     .remove(DOCK_OPACITY_KEY);
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
             choices.edit().remove("columns").remove("animations").remove("advanced_effects")
+                    .remove(TileSpacing.FOCUS).remove(TileSpacing.CHOICE)
                     .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO)
                     .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY).remove(DOCK_OPACITY_KEY)
                     .putString(THEME_SIGNATURE_KEY, signature).commit();

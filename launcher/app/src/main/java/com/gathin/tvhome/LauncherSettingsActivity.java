@@ -49,6 +49,24 @@ public final class LauncherSettingsActivity extends Activity {
         setContentView(R.layout.activity_launcher_settings);
         Config config = Config.load(this);
         choices = ProfileStore.preferences(this);
+        AppearanceSettings.attach(this, config);
+        TvButtonSettings.attach(this, config);
+        TextView inputs = findViewById(R.id.inputVisibilityChoice);
+        if (config.inputVisibilityChoice) {
+            inputs.setVisibility(View.VISIBLE);
+            inputs.setText(getString(R.string.input_visibility_state, getString(config.hideInactiveHdmi
+                    ? R.string.input_visibility_hide : R.string.input_visibility_all)));
+            inputs.setOnClickListener(v -> {
+                String[] labels = {getString(R.string.tv_button_follow), getString(R.string.input_visibility_all), getString(R.string.input_visibility_hide)};
+                int selected = choices.contains(HdmiVisibility.CHOICE) ? (choices.getBoolean(HdmiVisibility.CHOICE, false) ? 2 : 1) : 0;
+                AppearanceSettings.choose(this, R.string.input_visibility, labels, selected, which -> {
+                    SharedPreferences.Editor edit = choices.edit();
+                    if (which == 0) edit.remove(HdmiVisibility.CHOICE); else edit.putBoolean(HdmiVisibility.CHOICE, which == 2);
+                    edit.putLong(Config.SETTINGS_REVISION_KEY, choices.getLong(Config.SETTINGS_REVISION_KEY, 0) + 1).apply();
+                    setResult(RESULT_OK); finish();
+                });
+            });
+        }
         View themes = findViewById(R.id.themesChoice);
         if (ThemeLibrary.enabled()) {
             themes.setVisibility(View.VISIBLE);
@@ -176,12 +194,14 @@ public final class LauncherSettingsActivity extends Activity {
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
             SharedPreferences.Editor reset = choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
+                    .remove(TileSpacing.FOCUS).remove(TileSpacing.CHOICE)
                     .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO)
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
                     .remove(Config.DOCK_OPACITY_KEY);
             if (ProfileStore.id().isEmpty()) reset.remove(OpenOnStart.KEY);
             reset.commit();
             Config current = Config.load(this);
+            AppearanceSettings.attach(this, current);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
             dockOpacity = current.dockOpacity;
@@ -199,6 +219,11 @@ public final class LauncherSettingsActivity extends Activity {
         refresh();
         if (config.launcherSettingsButton) reorderChoice.requestFocus();
         else columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        TvButtonSettings.refreshStatus(this);
     }
 
     private void reverseRow(TextView[] views) {
@@ -342,7 +367,8 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private boolean hasOnTvChoices() {
-        return choices.contains(HomeStyles.CHOICE) || choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
+        return choices.contains(TileSpacing.FOCUS) || choices.contains(TileSpacing.CHOICE)
+                || choices.contains(HomeStyles.CHOICE) || choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
                 || (ProfileStore.id().isEmpty() && choices.contains(OpenOnStart.KEY));

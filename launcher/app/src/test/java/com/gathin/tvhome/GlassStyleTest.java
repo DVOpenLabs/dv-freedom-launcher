@@ -6,6 +6,10 @@ import static org.junit.Assert.assertEquals;
 
 /** glass_style from config.xml or a theme: rim or halo by name, glass for anything else. */
 public class GlassStyleTest {
+    @Test public void dualContrastFrameIsExplicitAndCaseInsensitive() {
+        assertEquals(Config.GLASS_DOUBLE, Config.glassStyle("double"));
+        assertEquals(Config.GLASS_DOUBLE, Config.glassStyle(" Double "));
+    }
 
     @Test
     public void rimByNameAnyCase() {

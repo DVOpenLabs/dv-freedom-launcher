@@ -58,6 +58,13 @@ public class ThemeArchiveTest {
         entries=valid("{}");entries.put("manifest.json",utf("{\"schema\":2,\"id\":\"night\",\"name\":\"Night\",\"version\":1}"));rejected(entries);
         entries=valid("{}");entries.put("manifest.json",utf("{\"schema\":1,\"id\":\"night\",\"name\":\"Night\",\"version\":1,\"download\":\"url\"}"));rejected(entries);
     }
+    @Test public void focusAndSpacingPacksRemainVisualOnly() throws Exception {
+        ThemeArchive.Pack pack=read(valid("{\"glass_style\":\"double\",\"tile_gap\":16}"));
+        assertEquals("double",pack.visual.get("glass_style")); assertEquals(16L,pack.visual.get("tile_gap"));
+        rejected(valid("{\"tile_gap\":33}")); rejected(valid("{\"glass_style\":\"unknown\"}"));
+        rejected(valid("{\"appearance_controls\":true}")); rejected(valid("{\"tv_button_picker\":true}"));
+        rejected(valid("{\"hide_inactive_hdmi\":true}"));
+    }
     @Test public void boundsZipEntryCountAndExpandedImages() throws Exception {
         Map<String,byte[]> entries=valid("{}");for(int i=0;i<62;i++)entries.put("wallpapers/"+i+".jpg",new byte[]{1});rejected(entries);
         entries=valid("{}");entries.put("wallpaper.jpg",new byte[(int)ThemeArchive.MAX_IMAGE+1]);rejected(entries);

@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="appearance_follow">Follow theme</string>
+    <string name="focus_outline">Focus outline</string>
+    <string name="focus_outline_state">Focus outline: %1$s</string>
+    <string name="focus_outline_standard">Standard rim</string>
+    <string name="focus_outline_strong">Strong black and white</string>
+    <string name="tile_spacing">Extra tile spacing</string>
+    <string name="tile_spacing_state">Extra tile spacing: %1$s</string>
+    <string name="tile_spacing_dp">%1$d dp</string>
+    <string name="input_visibility">HDMI input list</string>
+    <string name="input_visibility_state">HDMI inputs: %1$s</string>
+    <string name="input_visibility_all">Show all</string>
+    <string name="input_visibility_hide">Hide inactive bare ports</string>
+    <string name="inputs_show_all">Show all inputs (%1$d hidden)</string>
+    <string name="tv_button">Remote TV button</string>
+    <string name="tv_button_follow">Follow configuration</string>
+    <string name="tv_button_inputs">Launcher Inputs menu</string>
+    <string name="tv_button_unavailable">Selected TV-button destination is unavailable.</string>
+    <string name="tv_button_missing">Previously selected app (unavailable)</string>
+    <string name="tv_button_save_failed">Could not save the TV-button choice.</string>
+    <string name="tv_button_helper_active">A key helper is active. Open Accessibility settings</string>
+    <string name="tv_button_helper_needed">For use across apps, enable an existing key helper in Accessibility settings. On Home, no helper is needed.</string>
     <string name="style_carousel">Bottom carousel</string>
     <string name="theme_library">Offline themes</string>
     <string name="theme_original">Original theme</string>
