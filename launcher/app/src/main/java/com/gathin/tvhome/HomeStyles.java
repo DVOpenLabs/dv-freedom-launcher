@@ -26,6 +26,7 @@ final class HomeStyles {
             return id;
         }
         int seconds(long now) { return active(now) == null ? 0 : (int) ((deadline - now + 999) / 1000); }
+        long remaining(long now) { return active(now) == null ? 0 : deadline - now; }
         boolean cancel() {
             if (id == null) return false;
             id = null; revision++; return true;

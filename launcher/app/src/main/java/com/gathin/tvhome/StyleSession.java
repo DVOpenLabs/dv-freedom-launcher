@@ -71,17 +71,13 @@ final class StyleSession {
                     if (!keep(activity)) Toast.makeText(activity, R.string.style_save_failed, Toast.LENGTH_LONG).show();
                     activity.recreate();
                 }).create();
-        Runnable tick = new Runnable() {
-            @Override public void run() {
-                int seconds = PREVIEW.seconds(SystemClock.elapsedRealtime());
-                if (seconds == 0) { dialog.dismiss(); activity.recreate(); return; }
-                dialog.setMessage(activity.getString(R.string.style_countdown, seconds));
-                handler.postDelayed(this, 250);
-            }
-        };
+        Runnable timeout = () -> { PREVIEW.cancel(); dialog.dismiss(); activity.recreate(); };
         dialog.setOnCancelListener(d -> { PREVIEW.cancel(); activity.recreate(); });
-        dialog.setOnDismissListener(d -> handler.removeCallbacks(tick));
-        dialog.setOnShowListener(d -> { dialog.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus(); handler.post(tick); });
+        dialog.setOnDismissListener(d -> handler.removeCallbacks(timeout));
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus();
+            handler.postDelayed(timeout, PREVIEW.remaining(SystemClock.elapsedRealtime()));
+        });
         dialog.show();
         return dialog;
     }

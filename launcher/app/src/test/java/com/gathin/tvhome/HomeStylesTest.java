@@ -9,8 +9,10 @@ public class HomeStylesTest {
         state.begin("cinematic", 100);
         assertEquals("cinematic", state.active(20_099));
         assertEquals(1, state.seconds(20_099));
+        assertEquals(1, state.remaining(20_099));
         assertNull(state.active(20_100));
         assertEquals(0, state.seconds(20_100));
+        assertEquals(0, state.remaining(20_100));
         assertEquals(2, state.revision());
     }
     @Test public void cancelIsIdempotentAndNewProcessHasNoPreview() {
