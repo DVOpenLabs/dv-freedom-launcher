@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stock_home_redirect_name">CleanYourTV Home redirect</string>
+    <string name="stock_home_redirect_description">Opens CleanYourTV when Google TV Home appears and when this helper connects. Watches only Google Home’s window name; cannot read screen contents or filter remote buttons.</string>
+</resources>

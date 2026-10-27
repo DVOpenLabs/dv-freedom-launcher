@@ -245,5 +245,19 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/input_key_service" />
         </service>
+        <!-- Streamer Home-only alternative. Explicit accessibility opt-in required.
+             No content retrieval, key filtering, notification listener or boot receiver. -->
+        <service
+            android:name=".StockHomeRedirectService"
+            android:enabled="true"
+            android:directBootAware="true"
+            android:exported="true"
+            android:label="@string/stock_home_redirect_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/stock_home_redirect_service" />
+        </service>
     </application>
 </manifest>
