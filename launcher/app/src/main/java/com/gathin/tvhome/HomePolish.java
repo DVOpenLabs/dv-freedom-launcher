@@ -12,7 +12,7 @@ import java.util.function.BooleanSupplier;
 
 /** Launcher-only quiet view and a still/poster-sampled header gradient. Never reads another app. */
 final class HomePolish {
-    static final String IDLE="cinematic_idle_seconds",HEADER="adaptive_header",MOTION="refined_motion";
+    static final String IDLE="cinematic_idle_seconds",HEADER="adaptive_header",MOTION="refined_motion",INK="text_ink_choice",NAMES="app_names_choice";
     private final Activity activity;private final Config config;private final BooleanSupplier ready;
     private final Handler handler=new Handler(Looper.getMainLooper());private final PolishPolicy.Idle idle=new PolishPolicy.Idle();
     private final Map<View,Float> faded=new HashMap<>();private final int seconds;private final View shade;
@@ -44,7 +44,7 @@ final class HomePolish {
     }
     // One palette per theme, not independent colours for neighbouring app names.
     // Theme background is authoritative; the poster may contain transient bright particles/water.
-    private int ink(View view){return PolishPolicy.ink(new int[]{config.backgroundColor});}
+    private int ink(View view){return PolishPolicy.textInk(ProfileStore.preferences(activity).getInt(INK,0),config.backgroundColor);}
     private void header(View view,int color){
         if(view instanceof TextView)text((TextView)view,color);
         if(view instanceof ViewGroup)for(int i=0;i<((ViewGroup)view).getChildCount();i++)header(((ViewGroup)view).getChildAt(i),color);
@@ -105,10 +105,18 @@ final class HomePolish {
                 Map<String,Object> changes=new HashMap<>();changes.put(IDLE,values[index]);changes.put(Config.SETTINGS_REVISION_KEY,p.getLong(Config.SETTINGS_REVISION_KEY,0)+1);
                 if(SetupValues.commit(p,changes)){d.dismiss();a.finish();}else Toast.makeText(a,R.string.style_save_failed,Toast.LENGTH_SHORT).show();
             }).setNegativeButton(android.R.string.cancel,null).show();});
-        for(int id:new int[]{R.id.adaptiveHeaderChoice,R.id.refinedMotionChoice}){
-            String key=id==R.id.adaptiveHeaderChoice?HEADER:MOTION;int title=id==R.id.adaptiveHeaderChoice?R.string.adaptive_header:R.string.refined_motion;
-            TextView row=a.findViewById(id);row.setText(a.getString(title)+" · "+a.getString(p.getBoolean(key,false)?R.string.live_on:R.string.live_off));
-            row.setOnClickListener(v->{if(CompanionControls.saveBoolean(p,key,!p.getBoolean(key,false)))a.finish();else Toast.makeText(a,R.string.style_save_failed,Toast.LENGTH_SHORT).show();});
-        }
+        TextView motion=a.findViewById(R.id.refinedMotionChoice);motion.setText(a.getString(R.string.refined_motion)+" · "+a.getString(p.getBoolean(MOTION,false)?R.string.live_on:R.string.live_off));
+        motion.setOnClickListener(v->{if(CompanionControls.saveBoolean(p,MOTION,!p.getBoolean(MOTION,false)))a.finish();else Toast.makeText(a,R.string.style_save_failed,Toast.LENGTH_SHORT).show();});
+        choice(a,R.id.adaptiveHeaderChoice,R.string.home_text,R.array.home_text_options,p.getBoolean(HEADER,false)?Math.max(0,Math.min(2,p.getInt(INK,0)))+1:0,true);
+        choice(a,R.id.appNamesChoice,R.string.app_names,R.array.app_name_options,Math.max(0,Math.min(3,p.getInt(NAMES,0))),false);
+    }
+    private static void choice(Activity a,int id,int title,int options,int current,boolean ink){
+        String[] names=a.getResources().getStringArray(options);TextView row=a.findViewById(id);row.setText(a.getString(title)+" · "+names[current]);
+        row.setOnClickListener(v->AppearanceSettings.choose(a,title,names,current,which->{
+            android.content.SharedPreferences p=ProfileStore.preferences(a);Map<String,Object> changes=new HashMap<>();
+            if(ink){changes.put(HEADER,which!=0);changes.put(INK,which<2?null:which-1);}else changes.put(NAMES,which==0?null:which);
+            changes.put(Config.SETTINGS_REVISION_KEY,p.getLong(Config.SETTINGS_REVISION_KEY,0)+1);
+            if(SetupValues.commit(p,changes))a.finish();else Toast.makeText(a,R.string.style_save_failed,Toast.LENGTH_SHORT).show();
+        }));
     }
 }

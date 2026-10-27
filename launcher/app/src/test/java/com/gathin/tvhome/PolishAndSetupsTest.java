@@ -5,6 +5,26 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 public class PolishAndSetupsTest {
+    @Test public void explicitInkOverridesAreStableAndAutoStillFollowsTheme(){
+        assertEquals(0xfff5f7fa,PolishPolicy.textInk(1,0xffffffff));
+        assertEquals(0xff182334,PolishPolicy.textInk(2,0xff000000));
+        assertEquals(PolishPolicy.ink(new int[]{0xffeeeeee}),PolishPolicy.textInk(0,0xffeeeeee));
+        assertEquals(PolishPolicy.textInk(0,0xffeeeeee),PolishPolicy.textInk(99,0xffeeeeee));
+    }
+    @Test public void labelModesKeepOriginalOpacityUnlessExplicitlyChosen(){
+        assertEquals(.75f,PolishPolicy.nameAlpha(0,.75f),0f);
+        assertEquals(1f,PolishPolicy.nameAlpha(1,0f),0f);
+        assertEquals(0f,PolishPolicy.nameAlpha(2,1f),0f);
+        assertEquals(0f,PolishPolicy.nameAlpha(3,1f),0f);
+    }
+    @Test public void readableTextChoicesAreBoundedAndProfileScoped(){
+        for(String key:new String[]{"text_ink_choice","app_names_choice"}){
+            int max=key.equals("text_ink_choice")?2:3;
+            for(Object bad:new Object[]{-1,max+1,"1",true,1.5})try{SetupValues.validate(Collections.singletonMap(key,bad));fail(key);}catch(IllegalArgumentException expected){}
+            assertEquals(max,SetupValues.validate(Collections.singletonMap(key,(long)max)).get(key));
+            assertNotEquals(LocalProfiles.key("one",key),LocalProfiles.key("two",key));
+        }
+    }
     @Test public void idleHasAnExactDeadlineAndNoWorkWhenOff(){
         PolishPolicy.Idle idle=new PolishPolicy.Idle();idle.arm(100,60);assertFalse(idle.due(60099));assertTrue(idle.due(60100));assertTrue(idle.quiet);
         idle.stop();idle.arm(0,0);assertFalse(idle.due(Long.MAX_VALUE));assertFalse(idle.quiet);

@@ -16,7 +16,7 @@ final class LocalProfiles {
             "columns", "rows_below_dock", "dock_opacity", "animations", "advanced_effects",
             "wallpaper_choice", "home_style_choice", "home_style_undo", "theme_signature", "theme_pack_id", "live_wallpaper",
             "focus_outline_choice", "tile_gap_choice", "desktop_layout", "desktop_layout_undo",
-            "desktop_layout_undo_guard", "show_audio_indicator", "app_position", "desktop_position_undo", "remember_recent_apps", "wallpaper_dim_choice", "cinematic_idle_seconds", "adaptive_header", "refined_motion", "saved_home_setups")));
+            "desktop_layout_undo_guard", "show_audio_indicator", "app_position", "desktop_position_undo", "remember_recent_apps", "wallpaper_dim_choice", "cinematic_idle_seconds", "adaptive_header", "refined_motion", "saved_home_setups", "text_ink_choice", "app_names_choice")));
 
     static final class Profile {
         final String id, name;

@@ -65,7 +65,7 @@ tasks.configureEach { task ->
             keep.text = names.join('\n') + '\n'
             def suffix = System.getProperty('os.name').toLowerCase().contains('windows') ? '.exe' : ''
             def aapt = new File(android.sdkDirectory, 'build-tools/' + android.buildToolsVersion + '/aapt2' + suffix)
-            exec { commandLine aapt, 'optimize', '--collapse-resource-names', '--resources-config-path', keep,
+            exec { commandLine aapt, 'optimize', '--collapse-resource-names', '--deduplicate-entry-values', '--resources-config-path', keep,
                     '-o', temporary, archive }
             java.nio.file.Files.move(temporary.toPath(), archive.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
         }

@@ -2,6 +2,8 @@ package com.gathin.tvhome;
 
 /** Pure timing/contrast policy. One quiet state and one matched key-up; no background service. */
 final class PolishPolicy {
+    static int textInk(int choice,int background){return choice==1?0xfff5f7fa:choice==2?0xff182334:ink(new int[]{background});}
+    static float nameAlpha(int mode,float fallback){return mode==1?1f:mode==2||mode==3?0f:fallback;}
     static int shade(int[] colors){
         if(colors==null||colors.length==0)return 0;long light=0;
         for(int rgb:colors)light+=((rgb>>16&255)*54+(rgb>>8&255)*183+(rgb&255)*19)/256;

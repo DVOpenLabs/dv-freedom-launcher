@@ -9,7 +9,7 @@ final class SetupValues {
         "columns","rows_below_dock","dock_opacity","animations","advanced_effects","wallpaper_choice",
         "home_style_choice","theme_pack_id","live_wallpaper","focus_outline_choice","tile_gap_choice",
         "desktop_layout","show_audio_indicator","app_position","wallpaper_dim_choice","cinematic_idle_seconds",
-        "adaptive_header","refined_motion")));
+        "adaptive_header","refined_motion","text_ink_choice","app_names_choice")));
     private static final Set<String> FLAGS=new HashSet<>(Arrays.asList("animations","advanced_effects","live_wallpaper","show_audio_indicator","adaptive_header","refined_motion"));
     static String name(String text){
         if(text==null)throw new IllegalArgumentException("Name required");String value=text.trim();
@@ -23,11 +23,12 @@ final class SetupValues {
         for(Map.Entry<String,?> entry:values.entrySet()){
             String key=entry.getKey();Object value=entry.getValue();
             if(FLAGS.contains(key)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid switch");}
-            else if(Arrays.asList("columns","rows_below_dock","dock_opacity","tile_gap_choice","wallpaper_dim_choice","cinematic_idle_seconds").contains(key)){
+            else if(Arrays.asList("columns","rows_below_dock","dock_opacity","tile_gap_choice","wallpaper_dim_choice","cinematic_idle_seconds","text_ink_choice","app_names_choice").contains(key)){
                 if(!(value instanceof Integer||value instanceof Long))throw new IllegalArgumentException("Invalid number");
                 long n=((Number)value).longValue();int lo=0,hi=90;
                 if(key.equals("columns")){lo=2;hi=8;}if(key.equals("rows_below_dock"))hi=3;
                 if(key.equals("dock_opacity")){lo=30;hi=100;}if(key.equals("tile_gap_choice"))hi=32;
+                if(key.equals("text_ink_choice"))hi=2;if(key.equals("app_names_choice"))hi=3;
                 if(key.equals("cinematic_idle_seconds")&&n!=0&&n!=30&&n!=60&&n!=120)throw new IllegalArgumentException("Invalid idle time");
                 if(key.equals("cinematic_idle_seconds"))hi=120;
                 if(n<lo||n>hi)throw new IllegalArgumentException("Invalid range");value=(int)n;

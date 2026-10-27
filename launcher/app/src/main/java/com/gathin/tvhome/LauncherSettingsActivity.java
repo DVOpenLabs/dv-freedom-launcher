@@ -124,6 +124,7 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < ids.length; i++) {
             final int value = i + 4;
             columnChoices[i] = findViewById(ids[i]);
+            columnChoices[i].setContentDescription(getString(R.string.columns_label)+" · "+value);
             columnChoices[i].setOnClickListener(v -> {
                 if (columns == value) return;
                 columns = value;
@@ -136,6 +137,7 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < rowIds.length; i++) {
             final int value = i;
             rowChoices[i] = findViewById(rowIds[i]);
+            rowChoices[i].setContentDescription(getString(R.string.rows_below_dock_label)+" · "+value);
             rowChoices[i].setOnClickListener(v -> {
                 if (rowsBelowDock == value) return;
                 rowsBelowDock = value;
@@ -148,6 +150,7 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < dockIds.length; i++) {
             final int value = DOCK_OPACITIES[i];
             dockChoices[i] = findViewById(dockIds[i]);
+            dockChoices[i].setContentDescription(getString(R.string.dock_opacity_label)+" · "+value+"%");
             dockChoices[i].setOnClickListener(v -> {
                 if (dockOpacity == value) return;
                 dockOpacity = value;

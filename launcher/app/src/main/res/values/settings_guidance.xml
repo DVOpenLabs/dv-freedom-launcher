@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_text">Home text</string>
+    <string name="app_names">App names</string>
+    <string-array name="home_text_options"><item>Original theme</item><item>Automatic contrast</item><item>Light text</item><item>Dark text</item></string-array>
+    <string-array name="app_name_options"><item>Follow theme</item><item>Show all</item><item>Selected app only</item><item>Hide names</item></string-array>
+    <string name="help_position">Preview apps at the top, middle or bottom. Keep the position or let it revert.</string>
+    <string name="help_text">Automatic contrast follows the theme background. Choose light or dark ink for busy artwork. No text outlines or label backgrounds.</string>
+    <string name="help_names">Show every app name, just the selected name, or none. Icon size, spacing and remote navigation stay the same.</string>
+    <string name="help_focus">Choose the border around the selected app. Strong uses a light and dark outline for mixed artwork.</string>
+    <string name="help_spacing">Add space between app tiles without changing their order.</string>
+    <string name="help_live">Play the theme’s local video silently while Home is visible. Reduced motion and device support may disable playback.</string>
+    <string name="help_setups">Save up to five Home setups per profile. Restore appearance and app choices without changing TV settings or accounts.</string>
+    <string name="help_inputs">Show an Inputs shortcut on Home. TVs list their inputs; streamers provide guidance for the connected TV.</string>
+    <string name="help_idle">Hide app controls after a quiet period on Home. The first navigation press brings them back. Volume and Input still work.</string>
+</resources>

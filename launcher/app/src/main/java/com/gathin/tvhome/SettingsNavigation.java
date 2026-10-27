@@ -24,8 +24,12 @@ final class SettingsNavigation {
     private final View categories;
     private boolean editing;
     private int selected;
+    private int[] last=new int[BUTTONS.length];
+    private final TextView context;
     SettingsNavigation(Activity activity,Bundle saved) {
         this.activity=activity;scroll=activity.findViewById(R.id.settingsScroll);categories=activity.findViewById(R.id.settingsCategories);
+        context=activity.findViewById(R.id.settingsContext);
+        if(saved!=null){int[] value=saved.getIntArray("settings_focus");if(value!=null&&value.length==last.length)last=value;}
         rtl=activity.getResources().getBoolean(R.bool.rtl_menu_bar);
         for(int i=0;i<BUTTONS.length;i++) {
             final int index=i;
@@ -41,6 +45,9 @@ final class SettingsNavigation {
         }
         if(rtl)activity.findViewById(R.id.settingsPanes).setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         select(saved==null?0:Math.max(0,Math.min(BUTTONS.length-1,saved.getInt(SAVED,0))));
+        activity.findViewById(R.id.settingsPanes).getViewTreeObserver().addOnGlobalFocusChangeListener((old,focused)->{
+            if(editing&&focused!=null&&inside(focused,groups[selected])){last[selected]=focused.getId();describe(focused);}
+        });
         if(saved!=null&&saved.getBoolean("settings_detail",false))enter();else buttons[selected].requestFocus();
     }
     private void select(int index) {
@@ -59,7 +66,15 @@ final class SettingsNavigation {
         }
         return null;
     }
-    private void enter(){editing=true;categories.setVisibility(View.GONE);scroll.setVisibility(View.VISIBLE);scroll.scrollTo(0,0);View target=first(groups[selected]);if(target!=null)target.requestFocus();}
+    private void enter(){editing=true;categories.setVisibility(View.GONE);scroll.setVisibility(View.VISIBLE);View target=activity.findViewById(last[selected]);if(target==null||!inside(target,groups[selected])||!target.isShown()||!target.isEnabled())target=first(groups[selected]);if(target!=null){target.requestFocus();describe(target);}}
+    private void describe(View target){
+        context.setVisibility(View.VISIBLE);context.setText(target.getContentDescription()!=null?target.getContentDescription():target instanceof TextView?((TextView)target).getText():"");
+        int id=target.getId(),help=HINTS[selected];
+        int[] ids={R.id.positionChoice,R.id.adaptiveHeaderChoice,R.id.appNamesChoice,R.id.focusOutlineChoice,R.id.tileSpacingChoice,R.id.wallpaperDimChoice,R.id.liveWallpaperChoice,R.id.profilesChoice,R.id.savedSetupsChoice,R.id.inputsShortcutChoice,R.id.cinematicIdleChoice};
+        int[] hints={R.string.help_position,R.string.help_text,R.string.help_names,R.string.help_focus,R.string.help_spacing,R.string.wallpaper_dim_help,R.string.help_live,R.string.settings_apps_help,R.string.help_setups,R.string.help_inputs,R.string.help_idle};
+        for(int i=0;i<ids.length;i++)if(id==ids[i]){help=hints[i];break;}
+        ((TextView)activity.findViewById(R.id.settingsSectionHelp)).setText(help);
+    }
     private static boolean inside(View child,View ancestor) {
         while(child!=null){if(child==ancestor)return true;child=child.getParent() instanceof View?(View)child.getParent():null;}return false;
     }
@@ -77,6 +92,6 @@ final class SettingsNavigation {
         }
         return false;
     }
-    boolean back(){if(!editing)return false;editing=false;scroll.setVisibility(View.GONE);categories.setVisibility(View.VISIBLE);buttons[selected].requestFocus();return true;}
-    void save(Bundle out){out.putInt(SAVED,selected);out.putBoolean("settings_detail",editing);}
+    boolean back(){if(!editing)return false;editing=false;context.setVisibility(View.GONE);scroll.setVisibility(View.GONE);categories.setVisibility(View.VISIBLE);select(selected);buttons[selected].requestFocus();return true;}
+    void save(Bundle out){out.putInt(SAVED,selected);out.putBoolean("settings_detail",editing);out.putIntArray("settings_focus",last.clone());}
 }
