@@ -12,26 +12,31 @@ import java.util.List;
 final class ProfilePicker {
     static final int IMPORT = 4103;
     static void show(Activity activity) {
+        show(activity,true);
+    }
+    static void show(Activity activity,boolean allowImport) {
         List<LocalProfiles.Profile> rows = ProfileStore.read(activity);
-        String[] names = new String[rows.size() + 2];
+        String[] names = new String[rows.size() + (allowImport?2:1)];
         names[0] = activity.getString(R.string.profile_current);
         int checked = 0;
         for (int i = 0; i < rows.size(); i++) {
             names[i + 1] = rows.get(i).name;
             if (rows.get(i).id.equals(ProfileStore.id())) checked = i + 1;
         }
-        names[names.length - 1] = activity.getString(R.string.profile_import);
+        if(allowImport)names[names.length - 1] = activity.getString(R.string.profile_import);
         final int selected = checked;
         AlertDialog dialog = new AlertDialog.Builder(activity).setTitle(R.string.local_profiles)
                 .setSingleChoiceItems(names, checked, (d, which) -> {
                     d.dismiss();
-                    if (which == names.length - 1) {
+                    if (allowImport && which == names.length - 1) {
                         if (!ProfileStore.id().isEmpty()) { message(activity, R.string.profile_import_current); return; }
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json")
                                 .addCategory(Intent.CATEGORY_OPENABLE);
                         try { activity.startActivityForResult(intent, IMPORT); }
                         catch (android.content.ActivityNotFoundException e) { message(activity, R.string.not_available); }
-                    } else if (ProfileStore.select(activity, which == 0 ? "" : rows.get(which - 1).id)) activity.finish();
+                    } else if (ProfileStore.select(activity, which == 0 ? "" : rows.get(which - 1).id)) {
+                        if(activity instanceof MainActivity)activity.recreate();else activity.finish();
+                    }
                     else message(activity, R.string.profile_save_failed);
                 }).setNegativeButton(android.R.string.cancel, null).create();
         dialog.setOnShowListener(d -> { dialog.getListView().requestFocus(); dialog.getListView().setSelection(selected); });

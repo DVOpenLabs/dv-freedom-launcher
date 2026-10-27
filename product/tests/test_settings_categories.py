@@ -15,8 +15,8 @@ class SettingsCategoriesTest(unittest.TestCase):
     def test_every_control_is_reachable_in_one_group(self):
         expected={
             'groupLayout':['stylesChoice','styleUndoChoice','columns4','columns5','columns6','columns7','columns8','rows0','rows1','rows2','rows3','dock100','dock70','dock50','dock30','focusOutlineChoice','tileSpacingChoice','animationsChoice'],
-            'groupApps':['reorderChoice','findAppsChoice','profilesChoice'],
-            'groupWallpaper':['themesChoice','liveWallpaperChoice','wallpaperChoice'],
+            'groupApps':['reorderChoice','findAppsChoice','recentAppsChoice','clearRecentChoice','profilesChoice'],
+            'groupWallpaper':['themesChoice','liveWallpaperChoice','wallpaperChoice','wallpaperDimChoice'],
             'groupRemote':['bluetoothChoice','quickActionsChoice','audioIndicatorChoice','inputVisibilityChoice','tvButtonChoice','tvButtonHelper'],
             'groupAdvanced':['advancedChoice','openOnStartChoice','followThemeChoice','defaultHomeChoice','tvSettingsChoice']}
         for group,controls in expected.items():
@@ -31,5 +31,9 @@ class SettingsCategoriesTest(unittest.TestCase):
         self.assertEqual('visible',self.ids['@+id/groupLayout'].get(A+'visibility'))
         for name in ['Apps','Wallpaper','Remote','Advanced']:
             self.assertEqual('gone',self.ids['@+id/group'+name].get(A+'visibility'))
+    def test_quick_actions_can_scroll_without_changing_row_focusability(self):
+        quick=ET.parse(ROOT/'launcher/app/src/main/res/layout/activity_quick_settings.xml').getroot()
+        self.assertEqual(1,len(quick.findall('.//ScrollView')))
+        self.assertTrue(any(v.get(A+'id')=='@+id/rows' for v in quick.find('.//ScrollView').iter()))
 
 if __name__=='__main__':unittest.main()

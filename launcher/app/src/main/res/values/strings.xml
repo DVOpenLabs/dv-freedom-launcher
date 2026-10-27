@@ -216,4 +216,16 @@
     <string name="app_position_state">App position · %1$s</string>
     <string name="app_position_keep">Keep this app position?</string>
     <string-array name="app_positions"><item>Top</item><item>Middle</item><item>Bottom</item></string-array>
+    <string name="recent_apps">Recently opened apps</string>
+    <string name="recent_apps_state">Remember recently opened apps · %1$s</string>
+    <string name="recent_apps_help">Remember up to six apps opened through this launcher, separately for each launcher profile. Saved only on this TV. This does not track remote app buttons, viewing history or playback progress. Find them in Quick actions.</string>
+    <string name="recent_enable">Enable</string>
+    <string name="recent_clear">Clear recently opened apps</string>
+    <string name="recent_clear_help">Clear this launcher profile’s recent apps? Your favorites and app data stay as they are.</string>
+    <string name="recent_empty">No recent apps yet. Open an app through this launcher first.</string>
+    <string name="profile_switch">Switch launcher profile</string>
+    <string name="wallpaper_dim">Wallpaper dimming</string>
+    <string name="wallpaper_dim_state">Wallpaper dimming · %1$d%%</string>
+    <string name="wallpaper_dim_percent">%1$d%% dimming</string>
+    <string name="wallpaper_dim_help">Darkens only Home’s still or live wallpaper. App icons, text and the TV’s brightness setting stay unchanged.</string>
 </resources>

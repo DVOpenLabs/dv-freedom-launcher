@@ -48,7 +48,7 @@ final class ProfileStore {
         for (LocalProfiles.Profile row : read(ctx)) if (row.id.equals(id)) found = true;
         if (!found) return false;
         boolean saved = saveSelection(global(ctx), id);
-        if (saved) StyleSession.PREVIEW.cancel();
+        if (saved) {StyleSession.PREVIEW.cancel();PlacementSession.PREVIEW.cancel();}
         return saved;
     }
     static boolean saveSelection(SharedPreferences p, String id) {

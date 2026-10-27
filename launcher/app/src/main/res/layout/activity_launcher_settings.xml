@@ -50,9 +50,13 @@
                     <LinearLayout android:id="@+id/groupApps" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone" android:paddingBottom="24dp">
                         <TextView android:id="@+id/reorderChoice" style="@style/SettingsRow" android:layout_marginTop="0dp" android:text="@string/reorder" android:visibility="gone" />
                         <TextView style="@style/SettingsRow" android:id="@+id/findAppsChoice" android:text="@string/find_apps" android:layout_marginTop="10dp" />
+                        <TextView android:id="@+id/recentAppsChoice" style="@style/SettingsRow" android:layout_marginTop="16dp" />
+                        <TextView android:id="@+id/clearRecentChoice" style="@style/SettingsRow" android:layout_marginTop="10dp" android:text="@string/recent_clear" />
                         <TextView android:id="@+id/profilesChoice" style="@style/SettingsRow" android:layout_marginTop="16dp" android:text="@string/local_profiles" android:visibility="gone" />
                     </LinearLayout>
                     <LinearLayout android:id="@+id/groupWallpaper" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone" android:paddingBottom="24dp">
+                        <TextView android:id="@+id/wallpaperDimChoice" style="@style/SettingsRow" android:layout_marginBottom="10dp" />
+                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/wallpaper_dim_help" android:textColor="#FFBDCAD4" android:textSize="14sp" android:layout_marginBottom="16dp" />
                         <TextView android:id="@+id/themesChoice" style="@style/SettingsRow" android:layout_marginTop="0dp" android:text="@string/theme_library" android:visibility="gone" />
                         <TextView android:id="@+id/liveWallpaperChoice" style="@style/SettingsRow" android:layout_marginTop="10dp" android:visibility="gone" />
                         <TextView android:id="@+id/wallpaperChoice" style="@style/SettingsRow" android:layout_marginTop="28dp" />

@@ -662,6 +662,7 @@ final class Config {
         if (!wallpaperEnabled) wallpaper = null;
         int rotationMinutes = json == null ? 0 : integer(json, "wallpaper_rotation_minutes", 0, 0, 1440);
         int wallpaperDim = json == null ? 0 : integer(json, "wallpaper_dim", 0, 0, 90);
+        wallpaperDim=WallpaperDim.chosen(choices.getInt(WallpaperDim.KEY,-1),wallpaperDim);
         int dockOpacity = json == null ? 100 : integer(json, "dock_opacity", 100, 30, 100);
         dockOpacity = chosenDockOpacity(choices.getInt(DOCK_OPACITY_KEY, -1), dockOpacity);
         String wallpaperOrder = json == null ? WallpaperRotation.ORDER_SHUFFLE
@@ -789,14 +790,14 @@ final class Config {
             SharedPreferences.Editor editor = choices.edit();
             if (!"absent".equals(token)) editor.remove("columns").remove("animations")
                     .remove(TileSpacing.FOCUS).remove(TileSpacing.CHOICE)
-                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO).remove(AppPlacement.KEY)
+                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO).remove(AppPlacement.KEY).remove(WallpaperDim.KEY)
                     .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
                     .remove(DOCK_OPACITY_KEY);
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
             choices.edit().remove("columns").remove("animations").remove("advanced_effects")
                     .remove(TileSpacing.FOCUS).remove(TileSpacing.CHOICE)
-                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO).remove(AppPlacement.KEY)
+                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO).remove(AppPlacement.KEY).remove(WallpaperDim.KEY)
                     .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY).remove(DOCK_OPACITY_KEY)
                     .putString(THEME_SIGNATURE_KEY, signature).commit();
         }

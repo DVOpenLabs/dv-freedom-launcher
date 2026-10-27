@@ -83,12 +83,18 @@ final class CompanionControls {
         });
     }
     static boolean saveAudio(SharedPreferences p,boolean on) {
-        boolean existed=p.contains(AUDIO),before=p.getBoolean(AUDIO,false);
+        return saveBoolean(p,AUDIO,on);
+    }
+    static boolean saveBoolean(SharedPreferences p,String key,Boolean on) {
+        boolean existed=p.contains(key),before=p.getBoolean(key,false);
+        boolean hadRevision=p.contains(Config.SETTINGS_REVISION_KEY);
         long revision=p.getLong(Config.SETTINGS_REVISION_KEY,0);
-        if(p.edit().putBoolean(AUDIO,on).putLong(Config.SETTINGS_REVISION_KEY,revision+1).commit())return true;
+        SharedPreferences.Editor edit=p.edit();if(on==null)edit.remove(key);else edit.putBoolean(key,on);
+        if(edit.putLong(Config.SETTINGS_REVISION_KEY,revision+1).commit())return true;
         SharedPreferences.Editor repair=p.edit();
-        if(existed)repair.putBoolean(AUDIO,before);else repair.remove(AUDIO);
-        repair.putLong(Config.SETTINGS_REVISION_KEY,revision).commit();return false;
+        if(existed)repair.putBoolean(key,before);else repair.remove(key);
+        if(hadRevision)repair.putLong(Config.SETTINGS_REVISION_KEY,revision);else repair.remove(Config.SETTINGS_REVISION_KEY);
+        repair.commit();return false;
     }
     static void openPairing(Activity activity) {
         for(Intent intent:new Intent[]{new Intent(Settings.ACTION_BLUETOOTH_SETTINGS),

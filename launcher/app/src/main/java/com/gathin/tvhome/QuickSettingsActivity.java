@@ -28,6 +28,7 @@ public final class QuickSettingsActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_quick_settings);
+        Config config=Config.load(this);
         if (getResources().getBoolean(R.bool.rtl_menu_bar)) {
             View panel = findViewById(R.id.panel);
             android.widget.FrameLayout.LayoutParams position =
@@ -52,6 +53,20 @@ public final class QuickSettingsActivity extends Activity {
         // Through Home, so it rebuilds with the new choices when Launcher settings closes.
         addRow(rows, R.drawable.ic_home_settings, R.string.launcher_settings, 0,
                 new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_LAUNCHER_SETTINGS));
+        if(ProfileStore.preferences(this).getBoolean(RecentApps.ENABLED,false)) {
+            View recent=addRow(rows,R.drawable.ic_apps,R.string.recent_apps,0,null);
+            recent.setOnClickListener(v->RecentApps.show(this,config));
+        }
+        if(ProfileStore.enabled()){
+            View profiles=addRow(rows,R.drawable.ic_home_settings,R.string.profile_switch,0,null);
+            profiles.setOnClickListener(v->ProfilePicker.show(this,false));
+        }
+        View panel=findViewById(R.id.panel);
+        panel.post(()->{
+            android.widget.FrameLayout.LayoutParams p=(android.widget.FrameLayout.LayoutParams)panel.getLayoutParams();
+            int available=findViewById(R.id.scrim).getHeight()-p.topMargin-Math.round(24*getResources().getDisplayMetrics().density);
+            if(available>0&&panel.getMeasuredHeight()>available){p.height=available;panel.setLayoutParams(p);}
+        });
         rows.getChildAt(0).requestFocus();
     }
 

@@ -3371,6 +3371,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         LinearLayout rows = panel.findViewById(R.id.rows);
         PopupWindow popup = glassPopup(panel, (int) (200 * density));
         addSettingsMenuRow(rows,popup,R.string.quick_actions,()->open(new Intent(this,QuickSettingsActivity.class)));
+        if(ProfileStore.enabled())addSettingsMenuRow(rows,popup,R.string.profile_switch,()->{endReorder();ProfilePicker.show(this,false);});
         if (!launcherSettingsButton) addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
                 new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
         // Firmware that ships its own settings app next to the AOSP one (Xiaomi China is one): the
