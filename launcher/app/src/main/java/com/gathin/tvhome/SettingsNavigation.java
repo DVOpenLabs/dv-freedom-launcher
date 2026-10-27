@@ -21,13 +21,19 @@ final class SettingsNavigation {
     private final ViewGroup[] groups=new ViewGroup[GROUPS.length];
     private final ScrollView scroll;
     private final boolean rtl;
+    private final View categories;
+    private boolean editing;
     private int selected;
     SettingsNavigation(Activity activity,Bundle saved) {
-        this.activity=activity;scroll=activity.findViewById(R.id.settingsScroll);
+        this.activity=activity;scroll=activity.findViewById(R.id.settingsScroll);categories=activity.findViewById(R.id.settingsCategories);
         rtl=activity.getResources().getBoolean(R.bool.rtl_menu_bar);
         for(int i=0;i<BUTTONS.length;i++) {
             final int index=i;
             buttons[i]=activity.findViewById(BUTTONS[i]);groups[i]=activity.findViewById(GROUPS[i]);
+            TextView row=(TextView)buttons[i];android.graphics.drawable.Drawable[] icons=row.getCompoundDrawablesRelative();
+            float density=activity.getResources().getDisplayMetrics().density;
+            for(int n:new int[]{0,2})if(icons[n]!=null){icons[n]=icons[n].mutate();icons[n].setBounds(0,0,Math.round((n==0?24:12)*density),Math.round((n==0?24:20)*density));}
+            row.setCompoundDrawablesRelative(icons[0],icons[1],icons[2],icons[3]);
             buttons[i].setOnFocusChangeListener((v,focused)->{if(focused)select(index);});
             buttons[i].setOnClickListener(v->{select(index);enter();});
             buttons[i].setNextFocusUpId(BUTTONS[Math.max(0,i-1)]);
@@ -35,7 +41,7 @@ final class SettingsNavigation {
         }
         if(rtl)activity.findViewById(R.id.settingsPanes).setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         select(saved==null?0:Math.max(0,Math.min(BUTTONS.length-1,saved.getInt(SAVED,0))));
-        buttons[selected].requestFocus();
+        if(saved!=null&&saved.getBoolean("settings_detail",false))enter();else buttons[selected].requestFocus();
     }
     private void select(int index) {
         boolean changed=selected!=index;
@@ -53,7 +59,7 @@ final class SettingsNavigation {
         }
         return null;
     }
-    private void enter(){View target=first(groups[selected]);if(target!=null)target.requestFocus();}
+    private void enter(){editing=true;categories.setVisibility(View.GONE);scroll.setVisibility(View.VISIBLE);scroll.scrollTo(0,0);View target=first(groups[selected]);if(target!=null)target.requestFocus();}
     private static boolean inside(View child,View ancestor) {
         while(child!=null){if(child==ancestor)return true;child=child.getParent() instanceof View?(View)child.getParent():null;}return false;
     }
@@ -67,10 +73,10 @@ final class SettingsNavigation {
         }else if(inside(focused,groups[selected])&&key==(rtl?KeyEvent.KEYCODE_DPAD_RIGHT:KeyEvent.KEYCODE_DPAD_LEFT)) {
             // Keep Left/Right within numeric choice rows; only the edge returns to categories.
             View next=FocusFinder.getInstance().findNextFocus(scroll,focused,rtl?View.FOCUS_RIGHT:View.FOCUS_LEFT);
-            if(next==null){buttons[selected].requestFocus();return true;}
+            if(next==null){back();return true;}
         }
         return false;
     }
-    boolean back(){if(activity.getCurrentFocus()==buttons[selected])return false;buttons[selected].requestFocus();return true;}
-    void save(Bundle out){out.putInt(SAVED,selected);}
+    boolean back(){if(!editing)return false;editing=false;scroll.setVisibility(View.GONE);categories.setVisibility(View.VISIBLE);buttons[selected].requestFocus();return true;}
+    void save(Bundle out){out.putInt(SAVED,selected);out.putBoolean("settings_detail",editing);}
 }

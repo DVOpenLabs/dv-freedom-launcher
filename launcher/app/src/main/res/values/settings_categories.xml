@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="settings_layout">Home layout</string>
+    <string name="settings_layout">Home appearance</string>
     <string name="settings_apps">Apps &amp; profiles</string>
     <string name="settings_wallpaper">Wallpaper</string>
-    <string name="settings_remote">Remote &amp; extras</string>
+    <string name="settings_remote">Remotes &amp; inputs</string>
     <string name="settings_advanced">Advanced</string>
     <string name="settings_overview">Make Home comfortable from your seat.</string>
-    <string name="settings_layout_help">App size, spacing and motion. More apps per row makes them smaller.</string>
-    <string name="settings_apps_help">Find and arrange apps. Enabled launcher profiles keep separate favorites, not streaming accounts.</string>
-    <string name="settings_wallpaper_help">Offline themes and pictures. Live backgrounds are silent and stop when you leave Home.</string>
-    <string name="settings_remote_help">Shortcuts, inputs and optional extras. Bluetooth opens TV settings.</string>
-    <string name="settings_advanced_help">Effects, startup and reset. Browsing changes no TV settings.</string>
-    <string name="settings_navigation_help">Up/Down: categories · OK: open · Back: return</string>
+    <string name="settings_layout_help">Choose where your apps sit, how they look and how they move.</string>
+    <string name="settings_apps_help">Arrange your favorites or give each person their own Home.</string>
+    <string name="settings_wallpaper_help">Choose a theme, a picture or a silent live wallpaper.</string>
+    <string name="settings_remote_help">Find TV inputs, remote shortcuts and Bluetooth settings.</string>
+    <string name="settings_advanced_help">Save a setup, choose startup behavior or restore defaults.</string>
+    <string name="settings_navigation_help">Choose a section with Up/Down.
+Press OK to open; Back to return.</string>
     <string name="settings_columns_value">Apps per row: %1$d</string>
     <string name="settings_rows_value">Rows below favorites: %1$d</string>
     <string name="settings_opacity_value">Favorites background opacity: %1$d%%</string>
@@ -21,6 +22,9 @@
         <item name="android:layout_height">56dp</item>
         <item name="android:layout_marginBottom">6dp</item>
         <item name="android:background">@drawable/settings_category_bg</item>
+        <item name="android:drawablePadding">16dp</item>
+        <item name="android:drawableTint">@color/settings_category_text</item>
+        <item name="android:fontFamily">@string/font_regular</item>
         <item name="android:textColor">@color/settings_category_text</item>
         <item name="android:textSize">17sp</item>
         <item name="android:focusableInTouchMode">true</item>

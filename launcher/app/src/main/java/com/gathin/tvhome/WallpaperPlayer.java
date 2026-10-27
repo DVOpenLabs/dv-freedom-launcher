@@ -48,6 +48,8 @@ final class WallpaperPlayer {
     private final int dimColor;
     /** The picture on screen, released once the next one has been drawn. */
     private Bitmap current;
+    private java.util.function.Consumer<Bitmap> headerSample;
+    void headerSample(java.util.function.Consumer<Bitmap> listener){headerSample=listener;if(current!=null)listener.accept(current);}
     private boolean active;
     private boolean closed;
     private boolean loading;
@@ -161,7 +163,7 @@ final class WallpaperPlayer {
 
     void close() {
         active = false;
-        closed = true;
+        closed = true;headerSample=null;
         decoder.shutdownNow();
     }
 
@@ -266,6 +268,7 @@ final class WallpaperPlayer {
         // The wallpaper covers the whole root; avoid drawing the fallback colour under it.
         root.setBackground(null);
         image.setImageBitmap(bitmap);
+        if(headerSample!=null)headerSample.accept(bitmap);
         if (old != null && old != bitmap) image.postDelayed(old::recycle, 500);
     }
 

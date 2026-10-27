@@ -130,7 +130,7 @@ final class DesktopLayout {
         state.put("position",p.contains(AppPlacement.KEY)?p.getString(AppPlacement.KEY,null):JSONObject.NULL).put("header",HomePreview.snapshot(config));
         return state.put("apps",catalog).put("canUndo",p.contains(UNDO)&&token.equals(p.getString(GUARD,"")));
     }
-    private static List<String> favorites(Config config,Order order) {
+    static List<String> favorites(Config config,Order order) {
         List<String> favorites=new ArrayList<>(config.dockApps);
         if(!config.desktopOrder && order!=null && order.dock.equals(Order.dockKey(config.dockApps))) {
             List<String> ranked=new ArrayList<>();
@@ -144,10 +144,18 @@ final class DesktopLayout {
         }
         return favorites;
     }
-    private static String orderStamp(Context ctx)throws Exception {
+    static String orderStamp(Context ctx)throws Exception {
         File file=Order.file(ctx);
         LayoutDraft.check(file.length()<=262144,"Configuration too large for desktop editing");
         return file.lastModified()+":"+file.length()+":"+hex(MessageDigest.getInstance("SHA-256").digest(file.isFile()?Files.readAllBytes(file.toPath()):new byte[0]));
+    }
+    static String capture(Context ctx,Config config)throws Exception {
+        LayoutDraft draft=new LayoutDraft(favorites(config,Order.load(Order.file(ctx))),config.hiddenApps,config.appLabels);
+        return new JSONObject().put("layout",json(draft)).put("dock",new JSONArray(draft.favorites)).put("priority",true).put("orderStamp",orderStamp(ctx)).toString();
+    }
+    static LayoutDraft draftFromSaved(String text)throws Exception{return parse(object(text).getJSONObject("layout"));}
+    static String restamp(Context ctx,String text)throws Exception{
+        JSONObject value=object(text);draftFromSaved(text);value.put("priority",true).put("orderStamp",orderStamp(ctx));return value.toString();
     }
     private static Map<String,String> apps(Context ctx) {
         Map<String,String> result=new TreeMap<>();

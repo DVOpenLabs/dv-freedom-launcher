@@ -103,6 +103,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private static final int LAUNCHER_SETTINGS_REQUEST = 42;
     /** Sent by QuickSettingsActivity: open Launcher settings from here so Home rebuilds when they close. */
+    static final String ACTION_IDLE_PREVIEW="com.gathin.tvhome.action.IDLE_PREVIEW";
     static final String ACTION_LAUNCHER_SETTINGS = "com.gathin.tvhome.action.LAUNCHER_SETTINGS";
     static final String ACTION_LIBRARY = "com.gathin.tvhome.action.LIBRARY";
     /** The system input switcher, forwarded here by InputsRequestActivity while handle_view_inputs is on. */
@@ -146,6 +147,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private RecyclerView grid;
     private FrameLayout root;
     private WallpaperPlayer wallpaperPlayer;
+    private HomePolish homePolish;
     private LiveVideo liveVideo;
     private boolean carousel;
     private boolean hideInactiveHdmi;
@@ -460,6 +462,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             liveVideo = new LiveVideo(this, new java.io.File(theme.directory, "video.mp4"), cfg.wallpaperDim);
             root.addView(liveVideo.view(), 1, new android.widget.FrameLayout.LayoutParams(-1, -1));
         }
+        homePolish=new HomePolish(this,cfg,()->!reordering&&appLibrary==null&&cardPrompt==null&&openPopup==null&&StyleSession.preview()==null&&PlacementSession.preview()==null);
+        wallpaperPlayer.headerSample(homePolish::sample);
         sky = findViewById(R.id.sky);
         sky.setIntensity(cfg.skyIntensity);
         glass = findViewById(R.id.glass);
@@ -751,6 +755,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         for (SpringAnimation s : new SpringAnimation[]{springX, springY}) {
             if (reducedMotion) {
                 Motion.reduce(s);
+            } else if (ProfileStore.preferences(this).getBoolean(HomePolish.MOTION,false)) {
+                s.setSpring(new SpringForce().setStiffness(700f).setDampingRatio(1f));
             } else if (!focusOvershoot) {
                 // Critically damped: glides straight onto the tile without swinging past it.
                 s.setSpring(new SpringForce().setStiffness(advancedEffects ? 520f : 440f).setDampingRatio(1f));
@@ -951,6 +957,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private boolean openLauncherSettingsIfAsked(Intent intent) {
+        if(intent!=null&&ACTION_IDLE_PREVIEW.equals(intent.getAction())){setIntent(new Intent(Intent.ACTION_MAIN));grid.post(()->homePolish.preview());return true;}
         if(intent!=null&&ACTION_LIBRARY.equals(intent.getAction())) {
             setIntent(new Intent(Intent.ACTION_MAIN));
             grid.post(()->{if(!isFinishing()&&appLibrary==null){utilityLibrary=true;onLibraryRequested();}});return true;
@@ -1019,6 +1026,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return;
         }
         if(companionControls!=null)companionControls.start();
+        if(homePolish!=null)homePolish.start();
         restartIdleClock();
         promptsPaused = false;
         if (grid.getAdapter() == null) grid.setAdapter(adapter);   // dropped by onTrimMemory
@@ -1220,6 +1228,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public void onUserInteraction() {
         super.onUserInteraction();
+        if(homePolish!=null)homePolish.interact();
         restartIdleClock();
     }
 
@@ -1233,6 +1242,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onPause();
         HomePreview.detach(this);
         if(companionControls!=null)companionControls.stop();
+        if(homePolish!=null)homePolish.stop();
         root.removeCallbacks(showIdleClock);
         endReorder();   // Home or another app while reordering keeps the order so far
         wallpaperPlayer.stop();
@@ -1348,6 +1358,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        if(homePolish!=null&&homePolish.key(event))return true;
         if (tvButton != null && tvButton.handle(event)) return true;
         // Vendor keys (TCL Netflix button, 4062) never reach the key services, only the focused window.
         if (event.getKeyCode() >= 1000 && RemoteKeys.handle(this, event, homeAppKeys.get(event.getKeyCode()), null)) return true;
@@ -1720,6 +1731,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     @Override
     public void onTileFocused(int position, View card) {
+        if(homePolish!=null&&homePolish.quiet())return;
         lastFocused = position;
         lastFocusedKey = adapter.keyAt(position);
         // Focus restored before the first layout (cold start): the tile has no size yet, and the glass
@@ -1801,8 +1813,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
+    void styleHomeLabel(TextView name){if(homePolish!=null)homePolish.name(name);}
+    void greetingInk(int color){greetingColor=color;}
+
     /** Refits the glass to the focused holder once the grid layout and tile dimensions settle. */
-    private void refitGlass() {
+    void refitGlass() {
+        if(homePolish!=null&&homePolish.quiet())return;
         if (isDestroyed() || adapter.appCount() == 0 || libraryFocusPending) return;
         int pos = Math.max(0, Math.min(lastFocused, adapter.appCount() - 1));
         RecyclerView.ViewHolder vh = grid.findViewHolderForAdapterPosition(pos);
@@ -1812,7 +1828,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         float scale = adapter.focusScale();
         int w = (int) (card.getWidth() * scale + 2 * pad);
         int h = (int) (card.getHeight() * scale + 2 * pad);
-        if (!glassShown || card.getWidth() != glassCardW || glass.getWidth() != w || glass.getHeight() != h) {
+        Rect settled=new Rect(0,0,card.getWidth(),card.getHeight());root.offsetDescendantRectToMyCoords(card,settled);
+        float x=settled.exactCenterX()-w/2f,y=settled.exactCenterY()-h/2f-(advancedEffects?4f*density:0f);
+        if (!glassShown || card.getWidth() != glassCardW || glass.getWidth() != w || glass.getHeight() != h
+                || Math.abs(x-glassTargetX)>1f || Math.abs(y-glassTargetY)>1f) {
             onTileFocused(pos, card);
         }
     }
@@ -2514,6 +2533,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
+    /** A keyboard/touch dialog must not leave Home without a remote selection. */
+    private static void takeTileFocus(View card){if(card.isInTouchMode())card.requestFocusFromTouch();else card.requestFocus();}
+
     private void focusTile(int position) {
         libraryFocusPending = false;
         cancelPendingFocusScroll();
@@ -2528,7 +2550,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             View card = vh.itemView.findViewById(R.id.card);
             // Already focused (e.g. back from an app): no focus change fires, so restore the glass by hand.
             if (card.isFocused()) onTileFocused(pos, card);
-            else card.requestFocus();
+            else takeTileFocus(card);
             return;
         }
         // Not laid out yet: scroll there, then focus once the scroll settles.
@@ -2536,7 +2558,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             grid.scrollToPosition(pos);
             grid.post(() -> {
                 RecyclerView.ViewHolder h = grid.findViewHolderForAdapterPosition(pos);
-                if (h != null) h.itemView.findViewById(R.id.card).requestFocus();
+                if (h != null) takeTileFocus(h.itemView.findViewById(R.id.card));
             });
             return;
         }
@@ -2549,7 +2571,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 pendingFocusScroll = null;
                 RecyclerView.ViewHolder h = rv.findViewHolderForAdapterPosition(pos);
                 View target = h != null ? h.itemView.findViewById(R.id.card) : rv.getChildAt(0);
-                if (target != null) target.requestFocus();
+                if (target != null) takeTileFocus(target);
             }
         };
         grid.addOnScrollListener(pendingFocusScroll);
@@ -2953,7 +2975,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 }
             }
         }
-        btnInputs.setVisibility(any ? View.VISIBLE : View.GONE);
+        boolean explicit=getSharedPreferences(Config.SETTINGS_NAME,MODE_PRIVATE).getBoolean(InputShortcut.KEY,false);
+        btnInputs.setVisibility(any||explicit ? View.VISIBLE : View.GONE);
     }
 
     /** boot_to_live_tv, or the Open on start app: the first time Home comes up after the TV starts, open that app
@@ -3256,7 +3279,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     () -> root.post(() -> showInputs(true)));
         }
         if (rows.getChildCount() == 0) {
-            Toast.makeText(this, R.string.no_inputs, Toast.LENGTH_SHORT).show();
+            InputShortcut.help(this);
             return;
         }
 

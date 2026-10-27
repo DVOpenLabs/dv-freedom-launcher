@@ -14,11 +14,11 @@ class SettingsCategoriesTest(unittest.TestCase):
         return any(v.get(A+'id')=='@+id/'+control for v in self.ids['@+id/'+group].iter())
     def test_every_control_is_reachable_in_one_group(self):
         expected={
-            'groupLayout':['stylesChoice','styleUndoChoice','columns4','columns5','columns6','columns7','columns8','rows0','rows1','rows2','rows3','dock100','dock70','dock50','dock30','focusOutlineChoice','tileSpacingChoice','animationsChoice'],
+            'groupLayout':['stylesChoice','styleUndoChoice','columns4','columns5','columns6','columns7','columns8','rows0','rows1','rows2','rows3','dock100','dock70','dock50','dock30','focusOutlineChoice','tileSpacingChoice','animationsChoice','cinematicIdleChoice','previewIdleChoice','adaptiveHeaderChoice','refinedMotionChoice'],
             'groupApps':['reorderChoice','findAppsChoice','recentAppsChoice','clearRecentChoice','profilesChoice'],
             'groupWallpaper':['themesChoice','liveWallpaperChoice','wallpaperChoice','wallpaperDimChoice'],
-            'groupRemote':['bluetoothChoice','quickActionsChoice','audioIndicatorChoice','inputVisibilityChoice','tvButtonChoice','tvButtonHelper'],
-            'groupAdvanced':['advancedChoice','openOnStartChoice','followThemeChoice','defaultHomeChoice','tvSettingsChoice']}
+            'groupRemote':['bluetoothChoice','quickActionsChoice','audioIndicatorChoice','inputsShortcutChoice','inputVisibilityChoice','tvButtonChoice','tvButtonHelper'],
+            'groupAdvanced':['savedSetupsChoice','advancedChoice','openOnStartChoice','followThemeChoice','defaultHomeChoice','tvSettingsChoice']}
         for group,controls in expected.items():
             for control in controls:
                 self.assertTrue(self.contains(group,control),(group,control))

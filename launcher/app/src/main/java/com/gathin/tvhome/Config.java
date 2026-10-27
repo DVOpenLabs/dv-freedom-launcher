@@ -54,7 +54,7 @@ final class Config {
         return seen != current;
     }
     private static final String THEME_REVISION_NAME = "theme_revision";
-    private static final String THEME_SIGNATURE_KEY = "theme_signature";
+    static final String THEME_SIGNATURE_KEY = "theme_signature";
 
     final List<String> dockApps;
     /** Grid apps fill the dock slots dock_apps leaves free (config.xml, fill_dock); on by default, false leaves the slots empty. */
@@ -645,6 +645,7 @@ final class Config {
         for (String pkg : topBarApps) if (!hidden.contains(pkg)) hidden.add(pkg);
         // A theme push or reset invalidates choices made on the TV. On first use, remember the
         // current theme without clearing choices from an older launcher version.
+        showInputsPill = ctx.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE).getBoolean(InputShortcut.KEY,showInputsPill);
         SharedPreferences choices = ProfileStore.preferences(ctx);
         if (inputVisibilityChoice) hideInactiveHdmi = choices.getBoolean(HdmiVisibility.CHOICE, hideInactiveHdmi);
         // Unmounted storage looks like a theme reset; compare only once the file is readable.

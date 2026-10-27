@@ -52,7 +52,9 @@ public final class LauncherSettingsActivity extends Activity {
         choices = ProfileStore.preferences(this);
         CompanionControls.attachSettings(this);
         PlacementSession.attach(this, config);
-        RecentApps.attach(this);WallpaperDim.attach(this,config);
+        RecentApps.attach(this);WallpaperDim.attach(this,config);HomePolish.settings(this);
+        InputShortcut.settings(this);
+        findViewById(R.id.savedSetupsChoice).setOnClickListener(v->SetupUi.show(this));
         AppearanceSettings.attach(this, config);
         TvButtonSettings.attach(this, config);
         TextView inputs = findViewById(R.id.inputVisibilityChoice);
@@ -91,10 +93,8 @@ public final class LauncherSettingsActivity extends Activity {
             });
         }
         View profiles = findViewById(R.id.profilesChoice);
-        if (ProfileStore.enabled()) {
-            profiles.setVisibility(View.VISIBLE);
-            profiles.setOnClickListener(v -> ProfilePicker.show(this));
-        }
+        profiles.setVisibility(View.VISIBLE);
+        profiles.setOnClickListener(v -> ProfileSetup.show(this));
         View styles = findViewById(R.id.stylesChoice);
         View undoStyle = findViewById(R.id.styleUndoChoice);
         if (config.homeStylePicker) {

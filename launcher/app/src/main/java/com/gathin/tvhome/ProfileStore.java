@@ -21,12 +21,12 @@ import java.util.Map;
 
 /** Optional process-local routing, refreshed by Config.load; selection is committed atomically. */
 final class ProfileStore {
-    private static final String ACTIVE = "product_active_profile";
+    static final String ACTIVE = "product_active_profile";
     private static boolean enabled;
     private static LocalProfiles.Profile active;
     static LocalProfiles.Profile configure(Context ctx, boolean on) {
-        enabled = on; active = null;
-        if (on) {
+        enabled = on || global(ctx).getBoolean(ProfileSetup.ENABLED,false); active = null;
+        if (enabled) {
             String id = global(ctx).getString(ACTIVE, "");
             if (!id.isEmpty()) for (LocalProfiles.Profile row : read(ctx)) if (row.id.equals(id)) { active = row; break; }
         }
@@ -39,8 +39,12 @@ final class ProfileStore {
     static File file(Context ctx, String name) { return new File(ctx.getFilesDir(), LocalProfiles.filename(id(), name)); }
     private static AtomicFile manifest(Context ctx) { return new AtomicFile(new File(ctx.getFilesDir(), "product-profiles.json")); }
     static List<LocalProfiles.Profile> read(Context ctx) {
-        try (InputStream in = manifest(ctx).openRead()) { return parse(readBytes(in)); }
-        catch (Exception e) { Log.w("TvHome.Profiles", "Profile library unavailable; using current layout"); return Collections.emptyList(); }
+        List<LocalProfiles.Profile> rows=new ArrayList<>();
+        try (InputStream in = manifest(ctx).openRead()) { rows.addAll(parse(readBytes(in))); }
+        catch (Exception e) { /* No imported library is normal for on-TV-only profiles. */ }
+        java.util.Set<String> ids=new java.util.HashSet<>();for(LocalProfiles.Profile row:rows)ids.add(row.id);
+        for(LocalProfiles.Profile row:ProfileSetup.read(ctx))if(ids.add(row.id)&&rows.size()<16)rows.add(row);
+        return rows;
     }
     static boolean select(Context ctx, String id) {
         if (!enabled) return false;
@@ -101,7 +105,9 @@ final class ProfileStore {
     }
     static void install(Context ctx, byte[] bytes) throws Exception {
         if (!enabled || !id().isEmpty()) throw new IOException("Switch to Current layout before importing");
-        parse(bytes); // Validate everything before opening the atomic write.
+        List<LocalProfiles.Profile> incoming=parse(bytes);
+        for(LocalProfiles.Profile local:ProfileSetup.read(ctx))for(LocalProfiles.Profile row:incoming)if(local.id.equals(row.id))throw new IOException("Imported ID conflicts with a created profile");
+        if(incoming.size()+ProfileSetup.read(ctx).size()>16)throw new IOException("Maximum 16 profiles");
         AtomicFile file = manifest(ctx); FileOutputStream out = null;
         try { out = file.startWrite(); out.write(bytes); file.finishWrite(out); }
         catch (IOException e) { if (out != null) file.failWrite(out); throw e; }

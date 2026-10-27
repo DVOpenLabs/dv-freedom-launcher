@@ -46,3 +46,28 @@ dependencies {
     // Test only (never in the APK): plain JVM tests for the module card validators, src/test.
     testImplementation 'junit:junit:4.13.2'
 }
+// Compact resource names while keeping runtime banners and named view IDs.
+// Runs before APK packaging/signing with the SDK tool pinned by this project, not a downloaded plugin.
+tasks.configureEach { task ->
+    if (task.name == 'optimizeReleaseResources') {
+        task.doLast {
+            def archives = task.outputs.files.asFileTree.matching { include '**/*.ap_' }.files
+            if (archives.size() != 1) throw new GradleException('Expected one optimized resource archive')
+            def archive = archives.first()
+            def temporary = new File(archive.parentFile, 'compact.ap_.tmp')
+            def keep = new File(archive.parentFile, 'runtime-resource-names.cfg')
+            def names = fileTree('src/main/res').files.findAll { it.name.startsWith('banner_') }
+                    .collect { 'drawable/' + it.name.substring(0, it.name.lastIndexOf('.')) + '#no_collapse' }.unique().sort()
+            // Retain view IDs for accessibility/UI tooling as well as runtime banner lookups.
+            def symbols = new File(layout.buildDirectory.get().asFile, 'intermediates/runtime_symbol_list/release/processReleaseResources/R.txt')
+            if (!symbols.isFile()) throw new GradleException('Missing resource symbols')
+            names += symbols.readLines().findAll { it.startsWith('int id ') }.collect { 'id/' + it.split(' ')[2] + '#no_collapse' }
+            keep.text = names.join('\n') + '\n'
+            def suffix = System.getProperty('os.name').toLowerCase().contains('windows') ? '.exe' : ''
+            def aapt = new File(android.sdkDirectory, 'build-tools/' + android.buildToolsVersion + '/aapt2' + suffix)
+            exec { commandLine aapt, 'optimize', '--collapse-resource-names', '--resources-config-path', keep,
+                    '-o', temporary, archive }
+            java.nio.file.Files.move(temporary.toPath(), archive.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
+}

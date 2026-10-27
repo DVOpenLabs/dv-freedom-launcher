@@ -228,4 +228,25 @@
     <string name="wallpaper_dim_state">Wallpaper dimming · %1$d%%</string>
     <string name="wallpaper_dim_percent">%1$d%% dimming</string>
     <string name="wallpaper_dim_help">Darkens only Home’s still or live wallpaper. App icons, text and the TV’s brightness setting stay unchanged.</string>
+    <string name="cinematic_idle">Cinematic idle view</string>
+    <string name="cinematic_idle_state">Cinematic idle · %1$s</string>
+    <string name="cinematic_preview">Preview cinematic idle</string>
+    <string name="adaptive_header">Theme-aware text</string>
+    <string name="refined_motion">Refined focus motion</string>
+    <string name="saved_setups">Saved setups</string>
+    <string name="setup_name">Name</string>
+    <string name="setup_save">Save</string>
+    <string name="setup_save_current">Save current setup</string>
+    <string name="setup_restore">Restore setup</string>
+    <string name="setup_rename">Rename</string>
+    <string name="setup_delete">Delete</string>
+    <string name="setup_limit">Keep up to five setups per profile. Delete an older one to make room.</string>
+    <string name="setup_restore_help">Restore this profile’s apps, layout and appearance? TV settings, streaming accounts and recent-app history stay as they are.</string>
+    <string name="setup_delete_help">Delete this restore point? Your current Home stays as it is.</string>
+    <string name="profile_create">Create profile from current Home</string>
+    <string name="profile_manage">Manage created profiles</string>
+    <string name="profile_none_created">No on-TV profiles created yet.</string>
+    <string name="profile_delete_help">Delete this launcher profile and its saved choices? Streaming accounts and app data stay as they are.</string>
+    <string name="inputs_shortcut">Inputs shortcut</string>
+    <string name="inputs_external_help">This streamer cannot list the TV’s HDMI ports. Use Input/Source on your TV remote. On Google TV Streamer, the star remote button can switch inputs after remote setup. Open TV system settings, then Remotes &amp; accessories, to configure remote buttons.</string>
 </resources>
