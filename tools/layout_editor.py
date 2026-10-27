@@ -3,7 +3,7 @@
 
 python tools/layout_editor.py --demo
 python tools/layout_editor.py --tv <tv-ip> --package com.gathin.tvhome
-No TV theme files, media, permissions, services or system settings are written by this tool.
+App position is an optional, profile-scoped choice. No TV theme files, media, permissions, services or system settings are written by this tool.
 """
 from __future__ import annotations
 import argparse
@@ -102,17 +102,21 @@ class DemoBridge:
         names=['STB EMU','YouTube','Netflix','Crunchyroll','CNN','Fandango','Play Store','Settings']
         packages=['org.example.app'+str(i) for i in range(8)]
         self.state={'schema':1,'profile':'','layout':{'schema':1,'favorites':packages,'hidden':[],'labels':{}},
-            'apps':[{'package':p,'label':n} for p,n in zip(packages,names)],'canUndo':False}
-        self.counter=0;self.old=None;self._revision()
-    def _revision(self):self.state['revision']=hashlib.sha256((encode(self.state['layout'])+str(self.counter)).encode()).hexdigest()
+            'apps':[{'package':p,'label':n} for p,n in zip(packages,names)],'canUndo':False,'position':None,
+            'header':{'available':False,'effectivePosition':'top','inputs':True,'settings':'Launcher settings'}}
+        self.counter=0;self.old=None;self.old_position=None;self._revision()
+    def _revision(self):self.state['revision']=hashlib.sha256((encode(self.state['layout'])+str(self.state['position'])+str(self.counter)).encode()).hexdigest()
     def call(self,method,request=None):
         if method=='snapshot':return copy.deepcopy(self.state)
         if method not in {'apply','undo'}:raise ValueError('Unknown editor action')
         if request['revision']!=self.state['revision'] or request['profile']!=self.state['profile']:raise ValueError('The launcher changed. Reload and review your draft again.')
-        if method=='apply':self.old=copy.deepcopy(self.state['layout']);self.state['layout']=validate_layout(request['layout']);self.state['canUndo']=True
+        if method=='apply':
+            self.old=copy.deepcopy(self.state['layout']);self.old_position=self.state['position']
+            self.state['layout']=validate_layout(request['layout']);self.state['canUndo']=True
+            if 'position' in request:self.state['position']=request['position']
         else:
             if not self.state['canUndo']:raise ValueError('Nothing to undo')
-            self.state['layout']=self.old;self.state['canUndo']=False
+            self.state['layout']=self.old;self.state['position']=self.old_position;self.state['canUndo']=False
         self.counter+=1;self._revision();return copy.deepcopy(self.state)
 
 class Editor:
@@ -122,15 +126,18 @@ class Editor:
     def state(self):
         state=self.bridge.call('snapshot');state['target']=self.label;return state
     def request(self,value):
-        if not isinstance(value,dict) or set(value)!={'revision','profile','layout'}:raise ValueError('Unsupported editor request')
+        if not isinstance(value,dict) or set(value) not in ({'revision','profile','layout'},{'revision','profile','layout','position'}):raise ValueError('Unsupported editor request')
         if not isinstance(value['revision'],str) or not re.fullmatch(r'[a-f0-9]{64}',value['revision']):raise ValueError('Reload the TV first')
         if not isinstance(value['profile'],str) or not re.fullmatch(r'(?:[a-z][a-z0-9_-]{0,63})?',value['profile']):raise ValueError('Invalid profile')
+        if 'position' in value and value['position'] not in (None,'top','middle','bottom'):raise ValueError('Unknown app position')
         value=copy.deepcopy(value);value['layout']=validate_layout(value['layout']);return value
     def preview(self,value):
         with self.lock:
             value=self.request(value);current=self.state()
             if value['revision']!=current['revision'] or value['profile']!=current['profile']:raise ValueError('The launcher changed. Reload and review your draft again.')
             summary=changes(current['layout'],value['layout'])
+            if 'position' in value and value['position']!=current.get('position'):
+                summary.append('Move apps to '+value['position'] if value['position'] else 'Restore the theme app position')
             available={app['package'] for app in current['apps']}
             if any(package not in available for package in value['layout']['favorites']):raise ValueError('A favorite app is unavailable. Remove it from the draft first.')
             self.reviewed=hashlib.sha256(encode(value).encode()).hexdigest() if summary else None

@@ -1,4 +1,2 @@
-# Shrink and optimise, but keep class and method names: the size win comes from dropping unused
-# AndroidX code, not from renaming, and readable stack traces matter more in a sideloaded app
-# where crash reports arrive as screenshots.
--dontobfuscate
+# Allow R8 name shortening as well as shrinking. Keep mapping.txt alongside each tested build
+# so obfuscated crash traces can be decoded. Android entrypoints and XML views use AGP keep rules.

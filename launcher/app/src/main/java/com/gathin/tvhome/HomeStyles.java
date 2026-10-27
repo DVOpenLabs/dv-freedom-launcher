@@ -14,11 +14,14 @@ final class HomeStyles {
     }
 
     static final class Preview {
+        private final String[] allowed;
+        Preview(){this(IDS);}
+        Preview(String[] allowed){this.allowed=allowed.clone();}
         private String id;
         private long deadline;
         private long revision;
         void begin(String next, long now) {
-            if (!valid(next)) throw new IllegalArgumentException("Unknown style");
+            if (!java.util.Arrays.asList(allowed).contains(next)) throw new IllegalArgumentException("Unknown preview");
             id = next; deadline = now + PREVIEW_MS; revision++;
         }
         String active(long now) {
@@ -40,7 +43,7 @@ final class HomeStyles {
         final Integer columns, rows, opacity;
         Snapshot(String style, Integer columns, Integer rows, Integer opacity) {
             if (style != null && !valid(style)) throw new IllegalArgumentException("Unknown style");
-            if (columns != null && (columns < 4 || columns > 7)) throw new IllegalArgumentException("Columns");
+            if (columns != null && (columns < 4 || columns > 8)) throw new IllegalArgumentException("Columns");
             if (rows != null && (rows < 0 || rows > 3)) throw new IllegalArgumentException("Rows");
             if (opacity != null && (opacity < 30 || opacity > 100)) throw new IllegalArgumentException("Opacity");
             this.style = style; this.columns = columns; this.rows = rows; this.opacity = opacity;

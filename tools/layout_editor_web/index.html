@@ -17,15 +17,17 @@
       <div id="available" class="available" aria-label="Available installed apps"></div>
     </section>
     <section class="review" aria-labelledby="preview-title">
-      <div class="preview-title"><h2 id="preview-title">Your Home, in order</h2><span>Arrangement preview</span></div>
-      <div class="tv-preview"><img id="wallpaper" alt="" hidden><div class="preview-shade"></div><div class="preview-header"><span>GOOD EVENING</span><strong>6:00 <small>PM</small></strong><p>Your wallpaper and settings stay as they are.</p></div><div id="preview-apps" class="preview-apps"></div><div class="preview-caption">Preview shows app order and names. TV sizing and artwork may differ.</div></div>
+      <div class="preview-title"><h2 id="preview-title">Your Home</h2><span>Arrangement preview</span></div>
+      <fieldset class="placement"><legend>App position</legend><div id="positions" class="position-options"><button type="button" data-position="top" aria-pressed="false">Top</button><button type="button" data-position="middle" aria-pressed="false">Middle</button><button type="button" data-position="bottom" aria-pressed="false">Bottom</button></div><button type="button" id="follow-position" class="text-button">Use theme position</button></fieldset>
+      <div class="tv-preview" id="home-preview"><img id="wallpaper" alt="" hidden><div class="preview-shade"></div><div class="preview-header"><span id="preview-greeting"></span><div class="preview-clock-line"><strong id="preview-clock"></strong><div class="preview-details"><span id="preview-date"></span><div class="preview-weather" id="preview-weather"></div></div></div></div><div class="preview-controls"><span id="preview-inputs">Inputs</span><span id="preview-settings">Launcher settings</span></div><div id="preview-apps" class="preview-apps"></div></div>
+      <p class="preview-note" id="preview-note">Header snapshot from Home. Buttons are illustrations; TV sizing and artwork may differ.</p>
       <div class="target"><span class="target-dot" aria-hidden="true"></span><div><strong id="target">Connecting…</strong><span id="profile">Current Home</span></div><span class="target-label">REVIEW TARGET</span></div>
-      <div class="review-card"><h3>Before you apply</h3><p>Only app order, names and visibility change. Your wallpaper, scale and remote controls stay as they are.</p><ul id="changes"><li>Make a change, then preview it here.</li></ul></div>
+      <div class="review-card"><h3>Before you apply</h3><p>Review app order, names, visibility and position. Your wallpaper, icon size and remote controls stay as they are.</p><ul id="changes"><li>Make a change, then preview it here.</li></ul></div>
       <div class="actions"><button id="preview" class="primary" disabled>Preview changes<span aria-hidden="true"> →</span></button><button id="reset" class="secondary" disabled>Reset draft</button></div>
       <div class="secondary-actions"><button id="undo" class="text-button" disabled>Undo last TV change</button><button id="export" class="text-button" disabled>Export draft</button></div>
       <p id="message" class="message" role="status" aria-live="polite">Loading the current layout…</p>
     </section>
   </div>
 </main>
-<dialog id="confirm"><div class="dialog-body"><p class="eyebrow">READY TO UPDATE</p><h2>Apply these app changes?</h2><p id="confirm-target"></p><ul id="confirm-changes"></ul><p class="dialog-note">A backup is saved first. You can undo this change while it remains the latest edit.</p><div class="dialog-actions"><button id="cancel" class="secondary">Keep editing</button><button id="apply" class="primary">Apply to TV</button></div></div></dialog>
+<dialog id="confirm"><div class="dialog-body"><p class="eyebrow">READY TO UPDATE</p><h2>Apply these Home changes?</h2><p id="confirm-target"></p><ul id="confirm-changes"></ul><p class="dialog-note">A backup is saved first. You can undo this change while it remains the latest edit.</p><div class="dialog-actions"><button id="cancel" class="secondary">Keep editing</button><button id="apply" class="primary">Apply to TV</button></div></div></dialog>
 </body></html>

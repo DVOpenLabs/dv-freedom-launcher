@@ -51,6 +51,7 @@ public final class LauncherSettingsActivity extends Activity {
         Config config = Config.load(this);
         choices = ProfileStore.preferences(this);
         CompanionControls.attachSettings(this);
+        PlacementSession.attach(this, config);
         AppearanceSettings.attach(this, config);
         TvButtonSettings.attach(this, config);
         TextView inputs = findViewById(R.id.inputVisibilityChoice);
@@ -197,13 +198,14 @@ public final class LauncherSettingsActivity extends Activity {
             if (!hasOnTvChoices()) return;
             SharedPreferences.Editor reset = choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove(TileSpacing.FOCUS).remove(TileSpacing.CHOICE)
-                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO)
+                    .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO).remove(AppPlacement.KEY)
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
                     .remove(Config.DOCK_OPACITY_KEY);
             if (ProfileStore.id().isEmpty()) reset.remove(OpenOnStart.KEY);
             reset.commit();
             Config current = Config.load(this);
             AppearanceSettings.attach(this, current);
+            PlacementSession.attach(this, current);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
             dockOpacity = current.dockOpacity;
@@ -389,7 +391,7 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private boolean hasOnTvChoices() {
-        return choices.contains(TileSpacing.FOCUS) || choices.contains(TileSpacing.CHOICE)
+        return choices.contains(AppPlacement.KEY) || choices.contains(TileSpacing.FOCUS) || choices.contains(TileSpacing.CHOICE)
                 || choices.contains(HomeStyles.CHOICE) || choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)

@@ -212,4 +212,8 @@
     <string name="style_undo">Undo last Home style</string>
     <string name="style_save_failed">Could not save this appearance. Your previous style is restored.</string>
     <string name="quick_actions">Quick actions</string>
+    <string name="app_position">App position</string>
+    <string name="app_position_state">App position · %1$s</string>
+    <string name="app_position_keep">Keep this app position?</string>
+    <string-array name="app_positions"><item>Top</item><item>Middle</item><item>Bottom</item></string-array>
 </resources>

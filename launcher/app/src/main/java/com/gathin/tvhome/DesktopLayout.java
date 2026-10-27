@@ -21,9 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-/** Shell-permission protected, app-only edits. One atomic preference transaction; base themes untouched. */
+/** Shell-permission protected app/position edits. One atomic transaction; base themes untouched. */
 final class DesktopLayout {
     static final String STATE="desktop_layout",UNDO="desktop_layout_undo",GUARD="desktop_layout_undo_guard";
+    static final String UNDO_POSITION="desktop_position_undo";
     static final int MAX_BYTES=32768;
     static Uri uri(Context ctx){return Uri.parse("content://"+ctx.getPackageName()+".theme/product-layout");}
     static final class Selection {
@@ -56,15 +57,17 @@ final class DesktopLayout {
     }
     private static Bundle perform(Context ctx,String method,String arg) {
         try {
-            LayoutDraft.requireEditable(MainActivity.desktopLayoutEditing,StyleSession.preview()!=null);
+            LayoutDraft.requireEditable(MainActivity.desktopLayoutEditing,StyleSession.preview()!=null||PlacementSession.preview()!=null);
             Config config=Config.load(ctx);
             SharedPreferences prefs=ProfileStore.preferences(ctx);
             if("product_layout_apply".equals(method)||"product_layout_undo".equals(method)) {
                 JSONObject request=object(arg);
-                fields(request,"revision","profile","layout");
+                fields(request,"revision","profile","layout","position");
                 LayoutDraft.requireCurrent(request.getString("revision"),revision(ctx,prefs.getAll()),request.getString("profile"),ProfileStore.id());
                 long revision=prefs.getLong(Config.SETTINGS_REVISION_KEY,0);
                 String next;
+                String position=prefs.getString(AppPlacement.KEY,null);
+                if(request.has("position")){position=request.isNull("position")?null:request.getString("position");LayoutDraft.check(position==null||AppPlacement.valid(position),"Unknown app position");}
                 if("product_layout_apply".equals(method)) {
                     LayoutDraft draft=parse(request.getJSONObject("layout"));
                     Map<String,String> apps=apps(ctx);
@@ -78,11 +81,14 @@ final class DesktopLayout {
                 } else {
                     LayoutDraft.check(revision(ctx,prefs.getAll()).equals(prefs.getString(GUARD,"")),"Undo is no longer current. Reload first.");
                     next=prefs.getString(UNDO,"");
+                    position=prefs.contains(UNDO_POSITION)?prefs.getString(UNDO_POSITION,""):prefs.getString(AppPlacement.KEY,null);
+                    if("".equals(position))position=null;
                 }
                 Map<String,Object> predicted=new HashMap<>(prefs.getAll());
                 if(next.isEmpty())predicted.remove(STATE);else predicted.put(STATE,next);
                 predicted.put(Config.SETTINGS_REVISION_KEY,revision+1);
-                if(!commit(prefs,next,revision(ctx,predicted),"product_layout_undo".equals(method)))
+                if(position==null)predicted.remove(AppPlacement.KEY);else predicted.put(AppPlacement.KEY,position);
+                if(!commit(prefs,next,revision(ctx,predicted),"product_layout_undo".equals(method),position))
                     throw new IllegalStateException("Could not save layout. Reload before trying again.");
                 ctx.getContentResolver().notifyChange(uri(ctx),null);
                 config=Config.load(ctx);
@@ -92,15 +98,22 @@ final class DesktopLayout {
         catch(Exception failure){throw new IllegalArgumentException(failure.getMessage(),failure);}
     }
     static boolean commit(SharedPreferences prefs,String next,String guard,boolean undo) {
+        return commit(prefs,next,guard,undo,prefs.getString(AppPlacement.KEY,null));
+    }
+    static boolean commit(SharedPreferences prefs,String next,String guard,boolean undo,String position) {
+        String previousPosition=prefs.getString(AppPlacement.KEY,null),previousUndoPosition=prefs.getString(UNDO_POSITION,null);
         String old=prefs.getString(STATE,null),oldUndo=prefs.getString(UNDO,null),oldGuard=prefs.getString(GUARD,null);
         long revision=prefs.getLong(Config.SETTINGS_REVISION_KEY,0);
         SharedPreferences.Editor edit=prefs.edit();
         if(next.isEmpty())edit.remove(STATE);else edit.putString(STATE,next);
-        if(undo)edit.remove(UNDO).remove(GUARD);
-        else edit.putString(UNDO,old==null?"":old).putString(GUARD,guard);
+        if(position==null)edit.remove(AppPlacement.KEY);else edit.putString(AppPlacement.KEY,position);
+        if(undo)edit.remove(UNDO).remove(GUARD).remove(UNDO_POSITION);
+        else edit.putString(UNDO,old==null?"":old).putString(GUARD,guard).putString(UNDO_POSITION,previousPosition==null?"":previousPosition);
         edit.putLong(Config.SETTINGS_REVISION_KEY,revision+1);
         if(edit.commit())return true;
         SharedPreferences.Editor repair=prefs.edit();
+        if(previousPosition==null)repair.remove(AppPlacement.KEY);else repair.putString(AppPlacement.KEY,previousPosition);
+        if(previousUndoPosition==null)repair.remove(UNDO_POSITION);else repair.putString(UNDO_POSITION,previousUndoPosition);
         if(old==null)repair.remove(STATE);else repair.putString(STATE,old);
         if(oldUndo==null)repair.remove(UNDO);else repair.putString(UNDO,oldUndo);
         if(oldGuard==null)repair.remove(GUARD);else repair.putString(GUARD,oldGuard);
@@ -114,6 +127,7 @@ final class DesktopLayout {
         JSONObject state=new JSONObject().put("schema",1).put("revision",token).put("profile",ProfileStore.id()).put("layout",json(draft));
         JSONArray catalog=new JSONArray();
         for(Map.Entry<String,String> app:apps(ctx).entrySet())catalog.put(new JSONObject().put("package",app.getKey()).put("label",app.getValue()));
+        state.put("position",p.contains(AppPlacement.KEY)?p.getString(AppPlacement.KEY,null):JSONObject.NULL).put("header",HomePreview.snapshot(config));
         return state.put("apps",catalog).put("canUndo",p.contains(UNDO)&&token.equals(p.getString(GUARD,"")));
     }
     private static List<String> favorites(Config config,Order order) {
@@ -145,7 +159,7 @@ final class DesktopLayout {
     }
     private static String revision(Context ctx,Map<String,?> values)throws Exception {
         TreeMap<String,String> stable=new TreeMap<>();
-        for(Map.Entry<String,?> entry:values.entrySet())if(!entry.getKey().equals(UNDO)&&!entry.getKey().equals(GUARD)) {
+        for(Map.Entry<String,?> entry:values.entrySet())if(!entry.getKey().equals(UNDO)&&!entry.getKey().equals(GUARD)&&!entry.getKey().equals(UNDO_POSITION)) {
             Object value=entry.getValue();
             if(value instanceof java.util.Set){List<String> sorted=new ArrayList<>((java.util.Set<String>)value);Collections.sort(sorted);value=sorted;}
             stable.put(entry.getKey(),String.valueOf(value));

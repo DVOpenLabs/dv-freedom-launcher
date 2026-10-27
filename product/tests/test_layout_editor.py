@@ -60,6 +60,26 @@ class EditorTests(unittest.TestCase):
         with self.assertRaises(ValueError):bridge.call('reboot')
     def test_native_target_is_not_a_shell_expression(self):
         with self.assertRaises(ValueError):editor.NativeBridge('tv;reboot','org.example.launcher')
+    def test_position_only_review_apply_and_undo_preserve_app_layout(self):
+        before=self.session.state();request=self.request();request['position']='bottom'
+        result=self.session.preview(request)
+        self.assertEqual(['Move apps to bottom'],result['changes']);self.assertEqual(before,self.session.state())
+        applied=self.session.apply(request)['state'];self.assertEqual('bottom',applied['position']);self.assertEqual(before['layout'],applied['layout'])
+        restored=self.session.undo(self.request())['state'];self.assertIsNone(restored['position']);self.assertEqual(before['layout'],restored['layout'])
+    def test_old_app_only_client_preserves_existing_position(self):
+        self.bridge.state['position']='middle';self.bridge._revision()
+        request=self.edit();self.session.preview(request);result=self.session.apply(request)
+        self.assertEqual('middle',result['state']['position'])
+    def test_position_is_exactly_reviewed_and_cannot_carry_other_settings(self):
+        request=self.request();request['position']='top';self.session.preview(request);request['position']='bottom'
+        with self.assertRaisesRegex(ValueError,'Preview'):self.session.apply(request)
+        request['position']='reboot'
+        with self.assertRaisesRegex(ValueError,'position'):self.session.preview(request)
+        request['position']=35
+        with self.assertRaisesRegex(ValueError,'position'):self.session.preview(request)
+    def test_position_change_invalidates_a_stale_app_draft(self):
+        request=self.edit();self.session.preview(request);self.bridge.state['position']='middle';self.bridge._revision()
+        with self.assertRaisesRegex(ValueError,'changed'):self.session.apply(request)
 
 class HttpTests(unittest.TestCase):
     def setUp(self):

@@ -121,6 +121,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** Launcher settings' change count this Home was built with (see onResume). */
     private long settingsRevision;
     private long styleRevision;
+    private long placementRevision;
+    private android.app.AlertDialog placementPrompt;
     private boolean stylePickerEnabled;
     private android.app.AlertDialog stylePrompt;
     /** Idle time on Home before ClockActivity; 0 is off (config.xml, home_idle_clock_minutes). */
@@ -402,6 +404,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
         stylePickerEnabled = cfg.homeStylePicker;
+        placementRevision = PlacementSession.PREVIEW.revision();
         if (stylePickerEnabled) styleRevision = StyleSession.PREVIEW.revision();
         homeAppKeys = RemoteKeys.parseAppKeys(cfg.appKeys);
         appLibrarySelection = cfg.appLibrarySelection;
@@ -671,8 +674,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // A single row never shows the names under its tiles (the title above the row names the app), so the
             // 7dp gap and 22dp label item_app.xml keeps for them would only lift the row: sit it that much lower.
             if (singleRow && !cfg.alwaysShowNames) want += (int) (29 * density);
+            String position=PlacementSession.selected(this);
+            int minimum=(int)(AppAdapter.TOP_ROOM_DP*density);
+            if(MainActivity.this.dockRow)minimum=Math.max(minimum,shelfClearance+(int)((cfg.dockTitle?AppAdapter.TITLE_ROOM_DP:0)*density));
+            int block=(MainActivity.this.dockRow?dockRow:itemH)+gridRows;
+            want=AppPlacement.padding(position,minimum,h-block-(int)(AppAdapter.BOTTOM_ROOM_DP*density),want);
             if (grid.getPaddingTop() != want) {
                 grid.setPadding(grid.getPaddingLeft(), want, grid.getPaddingRight(), grid.getPaddingBottom());
+                if(position!=null&&!singleRow)grid.post(()->{
+                    ((GridLayoutManager)grid.getLayoutManager()).scrollToPositionWithOffset(0,0);
+                    grid.requestLayout();grid.post(this::refitGlass);
+                });
                 // A vertical grid parks the dock on the new padding line by scrolling (onTileFocused); a sideways
                 // row cannot scroll vertically, and the layout request made from inside this layout pass is
                 // dropped, so lay the row out again on the next frame. The glass and the title were placed for the
@@ -960,6 +972,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;
+        if(PlacementSession.PREVIEW.cancel()){if(placementPrompt!=null)placementPrompt.dismiss();recreate();return;}
         if (stylePickerEnabled && StyleSession.PREVIEW.cancel() && stylePrompt != null) stylePrompt.dismiss();
         grid.scrollToPosition(0);
         lastFocused = 0;
@@ -990,6 +1003,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        HomePreview.attach(this, null);
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
             recreate();
@@ -998,9 +1012,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // Something changed in Launcher settings: rebuild with it, however the settings were left. Only Back
         // delivered their RESULT_OK; Home (the remote's button) clears them off this task and the result comes
         // back cancelled, so a new wallpaper or layout waited for the next process start.
-        if (Config.settingsChanged(settingsRevision, settingsRevision())
+        if (placementRevision != PlacementSession.PREVIEW.revision() || Config.settingsChanged(settingsRevision, settingsRevision())
                 || (stylePickerEnabled && styleRevision != StyleSession.PREVIEW.revision())) {
-            if (stylePickerEnabled) settingsRecreationPending = true;
+            settingsRecreationPending = true;
             recreate();
             return;
         }
@@ -1058,6 +1072,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onPostResume() {
         super.onPostResume();
+        if(!settingsRecreationPending&&!isFinishing()&&PlacementSession.preview()!=null)placementPrompt=PlacementSession.prompt(this);
         if (stylePickerEnabled && !settingsRecreationPending && !isFinishing()) {
             String preview = StyleSession.preview();
             if (styleRevision != StyleSession.PREVIEW.revision()) {
@@ -1216,6 +1231,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onPause() {
         super.onPause();
+        HomePreview.detach(this);
         if(companionControls!=null)companionControls.stop();
         root.removeCallbacks(showIdleClock);
         endReorder();   // Home or another app while reordering keeps the order so far
@@ -1238,6 +1254,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onStop() {
         super.onStop();
+        if(!isChangingConfigurations())PlacementSession.PREVIEW.cancel();
+        if(placementPrompt!=null){placementPrompt.dismiss();placementPrompt=null;}
         if (stylePickerEnabled) {
             if (!isChangingConfigurations()) StyleSession.PREVIEW.cancel();
             if (stylePrompt != null) { stylePrompt.dismiss(); stylePrompt = null; }
