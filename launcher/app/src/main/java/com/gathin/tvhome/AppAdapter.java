@@ -296,11 +296,13 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             // redraw the tile name as something else (#117).
             String label = card != null ? card.label : Cards.cleanLabel(
                     appLabels.containsKey(pkg) ? appLabels.get(pkg) : String.valueOf(ri.loadLabel(pm)), pkg);
+            if(card==null)label=ProductFeatures.label(ctx,pkg,label);
             if (!seen.add(pkg + '\n' + label)) continue;
             Drawable banner = null;
             // uniform_tiles draws the icon, so an app's banner is never loaded. A module card keeps its banner.
             if (!(uniformTiles && card == null)) {
-                banner = bundledBanner(appBanners.get(pkg));
+                banner = card==null?ProductFeatures.banner(ctx,pkg):null;
+                if(banner==null)banner = bundledBanner(appBanners.get(pkg));
                 if (banner == null) banner = loadBanner(pm, ri);
             }
             // The icon is only drawn (and sampled for the glow) when there is no banner, so a tile with a
@@ -461,6 +463,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         h.card.setFocusable(true);
         h.name.setText(e.name);
         if(ctx instanceof MainActivity)((MainActivity)ctx).styleHomeLabel(h.name);
+        ProductFeatures.styleName(h.name);
         // The dock has no labels, unless always_show_names asks for them (DockDecoration then makes room in the band).
         // In a single row every tile is the dock's kind: the big title above names it.
         boolean dockKind = dockRow && (singleRow || position < dockSize);

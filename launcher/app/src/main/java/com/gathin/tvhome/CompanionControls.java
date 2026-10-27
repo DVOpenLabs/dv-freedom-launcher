@@ -86,6 +86,7 @@ final class CompanionControls {
         return saveBoolean(p,AUDIO,on);
     }
     static boolean saveBoolean(SharedPreferences p,String key,Boolean on) {
+        ProductFeatures.beforeChange("Change Home preference");
         boolean existed=p.contains(key),before=p.getBoolean(key,false);
         boolean hadRevision=p.contains(Config.SETTINGS_REVISION_KEY);
         long revision=p.getLong(Config.SETTINGS_REVISION_KEY,0);

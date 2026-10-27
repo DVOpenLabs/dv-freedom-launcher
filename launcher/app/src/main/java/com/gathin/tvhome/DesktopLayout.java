@@ -88,6 +88,7 @@ final class DesktopLayout {
                 if(next.isEmpty())predicted.remove(STATE);else predicted.put(STATE,next);
                 predicted.put(Config.SETTINGS_REVISION_KEY,revision+1);
                 if(position==null)predicted.remove(AppPlacement.KEY);else predicted.put(AppPlacement.KEY,position);
+                ProductFeatures.beforeChange(ctx,"Edit Home layout");
                 if(!commit(prefs,next,revision(ctx,predicted),"product_layout_undo".equals(method),position))
                     throw new IllegalStateException("Could not save layout. Reload before trying again.");
                 ctx.getContentResolver().notifyChange(uri(ctx),null);

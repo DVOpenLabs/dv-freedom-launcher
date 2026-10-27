@@ -32,8 +32,10 @@ final class SetupStore {
     }
     static boolean restore(Context ctx,JSONObject row)throws Exception{
         Map<String,Object> values=decode(row.getJSONObject("values"));
+        ProductFeatures.validateMedia(ctx,values);
         Object pack=values.get(ThemeLibrary.CHOICE);
         if(pack!=null&&!new java.io.File(ctx.getFilesDir(),"product-themes/"+pack).isDirectory())throw new IllegalArgumentException("Saved theme is unavailable");
+        ProductFeatures.beforeChange(ctx,"Restore saved setup");
         if(values.containsKey(DesktopLayout.STATE))values.put(DesktopLayout.STATE,DesktopLayout.restamp(ctx,(String)values.get(DesktopLayout.STATE)));
         SharedPreferences p=ProfileStore.preferences(ctx);Map<String,Object> changes=new HashMap<>();
         for(String key:SetupValues.KEYS)changes.put(key,values.get(key));

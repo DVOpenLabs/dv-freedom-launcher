@@ -1,10 +1,22 @@
 plugins {
     id 'com.android.application'
 }
+def communityFeatures = providers.gradleProperty('communityFeatures').map { it.toBoolean() }.getOrElse(false)
 
 android {
     namespace 'com.gathin.tvhome'
     compileSdk 34
+    sourceSets {
+        main {
+            java.srcDir communityFeatures ? 'src/community/java' : 'src/reference/java'
+            if (communityFeatures) {
+                java.exclude '**/SettingsNavigation.java'
+            }
+        }
+        test { if (communityFeatures) java.srcDir 'src/communityTest/java' }
+        release { if (communityFeatures) { res.srcDir 'src/community/res'; manifest.srcFile 'src/community/AndroidManifest.xml' } }
+        debug { if (communityFeatures) { res.srcDir 'src/community/res'; manifest.srcFile 'src/community/AndroidManifest.xml' } }
+    }
 
     defaultConfig {
         // Opt-in identity for firmware with a package-name HOME allowlist; see docs/devices/xiaomi-mitv-aetp0-dofus.md.
@@ -12,7 +24,7 @@ android {
         minSdk 26
         targetSdk 34
         versionCode 13
-        versionName '3.0-community-alpha5'
+        versionName communityFeatures ? '3.0-community-alpha6' : '3.0-community-alpha5'
     }
 
     buildTypes {

@@ -52,7 +52,7 @@ final class ProfileSetup {
         if(rows.isEmpty())changes.put(ENABLED,null);
         if(name==null){for(String key:p.getAll().keySet())if(key.startsWith("profile."+id+"."))changes.put(key,null);if(ProfileStore.id().equals(id))changes.put(ProfileStore.ACTIVE,"");}
         changes.put(Config.SETTINGS_REVISION_KEY,p.getLong(Config.SETTINGS_REVISION_KEY,0)+1);
-        boolean saved=SetupValues.commit(p,changes);if(saved){if(name==null)ctx.getSharedPreferences(RecentHistory.scope(id),Context.MODE_PRIVATE).edit().clear().commit();Config.load(ctx);}return saved;
+        boolean saved=SetupValues.commit(p,changes);if(saved){if(name==null){ctx.getSharedPreferences(RecentHistory.scope(id),Context.MODE_PRIVATE).edit().clear().commit();ProductFeatures.clearProfile(ctx,id);}Config.load(ctx);}return saved;
     }
     static void show(Activity a){
         String[] names=ProfileStore.enabled()?new String[]{a.getString(R.string.profile_switch),a.getString(R.string.profile_create),a.getString(R.string.profile_manage)}:new String[]{a.getString(R.string.profile_create)};

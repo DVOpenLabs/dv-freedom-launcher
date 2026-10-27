@@ -46,6 +46,7 @@ final class AppearanceSettings {
         });
     }
     private static void save(Activity activity, SharedPreferences prefs, SharedPreferences.Editor edit) {
+        ProductFeatures.beforeChange(activity,"Change focus or spacing");
         edit.putLong(Config.SETTINGS_REVISION_KEY, prefs.getLong(Config.SETTINGS_REVISION_KEY, 0) + 1).apply();
         activity.setResult(Activity.RESULT_OK); activity.finish();
     }

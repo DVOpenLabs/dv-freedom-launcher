@@ -12,6 +12,7 @@ final class WallpaperDim {
     static int chosen(int value,int fallback){return value>=0&&value<=90?value:fallback;}
     static boolean save(SharedPreferences p,int value){
         if(value< -1||value>90)return false;
+        ProductFeatures.beforeChange("Change wallpaper dimming");
         int old=p.getInt(KEY,-1);long revision=p.getLong(Config.SETTINGS_REVISION_KEY,0);boolean hadRevision=p.contains(Config.SETTINGS_REVISION_KEY);
         SharedPreferences.Editor edit=p.edit();if(value<0)edit.remove(KEY);else edit.putInt(KEY,value);
         if(edit.putLong(Config.SETTINGS_REVISION_KEY,revision+1).commit())return true;

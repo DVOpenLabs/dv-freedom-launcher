@@ -103,6 +103,7 @@ final class ThemeLibrary {
     static boolean select(Context ctx,String token){
         if(!enabled)return false;
         if(!token.isEmpty()&&list(ctx).stream().noneMatch(e->e.token.equals(token)))return false;
+        ProductFeatures.beforeChange(ctx,"Change offline theme");
         return saveChoice(ProfileStore.preferences(ctx),token);
     }
     static boolean saveChoice(SharedPreferences p,String token){
@@ -112,6 +113,7 @@ final class ThemeLibrary {
         p.edit().putString(CHOICE,old).putLong(Config.SETTINGS_REVISION_KEY,revision).commit();return false;
     }
     static void remove(Context ctx,Entry entry)throws IOException{
+        if(ProductFeatures.themeInUse(ctx,entry.token))throw new IOException("Theme is used by a saved setup or recovery point");
         SharedPreferences global=ctx.getSharedPreferences(Config.SETTINGS_NAME,Context.MODE_PRIVATE);
         for(Map.Entry<String,?> value:global.getAll().entrySet())
             if((value.getKey().equals(CHOICE)||value.getKey().matches("profile\\.[a-z][a-z0-9_-]{0,63}\\.theme_pack_id"))&&entry.token.equals(value.getValue()))throw new IOException("Theme is used by a profile");

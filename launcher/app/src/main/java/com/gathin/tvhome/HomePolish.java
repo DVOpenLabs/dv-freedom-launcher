@@ -103,6 +103,7 @@ final class HomePolish {
         quiet.setOnClickListener(v->{int[] values={0,30,60,120};String[] names={a.getString(R.string.live_off),"30 s","60 s","120 s"};
             new AlertDialog.Builder(a).setTitle(R.string.cinematic_idle).setSingleChoiceItems(names,Arrays.binarySearch(values,p.getInt(IDLE,0)),(d,index)->{
                 Map<String,Object> changes=new HashMap<>();changes.put(IDLE,values[index]);changes.put(Config.SETTINGS_REVISION_KEY,p.getLong(Config.SETTINGS_REVISION_KEY,0)+1);
+                ProductFeatures.beforeChange(a,"Change cinematic idle");
                 if(SetupValues.commit(p,changes)){d.dismiss();a.finish();}else Toast.makeText(a,R.string.style_save_failed,Toast.LENGTH_SHORT).show();
             }).setNegativeButton(android.R.string.cancel,null).show();});
         TextView motion=a.findViewById(R.id.refinedMotionChoice);motion.setText(a.getString(R.string.refined_motion)+" · "+a.getString(p.getBoolean(MOTION,false)?R.string.live_on:R.string.live_off));
@@ -116,6 +117,7 @@ final class HomePolish {
             android.content.SharedPreferences p=ProfileStore.preferences(a);Map<String,Object> changes=new HashMap<>();
             if(ink){changes.put(HEADER,which!=0);changes.put(INK,which<2?null:which-1);}else changes.put(NAMES,which==0?null:which);
             changes.put(Config.SETTINGS_REVISION_KEY,p.getLong(Config.SETTINGS_REVISION_KEY,0)+1);
+            ProductFeatures.beforeChange(a,ink?"Change Home text":"Change app names");
             if(SetupValues.commit(p,changes))a.finish();else Toast.makeText(a,R.string.style_save_failed,Toast.LENGTH_SHORT).show();
         }));
     }

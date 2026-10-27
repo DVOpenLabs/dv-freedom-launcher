@@ -5,11 +5,12 @@ import java.util.*;
 
 /** A saved Home is a bounded allowlist of app/appearance choices, never device settings or credentials. */
 final class SetupValues {
-    static final Set<String> KEYS=Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    static final Set<String> KEYS;
+    static {Set<String> keys=new HashSet<>(Arrays.asList(
         "columns","rows_below_dock","dock_opacity","animations","advanced_effects","wallpaper_choice",
         "home_style_choice","theme_pack_id","live_wallpaper","focus_outline_choice","tile_gap_choice",
         "desktop_layout","show_audio_indicator","app_position","wallpaper_dim_choice","cinematic_idle_seconds",
-        "adaptive_header","refined_motion","text_ink_choice","app_names_choice")));
+        "adaptive_header","refined_motion","text_ink_choice","app_names_choice"));ProductFeatures.setupKeys(keys);KEYS=Collections.unmodifiableSet(keys);}
     private static final Set<String> FLAGS=new HashSet<>(Arrays.asList("animations","advanced_effects","live_wallpaper","show_audio_indicator","adaptive_header","refined_motion"));
     static String name(String text){
         if(text==null)throw new IllegalArgumentException("Name required");String value=text.trim();
@@ -22,6 +23,7 @@ final class SetupValues {
         Map<String,Object> out=new HashMap<>();
         for(Map.Entry<String,?> entry:values.entrySet()){
             String key=entry.getKey();Object value=entry.getValue();
+            if(ProductFeatures.validateValue(key,value)){out.put(key,value);continue;}
             if(FLAGS.contains(key)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid switch");}
             else if(Arrays.asList("columns","rows_below_dock","dock_opacity","tile_gap_choice","wallpaper_dim_choice","cinematic_idle_seconds","text_ink_choice","app_names_choice").contains(key)){
                 if(!(value instanceof Integer||value instanceof Long))throw new IllegalArgumentException("Invalid number");

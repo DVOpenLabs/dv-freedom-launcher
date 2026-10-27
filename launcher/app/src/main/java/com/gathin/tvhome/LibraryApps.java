@@ -69,10 +69,12 @@ final class LibraryApps {
             return false;
         }
         if (onHome) {
+            ProductFeatures.beforeChange(context,"Add Home shortcut");
             if (!write(store(context, false), additions, pkg, true)) return false;
             return !removed.contains(pkg) || write(store(context, true), removed, pkg, false);
         }
         // The removal takes precedence over theme defaults and any previous explicit addition.
+        ProductFeatures.beforeChange(context,"Remove Home shortcut");
         if (!write(store(context, true), removed, pkg, true)) return false;
         if (additions.contains(pkg)) write(store(context, false), additions, pkg, false);
         return true;

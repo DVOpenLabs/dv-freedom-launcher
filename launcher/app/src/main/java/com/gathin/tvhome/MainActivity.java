@@ -401,6 +401,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ProductFeatures.init(this);
         setContentView(R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
@@ -1010,6 +1011,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        ProductFeatures.resumed(this);
         HomePreview.attach(this, null);
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
@@ -1610,6 +1612,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         dockInSession = null;
         if (!keys.equals(before) || (fillDockLeavesSlots && docked != dockedAtStart)) {
             Order order = new Order(Order.dockKey(dockApps), keys, docked);
+            ProductFeatures.beforeChange(this,"Arrange apps");
             if (Order.save(Order.file(this), order)) {
                 adapter.nativeOrderChanged();
                 adapter.setSavedOrder(Order.ranks(order, dockApps), Order.docked(order, dockApps));
@@ -3452,6 +3455,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             else Toast.makeText(this, R.string.library_save_failed, Toast.LENGTH_LONG).show();
         });
         // Some firmware has no App info page at all; a row that only toasts "can't open" helps nobody.
+        ProductFeatures.tileActions(this,rows,popup,pkg);
         Intent info = SystemSettings.appInfo(this, pkg);
         if (info != null) addSettingsMenuRow(rows, popup, R.string.library_app_info, () -> open(info));
         panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);

@@ -47,6 +47,7 @@ public final class LauncherSettingsActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        ProductFeatures.init(this);
         setContentView(R.layout.activity_launcher_settings);
         Config config = Config.load(this);
         choices = ProfileStore.preferences(this);
@@ -67,6 +68,7 @@ public final class LauncherSettingsActivity extends Activity {
                 int selected = choices.contains(HdmiVisibility.CHOICE) ? (choices.getBoolean(HdmiVisibility.CHOICE, false) ? 2 : 1) : 0;
                 AppearanceSettings.choose(this, R.string.input_visibility, labels, selected, which -> {
                     SharedPreferences.Editor edit = choices.edit();
+                    ProductFeatures.beforeChange(this,"Change input visibility");
                     if (which == 0) edit.remove(HdmiVisibility.CHOICE); else edit.putBoolean(HdmiVisibility.CHOICE, which == 2);
                     edit.putLong(Config.SETTINGS_REVISION_KEY, choices.getLong(Config.SETTINGS_REVISION_KEY, 0) + 1).apply();
                     setResult(RESULT_OK); finish();
@@ -88,6 +90,7 @@ public final class LauncherSettingsActivity extends Activity {
                     ? R.string.live_on : R.string.live_off)) : getString(R.string.live_wallpaper_unavailable));
             live.setOnClickListener(v -> {
                 if (!available) { Toast.makeText(this, R.string.live_wallpaper_help, Toast.LENGTH_LONG).show(); return; }
+                ProductFeatures.beforeChange(this,"Change live wallpaper");
                 choices.edit().putBoolean(ThemeLibrary.LIVE, !choices.getBoolean(ThemeLibrary.LIVE, false)).apply();
                 changed(); finish();
             });
@@ -128,6 +131,7 @@ public final class LauncherSettingsActivity extends Activity {
             columnChoices[i].setOnClickListener(v -> {
                 if (columns == value) return;
                 columns = value;
+                ProductFeatures.beforeChange(this,"Change apps per row");
                 choices.edit().putInt("columns", value).apply();
                 changed();
                 refresh();
@@ -141,6 +145,7 @@ public final class LauncherSettingsActivity extends Activity {
             rowChoices[i].setOnClickListener(v -> {
                 if (rowsBelowDock == value) return;
                 rowsBelowDock = value;
+                ProductFeatures.beforeChange(this,"Change app rows");
                 choices.edit().putInt(Config.ROWS_BELOW_DOCK_KEY, value).apply();
                 changed();
                 refresh();
@@ -154,6 +159,7 @@ public final class LauncherSettingsActivity extends Activity {
             dockChoices[i].setOnClickListener(v -> {
                 if (dockOpacity == value) return;
                 dockOpacity = value;
+                ProductFeatures.beforeChange(this,"Change dock opacity");
                 choices.edit().putInt(Config.DOCK_OPACITY_KEY, value).apply();
                 changed();
                 refresh();
@@ -172,6 +178,7 @@ public final class LauncherSettingsActivity extends Activity {
         wallpaperChoice.setOnClickListener(v -> showWallpaperPicker());
         animationsChoice = findViewById(R.id.animationsChoice);
         animationsChoice.setOnClickListener(v -> {
+            ProductFeatures.beforeChange(this,"Change animations");
             animations = !animations;
             if (!animations) advancedEffects = false;
             choices.edit().putBoolean("animations", animations)
@@ -200,6 +207,7 @@ public final class LauncherSettingsActivity extends Activity {
         followThemeChoice = findViewById(R.id.followThemeChoice);
         Runnable restoreChoices=()->{
             if (!hasOnTvChoices()) return;
+            ProductFeatures.beforeChange(this,"Restore theme defaults");
             SharedPreferences.Editor reset = choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove(TileSpacing.FOCUS).remove(TileSpacing.CHOICE)
                     .remove(HomeStyles.CHOICE).remove(HomeStyles.UNDO).remove(AppPlacement.KEY).remove(WallpaperDim.KEY)
@@ -361,6 +369,7 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private void setAdvanced(boolean enabled) {
+        ProductFeatures.beforeChange(this,"Change advanced effects");
         advancedEffects = enabled;
         choices.edit().putBoolean("advanced_effects", enabled).apply();
         changed();
@@ -413,6 +422,7 @@ public final class LauncherSettingsActivity extends Activity {
 
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
+        if(ProductFeatures.activityResult(this,request,result,data))return;
         if (request == ProfilePicker.IMPORT && ProfileStore.enabled()) ProfilePicker.imported(this, result, data);
         if (request == ThemePicker.IMPORT && ThemeLibrary.enabled()) ThemePicker.imported(this, result, data);
     }

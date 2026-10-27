@@ -14,6 +14,7 @@ final class PlacementSession {
     static String selected(android.content.Context ctx){String value=preview();return value!=null?value:ProfileStore.preferences(ctx).getString(AppPlacement.KEY,null);}
     static boolean save(android.content.SharedPreferences p,String value){
         if(!AppPlacement.valid(value))return false;
+        ProductFeatures.beforeChange("Change app position");
         String old=p.getString(AppPlacement.KEY,null);long revision=p.getLong(Config.SETTINGS_REVISION_KEY,0);
         if(p.edit().putString(AppPlacement.KEY,value).putLong(Config.SETTINGS_REVISION_KEY,revision+1).commit())return true;
         android.content.SharedPreferences.Editor repair=p.edit().putLong(Config.SETTINGS_REVISION_KEY,revision);

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="studioBaseTextSize" />
+    <item type="id" name="studioMenu" />
+    <item type="id" name="studioBreadcrumb" />
+    <item type="id" name="studioTitle" />
+    <item type="id" name="studioHelp" />
+    <item type="id" name="studioValue" />
+    <bool name="home_style_picker">true</bool>
+    <bool name="theme_library">true</bool>
+    <bool name="live_wallpapers">true</bool>
+    <bool name="appearance_controls">true</bool>
+    <bool name="input_visibility_choice">true</bool>
+    <bool name="tv_button_picker">true</bool>
+</resources>

@@ -31,6 +31,7 @@ final class StyleSession {
     static boolean keep(Context context) {
         String style = preview();
         if (style == null) return false;
+        ProductFeatures.beforeChange(context,"Change Home style");
         SharedPreferences p = prefs(context);
         HomeStyles.Snapshot before = snapshot(p);
         String oldUndo = p.getString(HomeStyles.UNDO, null);
@@ -49,6 +50,7 @@ final class StyleSession {
         SharedPreferences p = prefs(context);
         HomeStyles.Snapshot before = HomeStyles.Snapshot.decode(p.getString(HomeStyles.UNDO, null));
         if (before == null) return false;
+        ProductFeatures.beforeChange(context,"Undo Home style");
         SharedPreferences.Editor editor = p.edit(); restore(editor, before);
         return editor.remove(HomeStyles.UNDO).putLong(Config.SETTINGS_REVISION_KEY,
                 p.getLong(Config.SETTINGS_REVISION_KEY, 0) + 1).commit();
