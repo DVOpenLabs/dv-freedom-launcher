@@ -84,14 +84,14 @@ final class Weather {
         }
     }
 
-    /** "12°  ☁" for the place, blocking: call it off the main thread. */
-    static String now(double latitude, double longitude) throws IOException, JSONException {
+    /** "12°  ☁", or "54°F / 12°C  ☁" when requested. Blocking: call off the main thread. */
+    static String now(double latitude, double longitude, boolean bothUnits) throws IOException, JSONException {
         // Two decimals is about 1 km: enough for the weather, no more of where the TV is than that.
         String url = String.format(Locale.ROOT, "https://api.open-meteo.com/v1/forecast?latitude=%.2f"
                 + "&longitude=%.2f&current=temperature_2m,weather_code,is_day", latitude, longitude);
         JSONObject current = get(url).getJSONObject("current");
-        int temp = (int) Math.round(current.getDouble("temperature_2m"));
-        return temp + "°  " + symbol(current.getInt("weather_code"), current.optInt("is_day", 1) == 1);
+        return Temperatures.text(current.getDouble("temperature_2m"), bothUnits) + "  "
+                + symbol(current.getInt("weather_code"), current.optInt("is_day", 1) == 1);
     }
 
     /** A plain symbol for a WMO weather code, from characters every TV font has. */

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- A device build can opt in without rewriting any existing options or media. -->
+    <bool name="weather_both_units_default">false</bool>
+</resources>

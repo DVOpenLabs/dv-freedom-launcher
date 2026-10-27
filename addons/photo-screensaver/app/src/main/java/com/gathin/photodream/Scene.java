@@ -132,7 +132,8 @@ final class Scene {
         SharedPreferences cache = context.getSharedPreferences("weather", Context.MODE_PRIVATE);
         String cached = cache.getString("text", "");
         long age = System.currentTimeMillis() - cache.getLong("at", 0);
-        if (!cached.isEmpty() && age >= 0 && age < Weather.REFRESH_MS) {
+        if (!cached.isEmpty() && age >= 0 && age < Weather.REFRESH_MS
+                && cache.getBoolean("both_units", false) == options.bothUnits) {
             showWeather(cached);
             return;
         }
@@ -144,11 +145,12 @@ final class Scene {
                 n.execute(() -> {
                     String text;
                     try {
-                        text = Weather.now(lat, lon);
+                        text = Weather.now(lat, lon, options.bothUnits);
                     } catch (Exception e) {
                         return;   // offline: keep what shows, try again in half an hour
                     }
-                    cache.edit().putString("text", text).putLong("at", System.currentTimeMillis()).apply();
+                    cache.edit().putString("text", text).putLong("at", System.currentTimeMillis())
+                            .putBoolean("both_units", options.bothUnits).apply();
                     handler.post(() -> { if (running) showWeather(text); });
                 });
             } catch (java.util.concurrent.RejectedExecutionException ignored) {

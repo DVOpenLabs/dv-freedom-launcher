@@ -22,6 +22,7 @@ slideshow. Google TV has no settings entry for other screensavers, so there it i
 | Three prints | Three pictures at a time as tilted prints, the whole picture, never cropped; clips are skipped |
 | Sky | Behind the prints, a sky that follows the time of day |
 | Weather | Temperature and a symbol, from the TV's rough location and Open-Meteo, every 30 minutes |
+| Show both Fahrenheit and Celsius | Shows both units together, such as `68°F / 20°C`. Off by default; weather must already be enabled. Changing it refreshes the cached single-unit text. |
 
 The weather needs location access (asked when you switch it on) and the TV's location services on; the
 settings say when they are off and open the TV's location settings. The prints, the sky and the date on a

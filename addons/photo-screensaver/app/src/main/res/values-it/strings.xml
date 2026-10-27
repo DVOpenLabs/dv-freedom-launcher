@@ -11,6 +11,7 @@
     <string name="option_prints">Tre stampe invece dello schermo intero (senza mollette)</string>
     <string name="option_sky">Cielo che segue l’ora del giorno dietro le stampe</string>
     <string name="option_weather">Mostra il meteo (serve la posizione della TV)</string>
+    <string name="option_weather_both_units">Mostra Fahrenheit e Celsius insieme</string>
     <string name="weather_info">Usa la posizione approssimativa della TV e Open-Meteo. Se è spento, nulla passa dalla rete.</string>
     <string name="weather_no_permission">Consenti l’accesso alla posizione per il meteo.</string>
     <string name="weather_location_off">I servizi di localizzazione sono spenti su questa TV: accendili per il meteo.</string>

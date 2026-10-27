@@ -53,6 +53,7 @@ public class SettingsActivity extends Activity {
         list.addView(skySwitch);
         weatherSwitch = toggle(Options.WEATHER, R.string.option_weather, this::weatherChanged);
         list.addView(weatherSwitch);
+        list.addView(toggle(Options.WEATHER_BOTH_UNITS, R.string.option_weather_both_units, null));
 
         weatherStatus = new TextView(this);
         weatherStatus.setPadding(dp(8), 0, 0, dp(8));
@@ -92,7 +93,9 @@ public class SettingsActivity extends Activity {
         s.setText(label);
         s.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         s.setPadding(dp(8), dp(12), dp(8), dp(12));
-        s.setChecked(preferences.getBoolean(key, false));
+        boolean defaultValue = Options.WEATHER_BOTH_UNITS.equals(key)
+                && getResources().getBoolean(R.bool.weather_both_units_default);
+        s.setChecked(preferences.getBoolean(key, defaultValue));
         s.setOnCheckedChangeListener((button, value) -> {
             preferences.edit().putBoolean(key, value).apply();
             if (changed != null) changed.on(value);

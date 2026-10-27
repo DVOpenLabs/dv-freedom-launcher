@@ -10,19 +10,22 @@ final class Options {
     static final String SKY = "sky";
     static final String PRINTS = "prints";
     static final String WEATHER = "weather";
+    static final String WEATHER_BOTH_UNITS = "weather_both_units";
 
     final boolean clock;
     final boolean dates;
     final boolean sky;
     final boolean prints;
     final boolean weather;
+    final boolean bothUnits;
 
-    private Options(SharedPreferences p) {
+    private Options(SharedPreferences p, boolean bothUnitsDefault) {
         clock = p.getBoolean(CLOCK, false);
         dates = p.getBoolean(DATES, false);
         sky = p.getBoolean(SKY, false);
         prints = p.getBoolean(PRINTS, false);
         weather = p.getBoolean(WEATHER, false);
+        bothUnits = p.getBoolean(WEATHER_BOTH_UNITS, bothUnitsDefault);
     }
 
     static SharedPreferences preferences(Context context) {
@@ -30,6 +33,6 @@ final class Options {
     }
 
     static Options load(Context context) {
-        return new Options(preferences(context));
+        return new Options(preferences(context), context.getResources().getBoolean(R.bool.weather_both_units_default));
     }
 }
