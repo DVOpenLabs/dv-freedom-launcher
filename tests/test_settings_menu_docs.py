@@ -128,7 +128,7 @@ class MenuReaderTest(unittest.TestCase):
         # Six rows today: launcher settings, native settings, module cards, dock edit, reorder, restart.
         body = method_body(MAIN_ACTIVITY.read_text(encoding="utf-8"))
         self.assertEqual(menu_rows(body),
-                         ["launcher_settings", "native_settings", "module_cards", "dock_edit", "reorder",
+                         ["quick_actions", "launcher_settings", "native_settings", "module_cards", "dock_edit", "reorder",
                           "power_menu"])
 
     def test_a_row_with_no_string_is_reported(self):

@@ -28,7 +28,8 @@ public final class LauncherSettingsActivity extends Activity {
 
     static final String EXTRA_REORDER = "com.gathin.tvhome.extra.REORDER_FROM_SETTINGS";
     private SharedPreferences choices;
-    private final TextView[] columnChoices = new TextView[4];
+    private SettingsNavigation navigation;
+    private final TextView[] columnChoices = new TextView[5];
     private final TextView[] rowChoices = new TextView[4];
     private static final int[] DOCK_OPACITIES = {100, 70, 50, 30};
     private final TextView[] dockChoices = new TextView[DOCK_OPACITIES.length];
@@ -49,6 +50,7 @@ public final class LauncherSettingsActivity extends Activity {
         setContentView(R.layout.activity_launcher_settings);
         Config config = Config.load(this);
         choices = ProfileStore.preferences(this);
+        CompanionControls.attachSettings(this);
         AppearanceSettings.attach(this, config);
         TvButtonSettings.attach(this, config);
         TextView inputs = findViewById(R.id.inputVisibilityChoice);
@@ -116,7 +118,7 @@ public final class LauncherSettingsActivity extends Activity {
         animations = config.animations;
         advancedEffects = config.animations && config.advancedEffects;
 
-        int[] ids = {R.id.columns4, R.id.columns5, R.id.columns6, R.id.columns7};
+        int[] ids = {R.id.columns4, R.id.columns5, R.id.columns6, R.id.columns7, R.id.columns8};
         for (int i = 0; i < ids.length; i++) {
             final int value = i + 4;
             columnChoices[i] = findViewById(ids[i]);
@@ -191,7 +193,7 @@ public final class LauncherSettingsActivity extends Activity {
             openOnStartChoice.setOnClickListener(v -> showOpenOnStartPicker());
         }
         followThemeChoice = findViewById(R.id.followThemeChoice);
-        followThemeChoice.setOnClickListener(v -> {
+        Runnable restoreChoices=()->{
             if (!hasOnTvChoices()) return;
             SharedPreferences.Editor reset = choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove(TileSpacing.FOCUS).remove(TileSpacing.CHOICE)
@@ -209,6 +211,13 @@ public final class LauncherSettingsActivity extends Activity {
             advancedEffects = current.animations && current.advancedEffects;
             changed();
             refresh();
+        };
+        followThemeChoice.setOnClickListener(v->{
+            if(!hasOnTvChoices())return;
+            AlertDialog dialog=new AlertDialog.Builder(this).setTitle(R.string.settings_reset_title)
+                    .setMessage(R.string.settings_reset_help).setNegativeButton(android.R.string.cancel,null)
+                    .setPositiveButton(R.string.follow_theme,(d,w)->restoreChoices.run()).create();
+            dialog.show();dialog.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus();
         });
         findViewById(R.id.defaultHomeChoice).setOnClickListener(v -> {
             Toast.makeText(this, R.string.home_settings_help, Toast.LENGTH_LONG).show();
@@ -217,13 +226,23 @@ public final class LauncherSettingsActivity extends Activity {
         findViewById(R.id.tvSettingsChoice).setOnClickListener(v ->
                 open(SystemSettings.intent(this, Settings.ACTION_SETTINGS)));
         refresh();
-        if (config.launcherSettingsButton) reorderChoice.requestFocus();
-        else columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
+        navigation=new SettingsNavigation(this,state);
     }
 
     @Override protected void onResume() {
         super.onResume();
         TvButtonSettings.refreshStatus(this);
+    }
+
+
+    @Override public boolean dispatchKeyEvent(android.view.KeyEvent event) {
+        return navigation!=null&&navigation.key(event)||super.dispatchKeyEvent(event);
+    }
+    @Override public void onBackPressed() {
+        if(navigation==null||!navigation.back())super.onBackPressed();
+    }
+    @Override protected void onSaveInstanceState(Bundle state) {
+        if(navigation!=null)navigation.save(state);super.onSaveInstanceState(state);
     }
 
     private void reverseRow(TextView[] views) {
@@ -342,6 +361,9 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private void refresh() {
+        ((TextView)findViewById(R.id.settingsColumnsCaption)).setText(getString(R.string.settings_columns_value,columns));
+        ((TextView)findViewById(R.id.settingsRowsCaption)).setText(getString(R.string.settings_rows_value,rowsBelowDock));
+        ((TextView)findViewById(R.id.settingsOpacityCaption)).setText(getString(R.string.settings_opacity_value,dockOpacity));
         for (int i = 0; i < columnChoices.length; i++) {
             columnChoices[i].setSelected(columns == i + 4);
         }

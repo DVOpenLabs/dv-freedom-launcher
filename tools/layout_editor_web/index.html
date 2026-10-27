@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="editor-token" content="__EDITOR_TOKEN__"><meta name="has-wallpaper" content="__HAS_WALLPAPER__">
+  <title>CleanYourTV · Layout editor</title><link rel="stylesheet" href="/editor.css"><script src="/editor.js" defer></script>
+</head>
+<body>
+<header class="topbar"><a class="brand" href="/" aria-label="CleanYourTV layout editor"><span class="brandmark" aria-hidden="true">C</span>CleanYourTV<span class="divider"></span><span class="subbrand">Layout editor</span></a><span class="local">Local session</span></header>
+<main>
+  <section class="heading"><div><p class="eyebrow">MAKE HOME YOURS</p><h1>A place for every app.</h1><p class="intro">Arrange your favorites, tidy up app names and choose what stays visible.</p></div><div class="heading-actions"><button id="import" class="secondary">Import draft</button><button id="reload" class="secondary">Reload from TV</button><input id="draft-file" type="file" accept="application/json,.json" hidden></div></section>
+  <div class="workspace">
+    <section class="editor" aria-labelledby="apps-title">
+      <div class="section-title"><div><h2 id="apps-title">Favorite apps</h2><p>Move apps with the arrow buttons.</p></div><span id="count" class="count">—</span></div>
+      <div id="favorites" class="favorites" aria-label="Ordered favorite apps"></div>
+      <div class="available-heading"><h3>Available apps</h3><label class="sr-only" for="search">Search installed apps</label><input id="search" type="search" placeholder="Find an app…" autocomplete="off"></div>
+      <div id="available" class="available" aria-label="Available installed apps"></div>
+    </section>
+    <section class="review" aria-labelledby="preview-title">
+      <div class="preview-title"><h2 id="preview-title">Your Home, in order</h2><span>Arrangement preview</span></div>
+      <div class="tv-preview"><img id="wallpaper" alt="" hidden><div class="preview-shade"></div><div class="preview-header"><span>GOOD EVENING</span><strong>6:00 <small>PM</small></strong><p>Your wallpaper and settings stay as they are.</p></div><div id="preview-apps" class="preview-apps"></div><div class="preview-caption">Preview shows app order and names. TV sizing and artwork may differ.</div></div>
+      <div class="target"><span class="target-dot" aria-hidden="true"></span><div><strong id="target">Connecting…</strong><span id="profile">Current Home</span></div><span class="target-label">REVIEW TARGET</span></div>
+      <div class="review-card"><h3>Before you apply</h3><p>Only app order, names and visibility change. Your wallpaper, scale and remote controls stay as they are.</p><ul id="changes"><li>Make a change, then preview it here.</li></ul></div>
+      <div class="actions"><button id="preview" class="primary" disabled>Preview changes<span aria-hidden="true"> →</span></button><button id="reset" class="secondary" disabled>Reset draft</button></div>
+      <div class="secondary-actions"><button id="undo" class="text-button" disabled>Undo last TV change</button><button id="export" class="text-button" disabled>Export draft</button></div>
+      <p id="message" class="message" role="status" aria-live="polite">Loading the current layout…</p>
+    </section>
+  </div>
+</main>
+<dialog id="confirm"><div class="dialog-body"><p class="eyebrow">READY TO UPDATE</p><h2>Apply these app changes?</h2><p id="confirm-target"></p><ul id="confirm-changes"></ul><p class="dialog-note">A backup is saved first. You can undo this change while it remains the latest edit.</p><div class="dialog-actions"><button id="cancel" class="secondary">Keep editing</button><button id="apply" class="primary">Apply to TV</button></div></div></dialog>
+</body></html>

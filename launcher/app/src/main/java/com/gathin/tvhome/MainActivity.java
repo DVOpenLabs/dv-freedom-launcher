@@ -104,6 +104,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private static final int LAUNCHER_SETTINGS_REQUEST = 42;
     /** Sent by QuickSettingsActivity: open Launcher settings from here so Home rebuilds when they close. */
     static final String ACTION_LAUNCHER_SETTINGS = "com.gathin.tvhome.action.LAUNCHER_SETTINGS";
+    static final String ACTION_LIBRARY = "com.gathin.tvhome.action.LIBRARY";
     /** The system input switcher, forwarded here by InputsRequestActivity while handle_view_inputs is on. */
     static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
     /** Tiles per row and dock slots (res/values/config.xml, columns). Set in onCreate. */
@@ -147,6 +148,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean carousel;
     private boolean hideInactiveHdmi;
     private TvButtonController tvButton;
+    private CompanionControls companionControls;
     private GlassView glass;
     private View ambient;
     private TextView heroName;
@@ -277,6 +279,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private PopupWindow openPopup;
     /** Reorder mode is on (top-bar button). */
     private boolean reordering;
+    static boolean desktopLayoutEditing;
     /** Key of the tile being carried in reorder mode, or null. */
     private String movingKey;
     /** Tile order when reorder mode started, to save only when something moved. */
@@ -300,6 +303,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** Tile menu's "Add to dock": the app waiting for a dock place in edit-dock mode, or null. */
     private String dockEditAppKey;
     private AppLibraryDialog appLibrary;
+    private boolean utilityLibrary;
     private boolean appLibrarySelection;
     private boolean libraryOkOpens;
     private boolean libraryFocusPending;
@@ -418,6 +422,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         carousel = cfg.carousel;
         hideInactiveHdmi = cfg.hideInactiveHdmi;
         tvButton = cfg.tvButtonPicker ? new TvButtonController(this, cfg) : null;
+        companionControls = new CompanionControls(this);
         focusOvershoot = cfg.focusOvershoot;
         festival = cfg.festival;
         festive = festival.active(LocalDate.now());
@@ -639,7 +644,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         dockApps = cfg.dockApps;
         fillDockLeavesSlots = !cfg.fillDock;
         Order savedOrder = Order.load(Order.file(this));
-        adapter.setSavedOrder(Order.ranks(savedOrder, dockApps), Order.docked(savedOrder, dockApps));
+        adapter.setSavedOrder(cfg.desktopOrder ? Order.allRanks(savedOrder) : Order.ranks(savedOrder, dockApps),
+                cfg.desktopOrder ? -1 : Order.docked(savedOrder, dockApps));
         grid.setAdapter(adapter);
 
         // tvOS layout: push the dock row towards the bottom of the screen, leaving room for
@@ -933,6 +939,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private boolean openLauncherSettingsIfAsked(Intent intent) {
+        if(intent!=null&&ACTION_LIBRARY.equals(intent.getAction())) {
+            setIntent(new Intent(Intent.ACTION_MAIN));
+            grid.post(()->{if(!isFinishing()&&appLibrary==null){utilityLibrary=true;onLibraryRequested();}});return true;
+        }
         if (intent == null || !ACTION_LAUNCHER_SETTINGS.equals(intent.getAction())) return false;
         setIntent(new Intent(Intent.ACTION_MAIN));
         startActivityForResult(new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST);
@@ -994,6 +1004,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             recreate();
             return;
         }
+        if(companionControls!=null)companionControls.start();
         restartIdleClock();
         promptsPaused = false;
         if (grid.getAdapter() == null) grid.setAdapter(adapter);   // dropped by onTrimMemory
@@ -1205,6 +1216,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onPause() {
         super.onPause();
+        if(companionControls!=null)companionControls.stop();
         root.removeCallbacks(showIdleClock);
         endReorder();   // Home or another app while reordering keeps the order so far
         wallpaperPlayer.stop();
@@ -1273,6 +1285,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if(companionControls!=null)companionControls.close();
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
         if (liveVideo != null) liveVideo.close();
@@ -1406,6 +1419,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         adapter.setReordering(true);
         if (adapter.hasEmptySlots()) reloadTiles();   // every position must hold a tile that can move
         reordering = true;
+        desktopLayoutEditing = true;
         orderAtStart = adapter.movableKeys();
         glass.setAccent(REORDER_ACCENT);
         btnReorder.setActivated(true);
@@ -1550,6 +1564,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         dockEditAppKey = null;
         drop();
         reordering = false;
+        desktopLayoutEditing = false;
         adapter.setReordering(false);
         glass.setAccent(festive ? festival.accentColor() : 0);
         btnReorder.setActivated(false);
@@ -1567,6 +1582,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (!keys.equals(before) || (fillDockLeavesSlots && docked != dockedAtStart)) {
             Order order = new Order(Order.dockKey(dockApps), keys, docked);
             if (Order.save(Order.file(this), order)) {
+                adapter.nativeOrderChanged();
                 adapter.setSavedOrder(Order.ranks(order, dockApps), Order.docked(order, dockApps));
             } else {
                 Toast.makeText(this, R.string.reorder_not_saved, Toast.LENGTH_SHORT).show();
@@ -1659,9 +1675,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         libraryFocusPending = false;
         libraryFromTopBar = false;
         libraryFromVpnPill = false;
-        appLibrary = new AppLibraryDialog(this, animations, reducedMotion, appLibrarySelection, libraryOkOpens, adapter::containsPackage, () -> reloadApps(false), () -> {
+        appLibrary = new AppLibraryDialog(this, animations, reducedMotion, utilityLibrary ? false : appLibrarySelection, utilityLibrary || libraryOkOpens, adapter::containsPackage, () -> reloadApps(false), () -> {
             appLibrary = null;
             openPopup = null;
+            if(utilityLibrary){utilityLibrary=false;findViewById(R.id.btnSettings).requestFocus();return;}
             if (libraryFromTopBar) {
                 libraryFromTopBar = false;
                 btnLibraryTop.requestFocus();
@@ -3335,6 +3352,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
         LinearLayout rows = panel.findViewById(R.id.rows);
         PopupWindow popup = glassPopup(panel, (int) (200 * density));
+        addSettingsMenuRow(rows,popup,R.string.quick_actions,()->open(new Intent(this,QuickSettingsActivity.class)));
         if (!launcherSettingsButton) addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
                 new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
         // Firmware that ships its own settings app next to the AOSP one (Xiaomi China is one): the

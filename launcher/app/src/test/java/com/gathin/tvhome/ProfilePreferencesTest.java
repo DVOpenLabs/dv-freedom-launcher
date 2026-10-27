@@ -9,7 +9,7 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class ProfilePreferencesTest {
-    private static final class Memory implements SharedPreferences {
+    static final class Memory implements SharedPreferences {
         final Map<String, Object> data = new HashMap<>(); int commits; boolean failNext;
         public Map<String, ?> getAll(){return new HashMap<>(data);}
         public String getString(String k,String d){return (String)data.getOrDefault(k,d);}

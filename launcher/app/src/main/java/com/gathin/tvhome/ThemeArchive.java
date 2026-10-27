@@ -111,6 +111,7 @@ final class ThemeArchive {
         @Override public int read(byte[] b,int off,int len)throws IOException{int n=in.read(b,off,len);if(n>0&&(read+=n)>MAX_BYTES)throw fail("Archive too large");return n;}
     }
     static IOException fail(String message){return new IOException(message);}
+    static void validateJsonObject(String text) throws IOException { new Json(text).object(); }
     private ThemeArchive(){}
     private static final class Json {
         final String s; int p;

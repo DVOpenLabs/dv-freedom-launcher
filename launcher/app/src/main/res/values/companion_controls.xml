@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bluetooth_pairing">Bluetooth &amp; accessories</string>
+    <string name="bluetooth_fallback">Open Remotes &amp; accessories in TV Settings.</string>
+    <string name="audio_active">Audio playing</string>
+    <string name="audio_indicator_state">Audio-playing indicator: %1$s</string>
+    <string name="audio_save_failed">Could not save. Please try again.</string>
+    <string name="find_apps">Find apps</string>
+    <string name="app_search_hint">App name or package</string>
+    <string name="app_search_clear">Clear search</string>
+    <string name="app_search_results">Search: %1$s</string>
+    <string name="app_search_empty">No matching apps. Try another name or clear search.</string>
+</resources>

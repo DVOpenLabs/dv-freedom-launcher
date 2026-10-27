@@ -43,6 +43,10 @@ public final class QuickSettingsActivity extends Activity {
         addRow(rows, R.drawable.ic_settings, R.string.tv_settings, 0, SystemSettings.intent(this, Settings.ACTION_SETTINGS));
         addRow(rows, R.drawable.ic_picture, R.string.quick_picture, 0, SystemSettings.intent(this, Settings.ACTION_DISPLAY_SETTINGS));
         addRow(rows, R.drawable.ic_wifi, R.string.quick_network, 0, SystemSettings.intent(this, Settings.ACTION_WIFI_SETTINGS));
+        View bluetooth=addRow(rows,R.drawable.ic_settings,R.string.bluetooth_pairing,0,null);
+        bluetooth.setOnClickListener(v->{CompanionControls.openPairing(this);finish();});
+        addRow(rows,R.drawable.ic_apps,R.string.find_apps,0,
+                new Intent(this,MainActivity.class).setAction(MainActivity.ACTION_LIBRARY));
         addRow(rows, R.drawable.ic_apps, R.string.quick_apps, R.string.quick_apps_hint,
                 SystemSettings.intent(this, Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS));
         // Through Home, so it rebuilds with the new choices when Launcher settings closes.
@@ -66,7 +70,7 @@ public final class QuickSettingsActivity extends Activity {
         overridePendingTransition(0, 0);
     }
 
-    private void addRow(LinearLayout rows, int icon, int title, int status, Intent target) {
+    private View addRow(LinearLayout rows, int icon, int title, int status, Intent target) {
         View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
         ((ImageView) row.findViewById(R.id.icon)).setImageResource(icon);
         ((TextView) row.findViewById(R.id.title)).setText(title);
@@ -74,7 +78,7 @@ public final class QuickSettingsActivity extends Activity {
         TextView hint = row.findViewById(R.id.status);
         if (status != 0) hint.setText(status);
         else hint.setVisibility(View.GONE);
-        row.setOnClickListener(v -> {
+        if(target!=null)row.setOnClickListener(v -> {
             try {
                 startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (ActivityNotFoundException | SecurityException e) {
@@ -83,5 +87,6 @@ public final class QuickSettingsActivity extends Activity {
             finish();
         });
         rows.addView(row);
+        return row;
     }
 }

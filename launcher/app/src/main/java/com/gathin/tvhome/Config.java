@@ -174,6 +174,7 @@ final class Config {
     final boolean powerOnHomeAlways;
     final boolean homeStylePicker;
     boolean carousel;
+    boolean desktopOrder;
     boolean appearanceControls;
     int tileGap;
     boolean inputVisibilityChoice;
@@ -634,6 +635,12 @@ final class Config {
             hidden = new ArrayList<>(profile.hidden);
             columns = profile.columns;
         }
+        DesktopLayout.Selection desktop=DesktopLayout.selected(ctx);
+        if(desktop!=null) {
+            dock=new ArrayList<>(desktop.dock);
+            hidden=new ArrayList<>(desktop.draft.hidden);appLabels=new ArrayList<>();
+            for(Map.Entry<String,String> name:desktop.draft.labels.entrySet())appLabels.add(name.getKey()+"="+name.getValue());
+        }
         // A top-bar app is moved there, not copied: it leaves the grid.
         for (String pkg : topBarApps) if (!hidden.contains(pkg)) hidden.add(pkg);
         // A theme push or reset invalidates choices made on the TV. On first use, remember the
@@ -643,7 +650,7 @@ final class Config {
         // Unmounted storage looks like a theme reset; compare only once the file is readable.
         if (mounted) syncThemeChoices(choices, baseDir, file);
         int chosenColumns = choices.getInt("columns", columns);
-        if (chosenColumns >= 4 && chosenColumns <= 7) columns = chosenColumns;
+        if (chosenColumns >= 4 && chosenColumns <= 8) columns = chosenColumns;
         int chosenRows = choices.getInt(ROWS_BELOW_DOCK_KEY, rowsBelow);
         if (chosenRows >= 0 && chosenRows <= 3) rowsBelow = chosenRows;
         animations = choices.getBoolean("animations", animations);
@@ -738,7 +745,7 @@ final class Config {
                 dateBelowClock, vpnPill, locale, powerOnHomeAlways, homeStylePicker);
         result.carousel=carousel; result.appearanceControls=appearanceControls; result.tileGap=tileGap;
         result.inputVisibilityChoice=inputVisibilityChoice; result.hideInactiveHdmi=hideInactiveHdmi;
-        result.tvButtonPicker=tvButtonPicker; return result;
+        result.tvButtonPicker=tvButtonPicker; result.desktopOrder=desktop!=null&&desktop.priority; return result;
     }
 
     /**

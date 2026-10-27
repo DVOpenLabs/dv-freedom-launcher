@@ -1,6 +1,7 @@
 package com.gathin.tvhome;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -85,10 +87,13 @@ final class AppLibraryDialog {
     private final boolean animations;
     private final boolean rtl;
     private TextView instructions;
-    private int totalApps;
     final PopupWindow popup;
     private final float density;
     private List<ResolveInfo> apps = new ArrayList<>();
+    private List<ResolveInfo> allApps = new ArrayList<>();
+    private String query="";
+    private TextView searchButton;
+    private AlertDialog searchDialog;
     private String selectedPackage;
     private int selectedPosition;
     private int selectedOffset;
@@ -169,6 +174,7 @@ final class AppLibraryDialog {
         popup.setAnimationStyle(0);
         popup.setOnDismissListener(() -> {
             closed = true;
+            if(searchDialog!=null)searchDialog.dismiss();
             dismissActions();
             stopHighlight();
             icons.clear();
@@ -267,8 +273,9 @@ final class AppLibraryDialog {
     }
 
     private void fill(List<ResolveInfo> catalogue) {
-        totalApps = catalogue.size();
-        apps = catalogue;
+        allApps = new ArrayList<>(catalogue);
+        apps = new ArrayList<>();
+        for(ResolveInfo app:catalogue)if(AppSearch.matches(label(app),app.activityInfo.packageName,query))apps.add(app);
         Map<String, Boolean> home = new HashMap<>();
         for (ResolveInfo app : apps) {
             String pkg = app.activityInfo.packageName;
@@ -356,11 +363,26 @@ final class AppLibraryDialog {
         title.setSingleLine(true);
         title.setEllipsize(TextUtils.TruncateAt.END);
         TextView count = text(activity.getResources().getQuantityString(
-                R.plurals.library_app_count, totalApps, totalApps), 13, 0xA6FFFFFF);
+                R.plurals.library_app_count, apps.size(), apps.size()), 13, 0xA6FFFFFF);
         count.setSingleLine(true);
         header.addView(count, new LinearLayout.LayoutParams(-2, -2));
-        panel.addView(header, new LinearLayout.LayoutParams(-1, dp(44)));
-        instructions = text(hint(false), 13, 0xBBFFFFFF);
+        searchButton=text(activity.getString(R.string.find_apps),15,Color.WHITE);
+        searchButton.setGravity(Gravity.CENTER);searchButton.setPadding(dp(16),0,dp(16),0);
+        searchButton.setBackgroundResource(R.drawable.input_row_bg);
+        searchButton.setTextColor(new android.content.res.ColorStateList(
+                new int[][]{new int[]{android.R.attr.state_focused},new int[]{}},new int[]{0xFF101419,Color.WHITE}));
+        searchButton.setFocusable(true);searchButton.setClickable(true);
+        searchButton.setOnClickListener(v->search());
+        searchButton.setOnFocusChangeListener((v,focused)->{if(focused&&highlight!=null)highlight.setAlpha(0f);});
+        searchButton.setOnKeyListener((v,key,event)->{
+            if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;
+            if(key==KeyEvent.KEYCODE_DPAD_DOWN){restoreCardFocus();return true;}
+            return key==KeyEvent.KEYCODE_DPAD_UP;
+        });
+        LinearLayout.LayoutParams searchParams=new LinearLayout.LayoutParams(-2,dp(44));searchParams.setMarginStart(dp(16));
+        header.addView(searchButton,searchParams);
+        panel.addView(header, new LinearLayout.LayoutParams(-1, dp(48)));
+        instructions = text(query.isEmpty()?hint(false):activity.getString(R.string.app_search_results,query), 13, 0xBBFFFFFF);
         instructions.setSingleLine(true);
         instructions.setEllipsize(TextUtils.TruncateAt.END);
         instructions.setPadding(dp(12), 0, dp(12), dp(6));
@@ -368,9 +390,8 @@ final class AppLibraryDialog {
         panel.setFocusableInTouchMode(apps.isEmpty());
         if (apps.isEmpty()) {
             instructions.setVisibility(View.GONE);
-            heading(activity.getString(R.string.library_empty));
-            panel.setFocusableInTouchMode(true);
-            panel.requestFocus();
+            heading(activity.getString(query.isEmpty()?R.string.library_empty:R.string.app_search_empty));
+            searchButton.requestFocus();
             return;
         }
         shelf = new FrameLayout(activity);
@@ -422,6 +443,28 @@ final class AppLibraryDialog {
         });
     }
 
+    private void search() {
+        EditText field=new EditText(activity);
+        field.setSingleLine(true);field.setText(query);field.setSelectAllOnFocus(true);
+        field.setHint(R.string.app_search_hint);
+        field.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(80)});
+        field.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+        field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
+        searchDialog=new AlertDialog.Builder(activity).setTitle(R.string.find_apps).setView(field)
+                .setPositiveButton(R.string.find_apps,(d,w)->filter(field.getText().toString().trim()))
+                .setNeutralButton(R.string.app_search_clear,(d,w)->filter(""))
+                .setNegativeButton(android.R.string.cancel,null).create();
+        field.setOnEditorActionListener((v,action,event)->{
+            if(action!=android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH)return false;
+            filter(field.getText().toString().trim());searchDialog.dismiss();return true;
+        });
+        searchDialog.show();
+    }
+    private void filter(String text) {
+        query=text;selectedPackage=null;selectedPosition=0;selectedOffset=0;
+        fill(new ArrayList<>(allApps));
+    }
+
     private void dismissActions() {
         PopupWindow menu = actionPopup;
         actionPopup = null;
@@ -445,7 +488,7 @@ final class AppLibraryDialog {
         if (selectionMode) {
             updateSelectionFocus(app, add);
             changed.run();
-            fill(new ArrayList<>(apps));
+            fill(new ArrayList<>(allApps));
             return;
         }
         selectedOffset = 0;
@@ -665,8 +708,8 @@ final class AppLibraryDialog {
             });
             holder.itemView.setOnKeyListener((v, key, event) -> {
                 int index = holder.getBindingAdapterPosition();
-                return event.getAction() == KeyEvent.ACTION_DOWN && (key == KeyEvent.KEYCODE_DPAD_UP
-                        || key == KeyEvent.KEYCODE_DPAD_DOWN
+                if(event.getAction()==KeyEvent.ACTION_DOWN&&key==KeyEvent.KEYCODE_DPAD_UP){searchButton.requestFocus();return true;}
+                return event.getAction() == KeyEvent.ACTION_DOWN && (key == KeyEvent.KEYCODE_DPAD_DOWN
                         || (rtl ? key == KeyEvent.KEYCODE_DPAD_RIGHT : key == KeyEvent.KEYCODE_DPAD_LEFT) && index == 0
                         || (rtl ? key == KeyEvent.KEYCODE_DPAD_LEFT : key == KeyEvent.KEYCODE_DPAD_RIGHT) && index == apps.size() - 1);
             });

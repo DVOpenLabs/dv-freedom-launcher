@@ -58,6 +58,9 @@ public class ThemeProvider extends ContentProvider {
     }
 
     @Override public boolean onCreate() { return true; }
+    @Override public android.os.Bundle call(String method,String arg,android.os.Bundle extras) {
+        return DesktopLayout.call(getContext(),method,arg);
+    }
     @Override public String getType(Uri uri) { return null; }
     @Override public Cursor query(Uri uri, String[] p, String s, String[] a, String o) { return null; }
     @Override public Uri insert(Uri uri, ContentValues values) { return null; }

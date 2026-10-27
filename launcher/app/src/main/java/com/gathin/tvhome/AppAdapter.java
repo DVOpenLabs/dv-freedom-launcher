@@ -176,6 +176,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Map<String, Integer> savedRanks = Collections.emptyMap();
     /** Dock size recorded with the saved order (Order.docked), or -1: then dock_apps says which tiles are docked. */
     private int savedDocked = -1;
+    private boolean desktopOrder;
     /** Reorder mode: no empty dock slots, so every position holds a tile that can move. */
     private boolean reordering;
     private final TileListener listener;
@@ -224,6 +225,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.listener = listener;
         this.dockSize = dockSize;
         this.favourites = cfg.dockApps;
+        this.desktopOrder = cfg.desktopOrder;
         this.fillDock = cfg.fillDock;
         this.hidden = new HashSet<>(cfg.hiddenApps);
         this.libraryPreload = new HashSet<>(cfg.libraryApps);
@@ -310,14 +312,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         Collections.sort(fresh, (a, b) -> {
             // The owner's own order first; tiles it does not know (new installs) follow by the rule below.
-            int saved = Order.compare(savedRanks, a.component.flattenToShortString(), b.component.flattenToShortString());
+            int saved = LayoutDraft.compareOrder(desktopOrder, favourites, savedRanks, a.pkg,
+                    a.component.flattenToShortString(), b.pkg, b.component.flattenToShortString());
             if (saved != 0) return saved;
-            int fa = favourites.indexOf(a.pkg), fb = favourites.indexOf(b.pkg);
-            if (fa >= 0 || fb >= 0) {
-                if (fa < 0) return 1;
-                if (fb < 0) return -1;
-                return Integer.compare(fa, fb);
-            }
             // Cards come right after the configured dock apps, before the alphabetical grid.
             boolean ca = a.kind == Entry.CARD, cb = b.kind == Entry.CARD;
             if (ca != cb) return ca ? -1 : 1;
@@ -567,6 +564,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         savedRanks = ranks;
         savedDocked = docked;
     }
+    void nativeOrderChanged() { desktopOrder=false; }
 
     /**
      * A tile in the dock: one of the first savedDocked tiles of the saved order when one was recorded, so an app

@@ -211,4 +211,5 @@
     <string name="style_keep">Keep</string>
     <string name="style_undo">Undo last Home style</string>
     <string name="style_save_failed">Could not save this appearance. Your previous style is restored.</string>
+    <string name="quick_actions">Quick actions</string>
 </resources>

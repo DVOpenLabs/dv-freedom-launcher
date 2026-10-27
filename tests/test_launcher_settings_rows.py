@@ -146,12 +146,12 @@ class ScreenRows(unittest.TestCase):
     def test_readme_names_the_numbers_under_each_row(self):
         columns = numbered("columns_label", self.layout_text)
         under_dock = numbered("rows_below_dock_label", self.layout_text)
-        self.assertEqual(columns, ["4", "5", "6", "7"])
+        self.assertEqual(columns, ["4", "5", "6", "7", "8"])
         self.assertEqual(under_dock, ["0", "1", "2", "3"])
         opacities = re.search(r"DOCK_OPACITIES\s*=\s*\{([0-9,\s]+)\}", self.activity_text).group(1)
         opacities = [value.strip() for value in opacities.split(",") if value.strip()]
         section = normalise(self.section)
-        self.assertIn("%s, %s, %s or %s" % tuple(columns), section)
+        self.assertIn(", ".join(columns[:-1]) + " or " + columns[-1], section)
         self.assertIn("%s to %s" % (under_dock[0], under_dock[-1]), section)
         self.assertIn("%s%%, %s%%, %s%% or %s%%" % tuple(opacities), section)
 
