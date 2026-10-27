@@ -50,6 +50,9 @@ final class LiveVideo implements TextureView.SurfaceTextureListener {
         final int token=gate.begin();
         try{
             MediaPlayer next=new MediaPlayer();player=next;
+            // Keep a muted soundtrack out of Android's music-active signal. Gain remains permanently zero.
+            next.setAudioAttributes(new android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build());
             next.setDataSource(file.getAbsolutePath());next.setSurface(surface);next.setLooping(true);
             next.setVolume(0f,0f); // No audio toggle, audio focus request or system-volume change.
             next.setOnPreparedListener(mp->{
