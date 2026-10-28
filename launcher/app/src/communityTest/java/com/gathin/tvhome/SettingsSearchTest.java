@@ -4,6 +4,8 @@ import java.util.Locale;
 import static org.junit.Assert.*;
 public class SettingsSearchTest {
     @Test public void aliasesLeadToControlsInsteadOfUnrelatedActions(){
+        assertTrue(SettingsSearch.matches("small icons","Icon size","","Appearance"));
+        assertTrue(SettingsSearch.matches("gap","App spacing","","Appearance"));
         assertTrue(SettingsSearch.matches("HDMI","Inputs shortcut","","Remotes & inputs"));
         assertTrue(SettingsSearch.matches("font","Text sizes","","Appearance"));
         assertTrue(SettingsSearch.matches("gap","Extra tile spacing","","Appearance"));

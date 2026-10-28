@@ -5,7 +5,8 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 public class ExperiencePolicyTest {
-    @Test public void missingOrUnknownLookCannotSelectAnotherRenderer(){assertFalse(ExperiencePolicy.valid(null));assertFalse(ExperiencePolicy.valid("https://theme"));assertTrue(ExperiencePolicy.valid("legacy"));assertEquals("Current layout",ExperiencePolicy.name("legacy"));}
+    @Test public void focusStyleUsesTheNamedSetting(){assertTrue(ExperiencePolicy.strongFocus("double"));assertFalse(ExperiencePolicy.strongFocus("rim"));assertFalse(ExperiencePolicy.strongFocus("glass"));assertFalse(ExperiencePolicy.strongFocus(null));}
+    @Test public void missingOrUnknownLookCannotSelectAnotherRenderer(){assertFalse(ExperiencePolicy.valid(null));assertFalse(ExperiencePolicy.valid("https://theme"));assertTrue(ExperiencePolicy.valid("legacy"));assertEquals("Classic",ExperiencePolicy.name("legacy"));}
     @Test public void eightCardsAndTheirFocusRingsFitInsideEveryPosition(){
         for(String look:Arrays.asList("glass","clean","cinema"))for(String position:Arrays.asList("top","middle","bottom")){
             ExperiencePolicy.Geometry g=new ExperiencePolicy.Geometry(look,position,8);

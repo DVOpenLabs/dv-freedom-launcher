@@ -9,6 +9,9 @@
         <item name="android:textColorSecondary">#C7D3E2</item>
         <item name="android:fontFamily">@string/font_regular</item>
         <item name="android:windowTitleStyle">@style/Freedom.DialogTitle</item>
+        <item name="android:textAppearance">@style/Freedom.DialogItem</item>
+        <item name="android:textAppearanceMedium">@style/Freedom.DialogItem</item>
+        <item name="android:textAppearanceSmall">@style/Freedom.DialogItem</item>
         <item name="android:textAppearanceListItem">@style/Freedom.DialogItem</item>
         <item name="android:textAppearanceListItemSmall">@style/Freedom.DialogItem</item>
         <item name="android:textAppearanceButton">@style/Freedom.DialogButton</item>

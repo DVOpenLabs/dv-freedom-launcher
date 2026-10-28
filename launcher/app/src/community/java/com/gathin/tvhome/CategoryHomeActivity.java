@@ -88,7 +88,7 @@ public final class CategoryHomeActivity extends Activity {
         final String id;final List<HomeCategories.App> apps;final RecyclerView list;final LinearLayoutManager layout;final int cell,width,height;
         RowView(String id,List<HomeCategories.App> apps){
             this.id=id;this.apps=apps;int available=getResources().getDisplayMetrics().widthPixels-dp(80);int columns=Math.max(2,Math.min(8,config.columns));cell=available/columns;
-            width=TileSpacing.width(AppAdapter.tileWidthPx(available,columns,getResources().getDisplayMetrics().density),config.tileGap,getResources().getDisplayMetrics().density);height=AppAdapter.tileHeightPx(width)+dp(58);
+            width=ProductFeatures.tileWidth(CategoryHomeActivity.this,TileSpacing.width(AppAdapter.tileWidthPx(available,columns,getResources().getDisplayMetrics().density),config.tileGap,getResources().getDisplayMetrics().density));height=AppAdapter.tileHeightPx(width)+dp(58);
             list=new RecyclerView(CategoryHomeActivity.this);list.setLayoutDirection(getResources().getBoolean(R.bool.rtl_app_grid)?View.LAYOUT_DIRECTION_RTL:View.LAYOUT_DIRECTION_LTR);list.setClipToPadding(false);list.setClipChildren(false);list.setItemAnimator(null);list.setPadding(0,dp(6),0,dp(6));list.setNestedScrollingEnabled(false);list.setItemViewCacheSize(2);
             layout=new LinearLayoutManager(CategoryHomeActivity.this,RecyclerView.HORIZONTAL,false);list.setLayoutManager(layout);list.setAdapter(new Tiles(this));
         }

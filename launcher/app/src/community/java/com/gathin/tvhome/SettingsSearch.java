@@ -13,7 +13,8 @@ final class SettingsSearch {
         if(title.equals("inputs shortcut")||title.equals("input visibility"))return "hdmi source ports television";
         if(title.equals("text sizes")||title.equals("home text")||title.equals("app names"))return "font fonts typography readable readability color colour size letters";
         if(title.equals("app position"))return "top middle bottom alignment dock location";
-        if(title.equals("extra tile spacing"))return "gap gaps space padding distance";
+        if(title.equals("icon size"))return "icons tiles small medium large scale banner size";
+        if(title.equals("app spacing")||title.equals("extra tile spacing"))return "gap gaps space padding distance";
         if(title.equals("focus outline"))return "selection selected highlight border remote cursor";
         if(title.equals("wallpaper playlist"))return "rotate rotation slideshow backgrounds interval";
         if(title.equals("silent live wallpaper"))return "animation animated video background sound";

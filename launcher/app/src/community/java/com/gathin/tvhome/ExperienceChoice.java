@@ -27,7 +27,7 @@ final class ExperienceChoice {
             if(ids[n].equals(current)){Toast.makeText(a,"This experience is already selected",Toast.LENGTH_SHORT).show();return;}
             if(ExperiencePolicy.LEGACY.equals(ids[n])){
                 String profile=ProfileStore.id();Map<String,?> before=ProfileStore.preferences(a).getAll();
-                new AlertDialog.Builder(a).setTitle("Use current layout?").setMessage("Return to your saved grid or category layout. Apps, wallpaper and other appearance choices stay saved.").setNegativeButton(android.R.string.cancel,null).setPositiveButton("Use current layout",(x,w)->{if(save(a,profile,before,ExperiencePolicy.LEGACY)){a.finish();home(a);}}).show();return;
+                new AlertDialog.Builder(a).setTitle("Use Classic?").setMessage("Return to your saved grid or category layout. Apps, wallpaper and other appearance choices stay saved.").setNegativeButton(android.R.string.cancel,null).setPositiveButton("Use Classic",(x,w)->{if(save(a,profile,before,ExperiencePolicy.LEGACY)){a.finish();home(a);}}).show();return;
             }
             trial=new Trial(a,ids[n]);a.startActivity(new Intent(a,ExperienceHomeActivity.class).putExtra(EXTRA,ids[n]));
         }).setNegativeButton(android.R.string.cancel,null).show();

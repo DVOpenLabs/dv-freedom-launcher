@@ -3,6 +3,7 @@ package com.gathin.tvhome;
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
     static void init(android.content.Context c){}
+    static int tileWidth(android.content.Context c,int width){return width;}
     static boolean settingsAccess(android.app.Activity a){return true;}
     static boolean allowEdit(android.app.Activity a,Runnable after){return true;}
     static boolean layoutEditable(android.content.Context c){return true;}
