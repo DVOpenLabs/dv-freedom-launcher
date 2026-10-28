@@ -40,15 +40,14 @@ final class HomeAppearance {
         TextView clock=new TextView(a),header=new TextView(a),names=new TextView(a);TextView[] sample={clock,header,names};
         String[] labels={"Clock size","Header size","App name size"};float[] sizes={38,18,16};
         clock.setText("6:42 PM");header.setText("Tuesday 27 October   68°F / 20°C");names.setText("YouTube       Netflix       Crunchyroll");
-        TextView template=a.findViewById(R.id.categoryLayout);Typeface font=template==null?Typeface.DEFAULT:template.getTypeface();
+        Typeface font=SettingsTypography.regular(a);
         for(TextView view:sample){view.setTypeface(font);view.setTextColor(0xfff3f4f6);view.setPadding(0,dp(a,5),0,dp(a,5));content.addView(view);}
-        TextView[] buttons=new TextView[3];Runnable refresh=()->{for(int i=0;i<3;i++){sample[i].setTextSize(sizes[i]*draft[i]/100f);if(buttons[i]!=null)buttons[i].setText(labels[i]+"  ·  "+draft[i]+"%");}};
-        for(int i=0;i<3;i++){final int n=i;TextView button=new TextView(a);buttons[i]=button;button.setTextSize(17);button.setTypeface(font);button.setTextColor(-1);button.setGravity(Gravity.CENTER_VERTICAL);button.setFocusable(true);button.setClickable(true);button.setBackgroundResource(R.drawable.settings_choice_bg);button.setPadding(dp(a,16),0,dp(a,16),0);
-            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(a,48));p.topMargin=dp(a,6);content.addView(button,p);
-            button.setOnClickListener(v->{String[] options={"85%","100%","110%","120%"};int selected=0;for(int k=0;k<SIZES.length;k++)if(SIZES[k]==draft[n])selected=k;
-                new AlertDialog.Builder(a).setTitle(labels[n]).setSingleChoiceItems(options,selected,(d,which)->{draft[n]=SIZES[which];refresh.run();d.dismiss();}).setNegativeButton(android.R.string.cancel,null).show();});}
-        refresh.run();AlertDialog dialog=new AlertDialog.Builder(a).setTitle("Text sizes · preview").setView(content).setNegativeButton(android.R.string.cancel,null).setNeutralButton("Theme sizes",(d,w)->save(a,profile,before,new int[]{100,100,100})).setPositiveButton("Apply",(d,w)->save(a,profile,before,draft)).create();
-        dialog.setOnShowListener(d->buttons[0].requestFocus());dialog.show();
+        TextView[][] chips=new TextView[3][SIZES.length];
+        Runnable refresh=()->{for(int i=0;i<3;i++){sample[i].setTextSize(sizes[i]*draft[i]/100f);for(int k=0;k<SIZES.length;k++)if(chips[i][k]!=null){chips[i][k].setSelected(draft[i]==SIZES[k]);chips[i][k].setText(SIZES[k]+"%"+(draft[i]==SIZES[k]?" ✓":""));}}};
+        for(int i=0;i<3;i++){final int n=i;TextView label=new TextView(a);label.setTypeface(font,Typeface.BOLD);label.setText(labels[i]);label.setTextColor(0xffc7d3e2);label.setTextSize(16);label.setPadding(0,dp(a,10),0,dp(a,4));content.addView(label);LinearLayout choices=new LinearLayout(a);content.addView(choices);
+            for(int k=0;k<SIZES.length;k++){final int option=k;TextView chip=new TextView(a);chips[i][k]=chip;chip.setTextSize(17);chip.setTypeface(font);chip.setTextColor(-1);chip.setGravity(Gravity.CENTER);chip.setFocusable(true);chip.setClickable(true);chip.setBackgroundResource(R.drawable.freedom_settings_chip);chip.setContentDescription(labels[i]+", "+SIZES[k]+" percent");LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(a,46),1);p.setMarginEnd(dp(a,8));choices.addView(chip,p);chip.setOnClickListener(v->{draft[n]=SIZES[option];refresh.run();});}}
+        refresh.run();ScrollView scroll=new ScrollView(a);scroll.addView(content);AlertDialog dialog=new AlertDialog.Builder(a).setTitle("Text sizes · preview").setView(scroll).setNegativeButton(android.R.string.cancel,null).setNeutralButton("Theme sizes",(d,w)->save(a,profile,before,new int[]{100,100,100})).setPositiveButton("Apply",(d,w)->save(a,profile,before,draft)).create();
+        dialog.setOnShowListener(d->chips[0][java.util.Arrays.binarySearch(SIZES,draft[0])].requestFocus());dialog.show();
     }
     private static void save(Activity a,String profile,Map<String,?> before,int[] values){
         if(!profile.equals(ProfileStore.id())||!before.equals(ProfileStore.preferences(a).getAll())){Toast.makeText(a,"Home changed. Open Text sizes again.",Toast.LENGTH_LONG).show();return;}

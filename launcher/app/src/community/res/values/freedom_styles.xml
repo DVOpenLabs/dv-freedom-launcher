@@ -1,4 +1,5 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="ReferenceType">
+    <string name="freedom_heading_font" translatable="false">@font/freedom_semibold</string>
     <style name="Theme.Freedom" parent="Theme.TvHome"><item name="android:alertDialogTheme">@style/Freedom.Dialog</item></style>
     <style name="Freedom.Dialog" parent="android:Theme.Material.Dialog.Alert">
         <item name="android:windowBackground">@drawable/freedom_dialog_background</item>
@@ -6,8 +7,22 @@
         <item name="android:colorAccent">#C7E7FF</item>
         <item name="android:textColorPrimary">#F5F7FA</item>
         <item name="android:textColorSecondary">#C7D3E2</item>
-        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:fontFamily">@string/font_regular</item>
+        <item name="android:windowTitleStyle">@style/Freedom.DialogTitle</item>
+        <item name="android:textAppearanceListItem">@style/Freedom.DialogItem</item>
+        <item name="android:textAppearanceListItemSmall">@style/Freedom.DialogItem</item>
+        <item name="android:textAppearanceButton">@style/Freedom.DialogButton</item>
+        <item name="android:listPreferredItemHeightSmall">56dp</item>
         <item name="android:backgroundDimAmount">0.65</item>
         <item name="android:windowMinWidthMajor">56%</item>
+    </style>
+    <style name="Freedom.DialogTitle" parent="android:TextAppearance.Material.Title">
+        <item name="android:fontFamily">@string/freedom_heading_font</item><item name="android:textSize">23sp</item><item name="android:textColor">#F5F7FA</item>
+    </style>
+    <style name="Freedom.DialogItem" parent="android:TextAppearance.Material.Body1">
+        <item name="android:fontFamily">@string/font_regular</item><item name="android:textSize">18sp</item><item name="android:textColor">#F5F7FA</item>
+    </style>
+    <style name="Freedom.DialogButton" parent="android:TextAppearance.Material.Widget.Button">
+        <item name="android:fontFamily">@string/freedom_heading_font</item><item name="android:textSize">16sp</item><item name="android:textAllCaps">false</item>
     </style>
 </resources>
