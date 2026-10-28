@@ -6,6 +6,7 @@ final class ProductFeatures {
     static void beforeChange(String reason){}
     static void beforeChange(android.content.Context c,String reason){}
     static void resumed(android.app.Activity a){}
+    static boolean playlistEnabled(android.content.Context c){return false;}
     static void profileKeys(java.util.Set<String> keys){}
     static void setupKeys(java.util.Set<String> keys){}
     static boolean validateValue(String key,Object value){return false;}

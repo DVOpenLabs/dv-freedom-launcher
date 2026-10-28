@@ -182,15 +182,16 @@ final class HomeHistory {
             List<String> profiles=new ArrayList<>();profiles.add("");
             for(LocalProfiles.Profile profile:ProfileStore.read(context))if(!profiles.contains(profile.id)&&profiles.size()<17)profiles.add(profile.id);
             for(String profile:profiles){
-                for(JSONObject entry:history(context,profile))if(token.equals(entry.getJSONObject("snapshot").getJSONObject("values").optString(ThemeLibrary.CHOICE,"")))return true;
+                for(JSONObject entry:history(context,profile))if(usesTheme(entry.getJSONObject("snapshot").getJSONObject("values"),token))return true;
                 AtomicFile pending=file(context,profile,PENDING);
-                if(exists(pending)){JSONObject entry=object(read(pending,HomeHistoryPolicy.MAX_BYTES));validateEntry(entry,profile);if(token.equals(entry.getJSONObject("snapshot").getJSONObject("values").optString(ThemeLibrary.CHOICE,"")))return true;}
+                if(exists(pending)){JSONObject entry=object(read(pending,HomeHistoryPolicy.MAX_BYTES));validateEntry(entry,profile);if(usesTheme(entry.getJSONObject("snapshot").getJSONObject("values"),token))return true;}
             }
             AtomicFile journal=journal(context);
-            if(exists(journal)&&token.equals(object(read(journal,HomeHistoryPolicy.MAX_BYTES*4)).getJSONObject("rawPrefs").optString(ThemeLibrary.CHOICE,"")))return true;
+            if(exists(journal)&&usesTheme(object(read(journal,HomeHistoryPolicy.MAX_BYTES*4)).getJSONObject("rawPrefs"),token))return true;
             return false;
         }catch(Exception failure){Log.w(TAG,"Keeping theme because recovery references cannot be checked",failure);return true;}
     }
+    private static boolean usesTheme(JSONObject values,String token){return token.equals(values.optString(ThemeLibrary.CHOICE,""))||WallpaperPlaylistChoice.references(values.optString(WallpaperPlaylistChoice.KEY,""),token);}
 
     private static void rollback(Context context,JSONObject recovery)throws Exception{
         exact(recovery,"schema","profile","committed","rawPrefs","files","historyBefore");

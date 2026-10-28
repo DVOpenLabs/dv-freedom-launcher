@@ -456,7 +456,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         getWindow().setBackgroundDrawable(null);
         wallpaperPlayer = new WallpaperPlayer(this, root, cfg);
         ThemeLibrary.Entry theme = ThemeLibrary.active();
-        if (ThemeLibrary.liveAllowed() && theme != null && cfg.wallpaperEnabled
+        if (!ProductFeatures.playlistEnabled(this) && ThemeLibrary.liveAllowed() && theme != null && cfg.wallpaperEnabled
                 && ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE, false)
                 && new java.io.File(theme.directory, "video.mp4").isFile()
                 && LiveVideo.supported(this, cfg.reducedMotion)) {

@@ -35,6 +35,7 @@ final class LiveVideo implements TextureView.SurfaceTextureListener {
         box.addView(shade,new FrameLayout.LayoutParams(-1,-1));
     }
     View view(){return box;}
+    boolean decoderAllocated(){return player!=null;}
     void start(){visible=true;if(surface!=null&&player==null&&!gate.failed())open();}
     void stop(){visible=false;release();}
     void close(){stop();if(surface!=null){surface.release();surface=null;}}

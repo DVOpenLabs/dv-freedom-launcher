@@ -67,7 +67,8 @@ final class WallpaperPlayer {
     WallpaperPlayer(Context context, FrameLayout root, Config config) {
         this.root = root;
         backgroundColor = config.backgroundColor;
-        files = new ArrayList<>(config.wallpapers);
+        boolean playlist = ProductFeatures.playlistEnabled(context);
+        files = new ArrayList<>(playlist ? Collections.emptyList() : config.wallpapers);
         interval = config.wallpaperRotationMinutes * 60_000L;
         bitmapConfig = config.wallpaperTrueColor ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
         // The dim is painted into the picture (decode), so no full-screen shade layer is drawn on every frame.
@@ -80,7 +81,7 @@ final class WallpaperPlayer {
         // Playback state belongs to one collection. Changing the collection starts from its first
         // picture instead of resuming a filename that belonged to the previous one.
         String collection = collectionKey(files);
-        if (!collection.equals(preferences.getString("collection", ""))) {
+        if (!playlist && !collection.equals(preferences.getString("collection", ""))) {
             preferences.edit().putString("collection", collection)
                     .remove("image").remove("changed").apply();
         }

@@ -18,30 +18,37 @@ final class ProductFeatures {
     static void beforeChange(String reason){if(app!=null)HomeHistory.before(app,reason);}
     static void beforeChange(Context c,String reason){HomeHistory.before(c,reason);}
     static void resumed(Activity a){
+        if((a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&HomeCategories.enabled(a)))WallpaperPlaylist.attach(a);
         a.getWindow().getDecorView().postDelayed(()->{
             if(a.isDestroyed()||a.isFinishing()||!a.hasWindowFocus())return;
             HomeAppearance.apply(a);
-            if(a instanceof MainActivity&&PlacementSession.preview()==null&&StyleSession.preview()==null&&HomeCategories.enabled(a))CategoryHomeActivity.openIfEnabled((MainActivity)a,Config.load(a));
+            if(a instanceof MainActivity&&PlacementSession.preview()==null&&StyleSession.preview()==null&&HomeCategories.enabled(a)){CategoryHomeActivity.openIfEnabled((MainActivity)a,Config.load(a));return;}
         },240);
     }
+    static boolean playlistEnabled(Context c){return WallpaperPlaylistChoice.enabled(c);}
     static void profileKeys(Set<String> keys){setupKeys(keys);}
-    static void setupKeys(Set<String> keys){keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);}
+    static void setupKeys(Set<String> keys){keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);}
     static boolean validateValue(String key,Object value){
-        if(!key.equals(HomeCategories.KEY)&&!key.equals(NativeTileEditor.KEY)&&!key.equals(HomeAppearance.KEY))return false;
+        if(!key.equals(HomeCategories.KEY)&&!key.equals(NativeTileEditor.KEY)&&!key.equals(HomeAppearance.KEY)&&!key.equals(WallpaperPlaylistChoice.KEY))return false;
         if(!(value instanceof String))throw new IllegalArgumentException("Invalid product setting");String raw=(String)value;
-        boolean valid=key.equals(HomeCategories.KEY)?HomeCategories.valid(raw):key.equals(NativeTileEditor.KEY)?NativeTileEditor.validate(raw):validSizes(raw);
+        boolean valid=key.equals(HomeCategories.KEY)?HomeCategories.valid(raw):key.equals(NativeTileEditor.KEY)?NativeTileEditor.validate(raw):key.equals(WallpaperPlaylistChoice.KEY)?validPlaylist(raw):validSizes(raw);
         if(!valid)throw new IllegalArgumentException("Invalid product setting");return true;
     }
     private static boolean validSizes(String raw){try{HomeAppearance.parse(raw);return true;}catch(RuntimeException invalid){return false;}}
-    static void validateMedia(Context c,Map<String,Object> values)throws IOException{if(values.containsKey(NativeTileEditor.KEY))NativeTileEditor.validateAssets(c,(String)values.get(NativeTileEditor.KEY));}
+    private static boolean validPlaylist(String raw){try{PlaylistPolicy.parse(raw);return true;}catch(RuntimeException invalid){return false;}}
+    static void validateMedia(Context c,Map<String,Object> values)throws IOException{if(values.containsKey(NativeTileEditor.KEY))NativeTileEditor.validateAssets(c,(String)values.get(NativeTileEditor.KEY));if(values.containsKey(WallpaperPlaylistChoice.KEY))WallpaperPlaylistChoice.validateMedia(c,(String)values.get(WallpaperPlaylistChoice.KEY));}
     static void clearProfile(Context c,String id){
         HomeHistory.clearProfile(c,id);if(id==null||id.isEmpty()||!LocalProfiles.validId(id))return;
+        c.deleteSharedPreferences(LocalProfiles.filename(id,WallpaperPlaylist.PLAYBACK));
         for(String name:HomeHistoryPolicy.FILES)try{java.io.File f=new java.io.File(c.getFilesDir(),LocalProfiles.filename(id,name));if(f.getCanonicalFile().getParentFile().equals(c.getFilesDir().getCanonicalFile())&&!java.nio.file.Files.isSymbolicLink(f.toPath()))new android.util.AtomicFile(f).delete();}catch(IOException ignored){}
     }
     static boolean themeInUse(Context c,String token){
         if(HomeHistory.themeInUse(c,token))return true;
-        for(Map.Entry<String,?> e:c.getSharedPreferences(Config.SETTINGS_NAME,Context.MODE_PRIVATE).getAll().entrySet())if(e.getKey().equals(SetupStore.KEY)||e.getKey().endsWith("."+SetupStore.KEY)){
-            try{JSONArray rows=new JSONArray(String.valueOf(e.getValue()));for(int i=0;i<rows.length();i++)if(token.equals(rows.getJSONObject(i).getJSONObject("values").optString(ThemeLibrary.CHOICE)))return true;}catch(Exception invalid){return true;}
+        for(Map.Entry<String,?> e:c.getSharedPreferences(Config.SETTINGS_NAME,Context.MODE_PRIVATE).getAll().entrySet()){
+            if((e.getKey().equals(WallpaperPlaylistChoice.KEY)||e.getKey().endsWith("."+WallpaperPlaylistChoice.KEY))&&WallpaperPlaylistChoice.references(String.valueOf(e.getValue()),token))return true;
+            if(e.getKey().equals(SetupStore.KEY)||e.getKey().endsWith("."+SetupStore.KEY)){
+                try{JSONArray rows=new JSONArray(String.valueOf(e.getValue()));for(int i=0;i<rows.length();i++){JSONObject values=rows.getJSONObject(i).getJSONObject("values");if(token.equals(values.optString(ThemeLibrary.CHOICE))||WallpaperPlaylistChoice.references(values.optString(WallpaperPlaylistChoice.KEY,""),token))return true;}}catch(Exception invalid){return true;}
+            }
         }return false;
     }
     static String label(Context c,String pkg,String fallback){return NativeTileEditor.label(c,pkg,fallback);}

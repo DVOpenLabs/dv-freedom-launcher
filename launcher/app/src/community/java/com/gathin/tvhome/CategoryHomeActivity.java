@@ -38,7 +38,7 @@ public final class CategoryHomeActivity extends Activity {
     @Override protected void onCreate(Bundle saved){
         super.onCreate(saved);ProductFeatures.init(this);preview=getIntent().getBooleanExtra(PREVIEW,false);
         if(saved!=null){lastRow=saved.getString("row","favorites");String[] ids=saved.getStringArray("row_ids"),apps=saved.getStringArray("row_apps");if(ids!=null&&apps!=null&&ids.length==apps.length&&ids.length<=9)for(int i=0;i<ids.length;i++)selections.put(ids[i],apps[i]);}
-        root=new FrameLayout(this);root.setBackgroundColor(Color.BLACK);setContentView(root);
+        root=new FrameLayout(this);root.setId(R.id.root);root.setBackgroundColor(Color.BLACK);setContentView(root);
     }
     private int dp(float value){return Math.round(value*getResources().getDisplayMetrics().density);}
     private TextView text(String value,float size){TextView view=new TextView(this);view.setText(value);view.setTextSize(size);view.setTextColor(ink);view.setTypeface(typeface);view.setShadowLayer(ink==0xfff5f7fa?dp(1):0,0,1,0xc0000000);return view;}
@@ -55,7 +55,7 @@ public final class CategoryHomeActivity extends Activity {
         ink=ProfileStore.preferences(this).getBoolean(HomePolish.HEADER,false)?PolishPolicy.textInk(ProfileStore.preferences(this).getInt(HomePolish.INK,0),config.backgroundColor):0xfff5f7fa;
         wallpaper=new WallpaperPlayer(this,root,config);
         ThemeLibrary.Entry theme=ThemeLibrary.active();
-        if(config.wallpaperEnabled&&theme!=null&&ThemeLibrary.liveAllowed()&&ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE,false)&&LiveVideo.supported(this,config.reducedMotion)){
+        if(!ProductFeatures.playlistEnabled(this)&&config.wallpaperEnabled&&theme!=null&&ThemeLibrary.liveAllowed()&&ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE,false)&&LiveVideo.supported(this,config.reducedMotion)){
             File file=new File(theme.directory,"video.mp4");if(file.isFile()){video=new LiveVideo(this,file,config.wallpaperDim);root.addView(video.view(),Math.min(1,root.getChildCount()),new FrameLayout.LayoutParams(-1,-1));}
         }
         View scrim=new View(this);scrim.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);scrim.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x90000000,0x00000000,0x70000000}));root.addView(scrim,new FrameLayout.LayoutParams(-1,-1));
@@ -171,7 +171,7 @@ public final class CategoryHomeActivity extends Activity {
         if(touchWake){if(action==android.view.MotionEvent.ACTION_UP||action==android.view.MotionEvent.ACTION_CANCEL)touchWake=false;return true;}
         if(action==android.view.MotionEvent.ACTION_DOWN)armIdle();return super.dispatchTouchEvent(event);
     }
-    @Override protected void onResume(){super.onResume();resumed=true;render();}
+    @Override protected void onResume(){super.onResume();resumed=true;render();ProductFeatures.resumed(this);}
     @Override protected void onPause(){resumed=false;timer.removeCallbacks(tick);timer.removeCallbacks(idleTimeout);idle.stop();touchWake=false;restoreChrome(false);if(wallpaper!=null)wallpaper.stop();if(video!=null)video.stop();super.onPause();}
     @Override protected void onDestroy(){release();timer.removeCallbacksAndMessages(null);super.onDestroy();}
     @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(!focused)timer.removeCallbacks(idleTimeout);else if(resumed){armIdle();String current=ProfileStore.id()+"\n"+ProfileStore.preferences(this).getString(HomeCategories.KEY,"");if(!current.equals(rendered))root.post(()->{if(resumed&&hasWindowFocus())render();});}}
