@@ -82,14 +82,15 @@ public final class ExperienceHomeActivity extends Activity {
         @Override public Tile onCreateViewHolder(ViewGroup parent,int type){
             FrameLayout cell=new FrameLayout(ExperienceHomeActivity.this);cell.setClipChildren(false);cell.setClipToPadding(false);cell.setFocusable(true);cell.setClickable(true);cell.setLayoutParams(new RecyclerView.LayoutParams(px(geometry.cardWidth+geometry.gap),px(geometry.cardHeight+38)));
             ImageView art=new ImageView(ExperienceHomeActivity.this);FrameLayout.LayoutParams picture=new FrameLayout.LayoutParams(px(geometry.cardWidth),px(geometry.cardHeight));picture.topMargin=px(1);art.setBackground(round(0xff28435f,ExperiencePolicy.CLEAN.equals(look)?9:12));art.setClipToOutline(true);art.setScaleType(ImageView.ScaleType.CENTER_INSIDE);cell.addView(art,picture);
-            TextView name=text("",14);name.setTextColor(labelInk);name.setGravity(Gravity.CENTER);name.setShadowLayer(px(1),0,px(1),0xc0000000);FrameLayout.LayoutParams title=new FrameLayout.LayoutParams(px(geometry.cardWidth),px(24));title.topMargin=px(geometry.cardHeight+7);cell.addView(name,title);HomeAppearance.name(name);return new Tile(cell,art,name);
+            View ring=new View(ExperienceHomeActivity.this);ring.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);ring.setFocusable(false);ring.setVisibility(View.INVISIBLE);boolean strong=ProfileStore.preferences(ExperienceHomeActivity.this).getBoolean(TileSpacing.FOCUS,false);GradientDrawable dark=round(Color.TRANSPARENT,16);dark.setStroke(px(strong?6:5),0xff101820);GradientDrawable light=round(Color.TRANSPARENT,14);light.setStroke(px(strong?3:2),0xfff5f7fa);LayerDrawable outline=new LayerDrawable(new Drawable[]{dark,light});outline.setLayerInset(1,px(2),px(2),px(2),px(2));ring.setBackground(outline);FrameLayout.LayoutParams edge=new FrameLayout.LayoutParams(px(geometry.cardWidth+12),px(geometry.cardHeight+12));edge.leftMargin=-px(6);edge.topMargin=-px(5);cell.addView(ring,edge);
+            TextView name=text("",14);name.setTextColor(labelInk);name.setGravity(Gravity.CENTER);name.setShadowLayer(px(1),0,px(1),0xc0000000);FrameLayout.LayoutParams title=new FrameLayout.LayoutParams(px(geometry.cardWidth),px(24));title.topMargin=px(geometry.cardHeight+7);cell.addView(name,title);HomeAppearance.name(name);return new Tile(cell,art,name,ring);
         }
         @Override public void onBindViewHolder(Tile h,int at){HomeCategories.App app=favorites.get(at);h.app=app;h.itemView.setContentDescription(app.label);h.name.setText(app.label);Drawable art=app.artwork(ExperienceHomeActivity.this,config);h.art.setImageDrawable(art);boolean banner=art!=null&&art.getIntrinsicWidth()>art.getIntrinsicHeight()*1.3f;h.art.setScaleType(banner?ImageView.ScaleType.FIT_CENTER:ImageView.ScaleType.CENTER_INSIDE);h.art.setPadding(banner?0:px(12),banner?0:px(8),banner?0:px(12),banner?0:px(8));h.paint(h.itemView.isFocused());}
         @Override public void onViewRecycled(Tile h){h.art.setImageDrawable(null);h.app=null;}
     }
     private final class Tile extends RecyclerView.ViewHolder {
-        final ImageView art;final TextView name;HomeCategories.App app;
-        Tile(FrameLayout cell,ImageView art,TextView name){super(cell);this.art=art;this.name=name;
+        final ImageView art;final TextView name;final View ring;HomeCategories.App app;
+        Tile(FrameLayout cell,ImageView art,TextView name,View ring){super(cell);this.art=art;this.name=name;this.ring=ring;
             cell.setOnFocusChangeListener((v,on)->{paint(on);int at=getBindingAdapterPosition();if(on&&at>=0){selected=at;updateSelection();}});
             cell.setOnClickListener(v->{if(app!=null){if(preview!=null){ExperienceChoice.cancel();finish();}app.launch(ExperienceHomeActivity.this,config);}});
             cell.setOnLongClickListener(v->{if(app!=null&&canEdit())NativeTileEditor.show(ExperienceHomeActivity.this,app.pkg);return true;});
@@ -100,8 +101,7 @@ public final class ExperienceHomeActivity extends Activity {
         }
         void paint(boolean on){
             art.animate().cancel();float scale=on?1.07f:1;art.animate().scaleX(scale).scaleY(scale).setDuration(config.animations&&!config.reducedMotion?150:0).start();
-            GradientDrawable frame=round(on?0xffe5f3ff:Color.TRANSPARENT,13);if(on){frame.setColor(Color.TRANSPARENT);frame.setStroke(px(ProfileStore.preferences(ExperienceHomeActivity.this).getBoolean(TileSpacing.FOCUS,false)?4:2),0xffe5f3ff);}FrameLayout.LayoutParams p=(FrameLayout.LayoutParams)art.getLayoutParams();
-            frame.setBounds(0,0,p.width,p.height);art.setForeground(on?frame:null);
+            ring.setVisibility(on?View.VISIBLE:View.INVISIBLE);
             int mode=ProfileStore.preferences(ExperienceHomeActivity.this).getInt(HomePolish.NAMES,0);name.setVisibility(ExperiencePolicy.CINEMA.equals(look)||mode==3?View.INVISIBLE:View.VISIBLE);name.setAlpha(on?1:PolishPolicy.nameAlpha(mode,config.alwaysShowNames?1:0));
         }
     }
