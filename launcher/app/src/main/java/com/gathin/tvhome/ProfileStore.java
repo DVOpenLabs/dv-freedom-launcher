@@ -88,7 +88,7 @@ final class ProfileStore {
         }
         return LocalProfiles.parse(object(new JSONObject(text)));
     }
-    private static Map<String, Object> object(JSONObject json) throws Exception {
+    static Map<String, Object> object(JSONObject json) throws Exception {
         Map<String, Object> map = new LinkedHashMap<>();
         Iterator<String> keys = json.keys();
         while (keys.hasNext()) { String key = keys.next(); map.put(key, value(json.get(key))); }

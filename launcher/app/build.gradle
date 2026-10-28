@@ -24,7 +24,7 @@ android {
         minSdk 26
         targetSdk 34
         versionCode 13
-        versionName communityFeatures ? '3.0-freedom-alpha8' : '3.0-community-alpha5'
+        versionName communityFeatures ? '3.0-freedom-alpha9' : '3.0-community-alpha5'
     }
 
     buildTypes {

@@ -1,7 +1,11 @@
-# webOS helper recovery patch
+# webOS platform work
 
-This directory is the first reviewed webOS source integration layer. It is **not a complete webOS
-launcher, installer or deployable helper package**. Nothing here contacts a TV. Root components are
+The new independently written [manual-launch launcher preview](LAUNCHER.md) is in `launcher/`,
+with pure source/service tests and a safe staging tool. It does not use the helper below.
+
+## Pinned helper recovery patch
+
+The helper patch below is **not a complete installer or deployable Home helper package**. Nothing here contacts a TV. Root components are
 excluded. Android and webOS remain separate build targets in the same product repository.
 
 Upstream: [Razdva122/clean-your-tv-lg-webos](https://github.com/Razdva122/clean-your-tv-lg-webos), pinned at

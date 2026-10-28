@@ -48,6 +48,7 @@ public final class LauncherSettingsActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         ProductFeatures.init(this);
+        if(!ProductFeatures.settingsAccess(this))return;
         setContentView(R.layout.activity_launcher_settings);
         Config config = Config.load(this);
         choices = ProfileStore.preferences(this);
@@ -246,7 +247,7 @@ public final class LauncherSettingsActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
-        TvButtonSettings.refreshStatus(this);
+        if(navigation!=null)TvButtonSettings.refreshStatus(this);
     }
 
 

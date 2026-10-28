@@ -3,6 +3,12 @@ package com.gathin.tvhome;
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
     static void init(android.content.Context c){}
+    static boolean settingsAccess(android.app.Activity a){return true;}
+    static boolean allowEdit(android.app.Activity a,Runnable after){return true;}
+    static boolean layoutEditable(android.content.Context c){return true;}
+    static android.os.Bundle setupOperation(android.content.Context c,String method,String arg)throws Exception{return null;}
+    static void requireLayoutEditable(android.content.Context c){}
+    static boolean profilePicker(android.app.Activity a,boolean allowImport){return false;}
     static void beforeChange(String reason){}
     static void beforeChange(android.content.Context c,String reason){}
     static void resumed(android.app.Activity a){}

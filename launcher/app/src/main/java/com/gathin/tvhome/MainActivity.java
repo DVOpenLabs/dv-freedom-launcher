@@ -1441,6 +1441,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     /** The reorder button: turns the mode on (focus goes back to the last tile), or off again. */
     private void toggleReorder() {
+        if(!ProductFeatures.allowEdit(this,this::toggleReorder))return;
         if (reordering) {
             endReorder();
             return;
@@ -1452,6 +1453,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     /** The start shared by reorder and edit-dock mode. False when there is nothing to move. */
     private boolean beginReorder() {
+        if(!ProductFeatures.allowEdit(this,this::toggleReorder))return false;
         if (adapter.movableCount() < 2) return false;
         // Before the reload below: once it has dropped the empty slots, the dock row also shows grid apps.
         dockInSession = new HashSet<>();
@@ -1469,6 +1471,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     /** Edit dock (Settings menu): focus goes to the first dock place, which OK then chooses. */
     private void startDockEdit() {
+        if(!ProductFeatures.allowEdit(this,this::startDockEdit))return;
         if (reordering) endReorder();
         if (!beginReorder()) return;
         dockEditing = true;
@@ -1534,6 +1537,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * for the app to put there. A grid app: it is already chosen, so focus goes to the dock for the place.
      */
     private void startDockEditFor(String key, boolean inDock) {
+        if(!ProductFeatures.allowEdit(this,()->startDockEditFor(key,inDock)))return;
         if (reordering) endReorder();
         if (!beginReorder()) return;
         dockEditing = true;

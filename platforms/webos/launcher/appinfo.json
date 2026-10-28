@@ -1,0 +1,18 @@
+{
+  "id": "com.dvopenlabs.freedom",
+  "version": "0.1.0",
+  "vendor": "DVOpenLabs",
+  "type": "web",
+  "main": "index.html",
+  "title": "DV Freedom Launcher",
+  "appDescription": "A manual-launch preview. LG Home and TV settings remain available.",
+  "icon": "icon.png",
+  "resolution": "1920x1080",
+  "bgColor": "#101820",
+  "handlesRelaunch": true,
+  "disableBackHistoryAPI": true,
+  "requiredACG": [
+    "application.launcher",
+    "application.query"
+  ]
+}

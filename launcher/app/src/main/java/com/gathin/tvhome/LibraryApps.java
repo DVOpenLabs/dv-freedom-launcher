@@ -59,6 +59,7 @@ final class LibraryApps {
     }
 
     static boolean save(Context context, String pkg, boolean onHome) {
+        if(!ProductFeatures.layoutEditable(context))return false;
         Set<String> additions, removed;
         try {
             additions = readStrict(store(context, false));

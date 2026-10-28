@@ -49,6 +49,10 @@ class EditorTests(unittest.TestCase):
         with self.assertRaises(ValueError):editor.loads('{"schema":1,"schema":2}')
         draft=self.request()['layout'];draft['favorites']=['a.b; reboot']
         with self.assertRaises(ValueError):editor.validate_layout(draft)
+    def test_locked_edit_error_explains_the_required_tv_action(self):
+        runner=Mock(return_value=type('Result',(),{'returncode':0,'stdout':'java.lang.SecurityException: Unlock launcher editing on the TV first','stderr':''})())
+        bridge=editor.NativeBridge('192.168.1.50','org.example.launcher',ROOT,runner)
+        with self.assertRaisesRegex(ValueError,'Unlock layout editing on the TV'):bridge.call('apply',self.request())
     def test_native_transport_is_a_single_quoted_content_call(self):
         state=self.bridge.call('snapshot');runner=Mock(return_value=type('Result',(),{'returncode':0,'stdout':'Result: Bundle[{json='+json.dumps(state)+'}]','stderr':''})())
         bridge=editor.NativeBridge('192.168.1.50','org.example.launcher',ROOT,runner)

@@ -47,7 +47,7 @@ final class WallpaperPlaylistChoice {
         void save(AlertDialog dialog){
             try{
                 if(!profile.equals(ProfileStore.id())||!initial.equals(ProfileStore.preferences(a).getAll()))throw new IllegalArgumentException("Home changed. Open the playlist again.");
-                PlaylistPolicy.Spec spec=new PlaylistPolicy.Spec(enabled,seconds,shuffle,tokens);validateMedia(a,spec.encode());String value=spec.encode();if(value.equals(ProfileStore.preferences(a).getString(KEY,""))){dialog.dismiss();return;}
+                PlaylistPolicy.Spec spec=new PlaylistPolicy.Spec(enabled,seconds,shuffle,tokens);validateMedia(a,spec.encode());SceneSchedules.validate(a,Collections.singletonMap(KEY,spec.encode()));String value=spec.encode();if(value.equals(ProfileStore.preferences(a).getString(KEY,""))){dialog.dismiss();return;}
                 ProductFeatures.beforeChange(a,"Change wallpaper playlist");Map<String,Object> changes=new HashMap<>();changes.put(KEY,value);changes.put(Config.SETTINGS_REVISION_KEY,ProfileStore.preferences(a).getLong(Config.SETTINGS_REVISION_KEY,0)+1);
                 if(!SetupValues.commit(ProfileStore.preferences(a),changes))throw new IOException("Could not save wallpaper playlist");dialog.dismiss();a.finish();
             }catch(Exception failed){Toast.makeText(a,failed.getMessage(),Toast.LENGTH_LONG).show();}

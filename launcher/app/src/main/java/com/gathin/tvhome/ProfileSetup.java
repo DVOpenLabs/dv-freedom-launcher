@@ -15,7 +15,7 @@ final class ProfileSetup {
         String text=global(ctx).getString(CREATED,"");if(text.isEmpty())return Collections.emptyList();
         try{return ProfileStore.parse(text.getBytes(StandardCharsets.UTF_8));}catch(Exception bad){return Collections.emptyList();}
     }
-    private static String encode(List<LocalProfiles.Profile> rows)throws Exception{
+    static String encode(List<LocalProfiles.Profile> rows)throws Exception{
         if(rows.isEmpty())return null;
         Map<String,String> apps=new TreeMap<>();for(LocalProfiles.Profile row:rows)for(List<String> values:Arrays.asList(row.favorites,row.hidden))for(String pkg:values)if(!apps.containsKey(pkg))apps.put(pkg,"app"+apps.size());
         JSONObject catalog=new JSONObject();for(Map.Entry<String,String> entry:apps.entrySet())catalog.put(entry.getValue(),new JSONObject().put("android",entry.getKey()));
@@ -30,7 +30,7 @@ final class ProfileSetup {
         if(all.size()>=16)throw new IllegalArgumentException("Maximum 16 profiles");checkName(ctx,name,"",all);
         Config config=Config.load(ctx);Map<String,Object> values=SetupStore.capture(ctx);
         LayoutDraft draft=DesktopLayout.draftFromSaved((String)values.get(DesktopLayout.STATE));
-        String id="local_"+UUID.randomUUID().toString();rows.add(new LocalProfiles.Profile(id,name,draft.favorites,draft.hidden,config.columns));
+        String id="local_"+UUID.randomUUID().toString();org.json.JSONObject layout=new org.json.JSONObject((String)values.get(DesktopLayout.STATE));layout.put("orderStamp",DesktopLayout.orderStamp(new java.io.File(ctx.getFilesDir(),LocalProfiles.filename(id,Order.FILE_NAME))));values.put(DesktopLayout.STATE,layout.toString());rows.add(new LocalProfiles.Profile(id,name,draft.favorites,draft.hidden,config.columns));
         SharedPreferences p=global(ctx);Map<String,Object> changes=new HashMap<>();
         for(Map.Entry<String,Object> value:values.entrySet())changes.put(LocalProfiles.key(id,value.getKey()),value.getValue());
         String signature=ProfileStore.preferences(ctx).getString(Config.THEME_SIGNATURE_KEY,null);if(signature!=null)changes.put(LocalProfiles.key(id,Config.THEME_SIGNATURE_KEY),signature);

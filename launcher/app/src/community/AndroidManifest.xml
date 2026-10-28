@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
-    <application android:label="@string/freedom_app_name" tools:replace="android:label">
+    <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
+    <application android:label="@string/freedom_app_name" android:theme="@style/Theme.Freedom" tools:replace="android:label,android:theme">
         <activity android:name="com.gathin.tvhome.CategoryHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
         <activity android:name="com.gathin.tvhome.ExperienceHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
+        <activity android:name="com.gathin.tvhome.ContentShelfActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name="com.gathin.tvhome.GuidedSetupActivity" android:exported="false" android:screenOrientation="landscape" />
     </application>
 </manifest>

@@ -24,7 +24,7 @@ public final class ExperienceHomeActivity extends Activity {
     private final Handler handler=new Handler(Looper.getMainLooper());
     private FrameLayout root,chrome;private LinearLayout info,controls;private RecyclerView list;private LinearLayoutManager listLayout;
     private TextView clock,date,hero,settings,trialRevert;private View topShade,bottomShade,dock,labelShade;private LinearLayout trialBar;
-    private WallpaperPlayer wallpaper;private LiveVideo video;private Config config;private Typeface font;
+    private ContentShelves.Row shelf;private WallpaperPlayer wallpaper;private LiveVideo video;private Config config;private Typeface font;
     private List<HomeCategories.App> catalog=Collections.emptyList(),favorites=Collections.emptyList();
     private String look,signature,preview,selectedPackage="";private float unit=1;private int selected,ink=0xfff5f7fa,labelInk=0xfff5f7fa;private boolean resumed,quiet;
     private TvButtonController tvButton;private Map<Integer,String> appKeys=Collections.emptyMap();
@@ -45,7 +45,7 @@ public final class ExperienceHomeActivity extends Activity {
     private void render(){
         config=Config.load(this);look=preview==null?ExperienceChoice.saved(this):preview;
         if(ExperiencePolicy.LEGACY.equals(look)||preview!=null&&!ExperienceChoice.trialValid(preview)){finish();return;}
-        unit=getResources().getDisplayMetrics().widthPixels/960f;release();handler.removeCallbacks(idleTimeout);idle.stop();quiet=false;quietViews.clear();root.removeAllViews();root.setBackgroundColor(config.backgroundColor);
+        if(shelf!=null){shelf.close();shelf=null;}unit=getResources().getDisplayMetrics().widthPixels/960f;release();handler.removeCallbacks(idleTimeout);idle.stop();quiet=false;quietViews.clear();root.removeAllViews();root.setBackgroundColor(config.backgroundColor);
         View template=getLayoutInflater().inflate(R.layout.item_app,root,false);font=((TextView)template.findViewById(R.id.name)).getTypeface();
         wallpaper=new WallpaperPlayer(this,root,config);
         ThemeLibrary.Entry theme=ThemeLibrary.active();if(!ProductFeatures.playlistEnabled(this)&&config.wallpaperEnabled&&theme!=null&&ThemeLibrary.liveAllowed()&&ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE,false)&&LiveVideo.supported(this,config.reducedMotion)){
@@ -56,7 +56,7 @@ public final class ExperienceHomeActivity extends Activity {
         bottomShade=new View(this);bottomShade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);bottomShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00081020,0xb3081020}));put(bottomShade,0,350,960,190);
         info=new LinearLayout(this);info.setId(R.id.leftBlock);info.setOrientation(LinearLayout.VERTICAL);clock=text("",ExperiencePolicy.CLEAN.equals(look)?44:34);clock.setId(R.id.clock);date=text("",13);info.addView(clock);info.addView(date);put(info,40,27,390,98);
         controls=new LinearLayout(this);controls.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);put(controls,450,30,470,42);
-        button("Inputs",R.id.btnInputs,this::inputs);button("Apps",0,this::allApps);settings=button("Launcher settings",R.id.btnSettings,()->{if(canEdit())startActivity(new Intent(this,LauncherSettingsActivity.class).putExtra("experience_context",true));});button("Profiles",0,()->{if(canEdit())ProfileSetup.show(this);});
+        button("Inputs",R.id.btnInputs,this::inputs);button("Apps",0,this::allApps);settings=button("Launcher settings",R.id.btnSettings,()->{if(canEdit())startActivity(new Intent(this,LauncherSettingsActivity.class).putExtra("experience_context",true));});button("Profiles",0,()->{if(canEdit())ProfilePicker.show(this,false);});
         ProductFeatures.categoryHeader(this,info,config);
         catalog=HomeCategories.catalog(this,config);Map<String,HomeCategories.App> by=new LinkedHashMap<>();for(HomeCategories.App app:catalog)by.put(app.pkg,app);List<HomeCategories.App> apps=new ArrayList<>();
         for(String pkg:DesktopLayout.favorites(config,Order.load(Order.file(this)))){HomeCategories.App app=by.get(pkg);if(app!=null)apps.add(app);}
@@ -69,10 +69,13 @@ public final class ExperienceHomeActivity extends Activity {
         list.setLayoutDirection(getResources().getBoolean(R.bool.rtl_app_grid)?View.LAYOUT_DIRECTION_RTL:View.LAYOUT_DIRECTION_LTR);listLayout=new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false);list.setLayoutManager(listLayout);list.setAdapter(new Tiles());
         put(list,geometry.left-7,geometry.top-7,960-2*geometry.left+14,geometry.cardHeight+44);quietViews.add(list);quietViews.add(controls);
         hero=text("",32);hero.setShadowLayer(px(2),0,px(1),0xcc081020);if(ExperiencePolicy.CINEMA.equals(look)){float y="middle".equals(position)?150:"top".equals(position)?365:geometry.top-72;put(hero,46,y,820,50);quietViews.add(hero);}
+        if(preview==null&&ContentShelves.enabled(this)){LinearLayout shelfHost=new LinearLayout(this);shelfHost.setOrientation(LinearLayout.VERTICAL);shelfHost.setPadding(px(12),px(8),px(12),px(6));shelfHost.setBackground(round(0xde111b2a,14));put(shelfHost,46,geometry.top<260?geometry.top+geometry.cardHeight+60:142,868,154);quietViews.add(shelfHost);shelf=new ContentShelves.Row(this,shelfHost,list,false);}
         selected=0;for(int i=0;i<favorites.size();i++)if(favorites.get(i).pkg.equals(selectedPackage))selected=i;updateSelection();
         idleSeconds=ProfileStore.preferences(this).getInt(HomePolish.IDLE,0);tvButton=config.tvButtonPicker?new TvButtonController(this,config):null;appKeys=RemoteKeys.parseAppKeys(config.appKeys);signature=currentSignature();
         applyInk(new int[]{config.backgroundColor},new int[]{config.backgroundColor});if(wallpaper!=null){wallpaper.headerSample(this::sample);wallpaper.start();}if(video!=null)video.start();ProductFeatures.resumed(this);handler.removeCallbacks(tick);handler.post(tick);list.post(()->focusApp(selected));armIdle();
     }
+    void shelfReturn(){focusApp(selected);}
+    void shelfReady(boolean shown){if(hero!=null&&ExperiencePolicy.CINEMA.equals(look)&&geometry.top<200)hero.setVisibility(shown?View.GONE:View.VISIBLE);}
     private void updateClock(){if(clock!=null)clock.setText(DateFormat.getTimeFormat(this).format(new Date()));if(date!=null)date.setText(new SimpleDateFormat("EEEE, d MMMM",Locale.getDefault()).format(new Date()));}
     private void updateSelection(){if(!favorites.isEmpty()){selected=Math.max(0,Math.min(favorites.size()-1,selected));selectedPackage=favorites.get(selected).pkg;if(hero!=null)hero.setText(favorites.get(selected).label);}}
     private void focusApp(int index){if(favorites.isEmpty()){settings.requestFocus();return;}selected=Math.max(0,Math.min(favorites.size()-1,index));updateSelection();if(list.findViewHolderForAdapterPosition(selected)==null)listLayout.scrollToPosition(selected);focusReady(selected,0);}
@@ -96,7 +99,8 @@ public final class ExperienceHomeActivity extends Activity {
             cell.setOnLongClickListener(v->{if(app!=null&&canEdit())NativeTileEditor.show(ExperienceHomeActivity.this,app.pkg);return true;});
             cell.setOnKeyListener((v,key,event)->{if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;int at=getBindingAdapterPosition();if(at<0)return false;
                 if(key==KeyEvent.KEYCODE_DPAD_LEFT||key==KeyEvent.KEYCODE_DPAD_RIGHT){focusApp(ExperiencePolicy.next(at,key==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1,favorites.size(),list.getLayoutDirection()==View.LAYOUT_DIRECTION_RTL));return true;}
-                if(key==KeyEvent.KEYCODE_DPAD_UP){if(trialRevert!=null)trialRevert.requestFocus();else settings.requestFocus();return true;}return key==KeyEvent.KEYCODE_DPAD_DOWN;
+                if(key==KeyEvent.KEYCODE_DPAD_DOWN&&shelf!=null&&geometry.top<260&&shelf.focus())return true;
+                if(key==KeyEvent.KEYCODE_DPAD_UP){if(shelf!=null&&geometry.top>=260&&shelf.focus())return true;if(trialRevert!=null)trialRevert.requestFocus();else settings.requestFocus();return true;}return key==KeyEvent.KEYCODE_DPAD_DOWN;
             });
         }
         void paint(boolean on){

@@ -15,6 +15,7 @@ final class ProfilePicker {
         show(activity,true);
     }
     static void show(Activity activity,boolean allowImport) {
+        if(ProductFeatures.profilePicker(activity,allowImport))return;
         List<LocalProfiles.Profile> rows = ProfileStore.read(activity);
         String[] names = new String[rows.size() + (allowImport?2:1)];
         names[0] = activity.getString(R.string.profile_current);
@@ -43,6 +44,7 @@ final class ProfilePicker {
         dialog.show();
     }
     static void imported(Activity activity, int result, Intent data) {
+        if(!ProductFeatures.layoutEditable(activity))return;
         if (result != Activity.RESULT_OK || data == null || data.getData() == null) return;
         try (InputStream in = activity.getContentResolver().openInputStream(data.getData())) {
             byte[] bytes = ProfileStore.readBytes(in);

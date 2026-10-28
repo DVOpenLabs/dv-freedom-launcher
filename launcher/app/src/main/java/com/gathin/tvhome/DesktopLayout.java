@@ -53,6 +53,7 @@ final class DesktopLayout {
         java.util.concurrent.FutureTask<Bundle> task=new java.util.concurrent.FutureTask<>(()->perform(ctx,method,arg));
         new android.os.Handler(android.os.Looper.getMainLooper()).post(task);
         try{return task.get(20,java.util.concurrent.TimeUnit.SECONDS);}
+        catch(java.util.concurrent.ExecutionException failure){Throwable cause=failure.getCause();if(cause instanceof RuntimeException)throw (RuntimeException)cause;throw new IllegalStateException("Editor request failed. Reload before retrying.",cause);}
         catch(Exception failure){task.cancel(false);throw new IllegalStateException("Editor request did not finish. Reload before retrying.",failure);}
     }
     private static Bundle perform(Context ctx,String method,String arg) {
@@ -60,7 +61,9 @@ final class DesktopLayout {
             LayoutDraft.requireEditable(MainActivity.desktopLayoutEditing,StyleSession.preview()!=null||PlacementSession.preview()!=null);
             Config config=Config.load(ctx);
             SharedPreferences prefs=ProfileStore.preferences(ctx);
+            Bundle setup=ProductFeatures.setupOperation(ctx,method,arg);if(setup!=null)return setup;
             if("product_layout_apply".equals(method)||"product_layout_undo".equals(method)) {
+                ProductFeatures.requireLayoutEditable(ctx);
                 JSONObject request=object(arg);
                 fields(request,"revision","profile","layout","position");
                 LayoutDraft.requireCurrent(request.getString("revision"),revision(ctx,prefs.getAll()),request.getString("profile"),ProfileStore.id());
@@ -146,7 +149,9 @@ final class DesktopLayout {
         return favorites;
     }
     static String orderStamp(Context ctx)throws Exception {
-        File file=Order.file(ctx);
+        return orderStamp(Order.file(ctx));
+    }
+    static String orderStamp(File file)throws Exception {
         LayoutDraft.check(file.length()<=262144,"Configuration too large for desktop editing");
         return file.lastModified()+":"+file.length()+":"+hex(MessageDigest.getInstance("SHA-256").digest(file.isFile()?Files.readAllBytes(file.toPath()):new byte[0]));
     }
@@ -166,7 +171,7 @@ final class DesktopLayout {
                     result.put(item.activityInfo.packageName,item.loadLabel(ctx.getPackageManager()).toString());
         return result;
     }
-    private static String revision(Context ctx,Map<String,?> values)throws Exception {
+    static String revision(Context ctx,Map<String,?> values)throws Exception {
         TreeMap<String,String> stable=new TreeMap<>();
         for(Map.Entry<String,?> entry:values.entrySet())if(!entry.getKey().equals(UNDO)&&!entry.getKey().equals(GUARD)&&!entry.getKey().equals(UNDO_POSITION)) {
             Object value=entry.getValue();

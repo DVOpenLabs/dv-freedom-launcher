@@ -1,0 +1,13 @@
+<resources>
+    <style name="Theme.Freedom" parent="Theme.TvHome"><item name="android:alertDialogTheme">@style/Freedom.Dialog</item></style>
+    <style name="Freedom.Dialog" parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/freedom_dialog_background</item>
+        <item name="android:colorBackground">#182332</item>
+        <item name="android:colorAccent">#C7E7FF</item>
+        <item name="android:textColorPrimary">#F5F7FA</item>
+        <item name="android:textColorSecondary">#C7D3E2</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:backgroundDimAmount">0.65</item>
+        <item name="android:windowMinWidthMajor">56%</item>
+    </style>
+</resources>

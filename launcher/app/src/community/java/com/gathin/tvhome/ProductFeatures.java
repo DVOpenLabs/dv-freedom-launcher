@@ -16,6 +16,12 @@ final class ProductFeatures {
     private static boolean initialized;
     static void init(Context c){app=c.getApplicationContext();if(!initialized){initialized=true;HomeHistory.initialize(c);}}
     static void beforeChange(String reason){if(app!=null)HomeHistory.before(app,reason);}
+    static boolean settingsAccess(Activity a){Config.load(a);boolean ready=LauncherLock.require(a,a::recreate);LauncherLock.watch(a,ready);return ready;}
+    static void requireLayoutEditable(Context c){if(!LauncherLock.open(c))throw new SecurityException("Unlock launcher editing on the TV first");}
+    static boolean profilePicker(Activity a,boolean allowImport){ProfileAvatars.show(a,allowImport);return true;}
+    static boolean allowEdit(Activity a,Runnable after){return LauncherLock.require(a,after);}
+    static boolean layoutEditable(Context c){return LauncherLock.open(c);}
+    static Bundle setupOperation(Context c,String method,String arg)throws Exception{return SetupTransfer.call(c,method,arg);}
     static void beforeChange(Context c,String reason){HomeHistory.before(c,reason);}
     static boolean routeHome(MainActivity a){return ExperienceChoice.route(a);}
     static boolean homeAction(MainActivity a,Intent intent){
@@ -35,9 +41,11 @@ final class ProductFeatures {
         },240);
     }
     static boolean playlistEnabled(Context c){return WallpaperPlaylistChoice.enabled(c);}
-    static void profileKeys(Set<String> keys){setupKeys(keys);}
-    static void setupKeys(Set<String> keys){keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);}
+    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);}
+    static void setupKeys(Set<String> keys){keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals(SceneSchedules.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid scene schedules");SceneSchedulePolicy.parse((String)value);return true;}
+        if(key.equals(ProfileAvatars.KEY)){if(!(value instanceof String)||!Arrays.asList(ProfileAvatars.NAMES).contains(value))throw new IllegalArgumentException("Invalid avatar");return true;}
         if(key.equals(ExperiencePolicy.KEY)){if(!(value instanceof String)||!ExperiencePolicy.valid((String)value))throw new IllegalArgumentException("Invalid Home experience");return true;}
         if(!key.equals(HomeCategories.KEY)&&!key.equals(NativeTileEditor.KEY)&&!key.equals(HomeAppearance.KEY)&&!key.equals(WallpaperPlaylistChoice.KEY))return false;
         if(!(value instanceof String))throw new IllegalArgumentException("Invalid product setting");String raw=(String)value;
@@ -46,7 +54,7 @@ final class ProductFeatures {
     }
     private static boolean validSizes(String raw){try{HomeAppearance.parse(raw);return true;}catch(RuntimeException invalid){return false;}}
     private static boolean validPlaylist(String raw){try{PlaylistPolicy.parse(raw);return true;}catch(RuntimeException invalid){return false;}}
-    static void validateMedia(Context c,Map<String,Object> values)throws IOException{if(values.containsKey(NativeTileEditor.KEY))NativeTileEditor.validateAssets(c,(String)values.get(NativeTileEditor.KEY));if(values.containsKey(WallpaperPlaylistChoice.KEY))WallpaperPlaylistChoice.validateMedia(c,(String)values.get(WallpaperPlaylistChoice.KEY));}
+    static void validateMedia(Context c,Map<String,Object> values)throws IOException{try{SceneSchedules.validateReplacement(values);}catch(RuntimeException bad){throw new IOException(bad.getMessage(),bad);}if(values.containsKey(NativeTileEditor.KEY))NativeTileEditor.validateAssets(c,(String)values.get(NativeTileEditor.KEY));if(values.containsKey(WallpaperPlaylistChoice.KEY))WallpaperPlaylistChoice.validateMedia(c,(String)values.get(WallpaperPlaylistChoice.KEY));}
     static void clearProfile(Context c,String id){
         HomeHistory.clearProfile(c,id);if(id==null||id.isEmpty()||!LocalProfiles.validId(id))return;
         c.deleteSharedPreferences(LocalProfiles.filename(id,WallpaperPlaylist.PLAYBACK));

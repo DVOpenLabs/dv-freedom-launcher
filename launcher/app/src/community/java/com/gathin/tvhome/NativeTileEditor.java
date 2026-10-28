@@ -74,6 +74,7 @@ final class NativeTileEditor {
         }catch(Exception|OutOfMemoryError unavailable){return null;}
     }
     static void show(Activity a){
+        if(!LauncherLock.require(a,()->show(a)))return;
         Config config=Config.load(a);String profile=ProfileStore.id();int generation=generation(a);
         List<String> favorites=DesktopLayout.favorites(config,Order.load(Order.file(a)));
         AlertDialog loading=new AlertDialog.Builder(a).setTitle("Customize apps").setMessage("Loading apps…").setNegativeButton(android.R.string.cancel,null).show();
@@ -101,6 +102,7 @@ final class NativeTileEditor {
         loading.setOnCancelListener(d->worker.shutdownNow());
     }
     static void show(Activity a,String pkg){
+        if(!LauncherLock.require(a,()->show(a,pkg)))return;
         if(!LayoutDraft.packageName(pkg)||pkg.equals(a.getPackageName()))return;
         for(String category:new String[]{Intent.CATEGORY_LEANBACK_LAUNCHER,Intent.CATEGORY_LAUNCHER})for(ResolveInfo info:a.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(category).setPackage(pkg),0))
             if(info.activityInfo!=null&&info.activityInfo.exported&&info.activityInfo.enabled&&info.activityInfo.applicationInfo.enabled){app(a,info);return;}

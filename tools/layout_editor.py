@@ -89,6 +89,7 @@ class NativeBridge:
         marker=output.find('json=')
         if result.returncode or marker<0:
             detail=(result.stderr or '')+output
+            if 'Unlock launcher editing' in detail:raise ValueError('Unlock layout editing on the TV before using the desktop editor.')
             for phrase in ['The launcher changed','Undo is no longer current','Finish the on-TV layout edit','Favorite app is unavailable','Editor request is too large','Could not save layout']:
                 if phrase in detail:raise ValueError(phrase+'. Reload the TV layout before trying again.')
             raise ValueError('Could not read the editor bridge. Check the TV address, authorized debugging and that this fork\'s editor build is installed.')
