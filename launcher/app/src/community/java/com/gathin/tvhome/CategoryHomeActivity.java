@@ -136,7 +136,7 @@ public final class CategoryHomeActivity extends Activity {
             int mode=ProfileStore.preferences(CategoryHomeActivity.this).getInt(HomePolish.NAMES,0);name.setVisibility(mode==3?View.INVISIBLE:View.VISIBLE);name.setAlpha(focused?1f:PolishPolicy.nameAlpha(mode,config.alwaysShowNames?1f:0f));
         }
     }
-    private void allApps(){String[] labels=new String[catalog.size()];for(int i=0;i<labels.length;i++)labels[i]=catalog.get(i).label;new AlertDialog.Builder(this).setTitle("Apps").setItems(labels,(d,which)->catalog.get(which).launch(this,config)).setNegativeButton(android.R.string.cancel,null).show();}
+    private void allApps(){AllAppsSurface.show(this,config,catalog);}
     private void inputs(){inputs(false);}
     private void inputs(boolean showAll){
         List<TvInputInfo> available=new ArrayList<>();List<String> labels=new ArrayList<>();TvInputManager manager=getSystemService(TvInputManager.class);int hidden=0;

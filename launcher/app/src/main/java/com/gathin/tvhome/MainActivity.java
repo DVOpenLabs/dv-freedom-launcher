@@ -928,6 +928,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * top_menu hides the pill, so the list hangs under the gear there, as in showInputs().
      */
     private boolean openInputsIfAsked(Intent intent) {
+        if(ProductFeatures.homeAction(this,intent)){productUtilityPending=true;setIntent(new Intent(Intent.ACTION_MAIN));return true;}
         if (intent == null || !ACTION_VIEW_INPUTS.equals(intent.getAction())) return false;
         setIntent(new Intent(Intent.ACTION_MAIN));
         View anchor = topMenu ? findViewById(R.id.btnSettings) : btnInputs;
@@ -958,6 +959,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private boolean openLauncherSettingsIfAsked(Intent intent) {
+        if(ProductFeatures.homeAction(this,intent)){productUtilityPending=true;setIntent(new Intent(Intent.ACTION_MAIN));return true;}
         if(intent!=null&&ACTION_IDLE_PREVIEW.equals(intent.getAction())){setIntent(new Intent(Intent.ACTION_MAIN));grid.post(()->homePolish.preview());return true;}
         if(intent!=null&&ACTION_LIBRARY.equals(intent.getAction())) {
             setIntent(new Intent(Intent.ACTION_MAIN));
@@ -1011,6 +1013,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        if(productUtilityPending){productUtilityPending=false;productRouted=true;return;}
+        productRouted=ProductFeatures.routeHome(this);
+        if(productRouted)return;
+        getWindow().getDecorView().setAlpha(1);
         ProductFeatures.resumed(this);
         HomePreview.attach(this, null);
         // A festival that started or ended while Home was in the background: rebuild with or without it.
@@ -1079,9 +1085,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         return getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE).getLong(Config.SETTINGS_REVISION_KEY, 0);
     }
 
+    private boolean productRouted,productUtilityPending;
+    boolean productRoutingAllowed(){return appLibrary==null&&openPopup==null&&cardPrompt==null&&!reordering&&!getIntent().getBooleanExtra(LauncherSettingsActivity.EXTRA_REORDER,false);}
+
     @Override
     protected void onPostResume() {
         super.onPostResume();
+        if(productRouted)return;
         if(!settingsRecreationPending&&!isFinishing()&&PlacementSession.preview()!=null)placementPrompt=PlacementSession.prompt(this);
         if (stylePickerEnabled && !settingsRecreationPending && !isFinishing()) {
             String preview = StyleSession.preview();

@@ -17,18 +17,28 @@ final class ProductFeatures {
     static void init(Context c){app=c.getApplicationContext();if(!initialized){initialized=true;HomeHistory.initialize(c);}}
     static void beforeChange(String reason){if(app!=null)HomeHistory.before(app,reason);}
     static void beforeChange(Context c,String reason){HomeHistory.before(c,reason);}
+    static boolean routeHome(MainActivity a){return ExperienceChoice.route(a);}
+    static boolean homeAction(MainActivity a,Intent intent){
+        if(intent==null||!ExperienceChoice.enabled(a))return false;String action=intent.getAction();
+        if(MainActivity.ACTION_LAUNCHER_SETTINGS.equals(action)){a.startActivity(new Intent(a,LauncherSettingsActivity.class).putExtra("experience_context",true));return true;}
+        if(MainActivity.ACTION_VIEW_INPUTS.equals(action)||MainActivity.ACTION_LIBRARY.equals(action)||MainActivity.ACTION_IDLE_PREVIEW.equals(action)){
+            a.startActivity(new Intent(a,ExperienceHomeActivity.class).putExtra("home_action",action).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP));return true;
+        }return false;
+    }
+    static void wallpaperSample(Activity a,android.graphics.Bitmap bitmap){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).sample(bitmap);}
     static void resumed(Activity a){
-        if((a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&HomeCategories.enabled(a)))WallpaperPlaylist.attach(a);
+        if(a instanceof ExperienceHomeActivity||(a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&(HomeCategories.enabled(a)||ExperienceChoice.enabled(a))))WallpaperPlaylist.attach(a);
         a.getWindow().getDecorView().postDelayed(()->{
             if(a.isDestroyed()||a.isFinishing()||!a.hasWindowFocus())return;
             HomeAppearance.apply(a);
-            if(a instanceof MainActivity&&PlacementSession.preview()==null&&StyleSession.preview()==null&&HomeCategories.enabled(a)){CategoryHomeActivity.openIfEnabled((MainActivity)a,Config.load(a));return;}
+            if(a instanceof MainActivity&&!ExperienceChoice.enabled(a)&&PlacementSession.preview()==null&&StyleSession.preview()==null&&HomeCategories.enabled(a)){CategoryHomeActivity.openIfEnabled((MainActivity)a,Config.load(a));return;}
         },240);
     }
     static boolean playlistEnabled(Context c){return WallpaperPlaylistChoice.enabled(c);}
     static void profileKeys(Set<String> keys){setupKeys(keys);}
-    static void setupKeys(Set<String> keys){keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);}
+    static void setupKeys(Set<String> keys){keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals(ExperiencePolicy.KEY)){if(!(value instanceof String)||!ExperiencePolicy.valid((String)value))throw new IllegalArgumentException("Invalid Home experience");return true;}
         if(!key.equals(HomeCategories.KEY)&&!key.equals(NativeTileEditor.KEY)&&!key.equals(HomeAppearance.KEY)&&!key.equals(WallpaperPlaylistChoice.KEY))return false;
         if(!(value instanceof String))throw new IllegalArgumentException("Invalid product setting");String raw=(String)value;
         boolean valid=key.equals(HomeCategories.KEY)?HomeCategories.valid(raw):key.equals(NativeTileEditor.KEY)?NativeTileEditor.validate(raw):key.equals(WallpaperPlaylistChoice.KEY)?validPlaylist(raw):validSizes(raw);

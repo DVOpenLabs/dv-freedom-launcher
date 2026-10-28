@@ -58,7 +58,7 @@ final class WallpaperPlaylist {
         int token=++generation;ThemeLibrary.Entry entry=entries.get(index);if(video!=null){video.close();layer.removeView(video.view());video=null;}
         decoder.execute(()->{Bitmap decoded=decode(new File(entry.directory,Config.WALLPAPER_NAME));handler.post(()->{
             if(closed||!active||generation!=token){if(decoded!=null)decoded.recycle();return;}
-            loaded=true;if(decoded!=null){Bitmap old=bitmap;bitmap=decoded;poster.setImageBitmap(decoded);if(old!=null&&old!=decoded)poster.postDelayed(old::recycle,500);}
+            loaded=true;if(decoded!=null){Bitmap old=bitmap;bitmap=decoded;poster.setImageBitmap(decoded);ProductFeatures.wallpaperSample(activity,decoded);if(old!=null&&old!=decoded)poster.postDelayed(old::recycle,500);}
             File file=new File(entry.directory,"video.mp4");
             if(ThemeLibrary.liveAllowed()&&ProfileStore.preferences(activity).getBoolean(ThemeLibrary.LIVE,false)&&file.isFile()&&LiveVideo.supported(activity,config.reducedMotion)){
                 video=new LiveVideo(activity,file,0);layer.addView(video.view(),1,new FrameLayout.LayoutParams(-1,-1));video.start();

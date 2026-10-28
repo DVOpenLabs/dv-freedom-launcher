@@ -2,5 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <application android:label="@string/freedom_app_name" tools:replace="android:label">
         <activity android:name="com.gathin.tvhome.CategoryHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
+        <activity android:name="com.gathin.tvhome.ExperienceHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
     </application>
 </manifest>

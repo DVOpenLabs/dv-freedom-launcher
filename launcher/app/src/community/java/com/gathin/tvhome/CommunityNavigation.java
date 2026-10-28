@@ -27,12 +27,13 @@ final class SettingsNavigation {
         if(saved!=null){String key=saved.getString("studio_path","");try{if(!key.isEmpty())for(String p:key.split("/"))path.add(Integer.parseInt(p));current();}catch(Exception invalid){path.clear();}String[] keys=saved.getStringArray("studio_memory_keys");int[] values=saved.getIntArray("studio_memory_values");if(keys!=null&&values!=null&&keys.length==values.length)for(int i=0;i<keys.length;i++)memory.put(keys[i],values[i]);}
         ViewGroup host=(ViewGroup)original.getParent();host.removeView(original);FrameLayout frame=new FrameLayout(a);original.setVisibility(View.GONE);frame.addView(original);
         LinearLayout panes=new LinearLayout(a);panes.setOrientation(LinearLayout.HORIZONTAL);panes.setBackgroundColor(0xff111316);if(rtl)panes.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        ScrollView left=new ScrollView(a);left.setFocusable(false);left.setBackgroundColor(0xff1b1e23);LinearLayout explanation=new LinearLayout(a);explanation.setOrientation(LinearLayout.VERTICAL);explanation.setPadding(dp(56),dp(48),dp(42),dp(24));left.addView(explanation);
+        ScrollView left=new ScrollView(a);left.setFocusable(false);left.setBackgroundColor(0xff1b1e23);LinearLayout explanation=new LinearLayout(a);explanation.setOrientation(LinearLayout.VERTICAL);explanation.setPadding(dp(48),dp(40),dp(40),dp(24));left.addView(explanation);
         breadcrumb=text("Launcher settings",13,0xffb7c1cf);breadcrumb.setId(R.id.studioBreadcrumb);explanation.addView(breadcrumb);
-        title=text("",30,0xfff4f5f7);title.setId(R.id.studioTitle);add(explanation,title,16);
-        context=text("",21,0xfff4f5f7);add(explanation,context,24);
-        help=text("",17,0xffcbd2dc);help.setId(R.id.studioHelp);help.setLineSpacing(dp(4),1f);add(explanation,help,14);
-        TextView tip=text("Up/Down to choose. OK opens. Back returns one level.",13,0xffaeb8c8);add(explanation,tip,32);
+        title=text("",30,0xfff4f5f7);title.setId(R.id.studioTitle);add(explanation,title,12);
+        context=text("",21,0xfff4f5f7);add(explanation,context,16);
+        help=text("",17,0xffcbd2dc);help.setId(R.id.studioHelp);help.setLineSpacing(dp(4),1f);add(explanation,help,10);
+        LinearLayout.LayoutParams illustration=new LinearLayout.LayoutParams(dp(220),dp(124));illustration.topMargin=dp(18);explanation.addView(new HomeMiniPreview(a,font),illustration);add(explanation,text("Layout illustration · Still image",12,0xffaeb8c8),6);
+        TextView tip=text("Up/Down to choose. OK opens. Back returns one level.",13,0xffaeb8c8);add(explanation,tip,18);
         panes.addView(left,new LinearLayout.LayoutParams(0,-1,1));scroll=new ScrollView(a);scroll.setId(R.id.settingsScroll);scroll.setFillViewport(false);scroll.setPadding(dp(22),dp(40),dp(34),dp(24));scroll.setClipToPadding(false);
         menu=new LinearLayout(a);menu.setId(R.id.studioMenu);menu.setOrientation(LinearLayout.VERTICAL);scroll.addView(menu);panes.addView(scroll,new LinearLayout.LayoutParams(dp(450),-1));frame.addView(panes,new FrameLayout.LayoutParams(-1,-1));host.addView(frame,new ViewGroup.LayoutParams(-1,-1));render();
     }
@@ -42,7 +43,8 @@ final class SettingsNavigation {
     private Item item(String t,String h,Supplier<String> v,Runnable r){return new Item(t,h,v,r);}
     private Item page(String t,String h,String v,Item...children){return new Item(t,h,()->v,null,Arrays.stream(children).filter(Objects::nonNull).toArray(Item[]::new));}
     private String raw(int id){View v=original.findViewById(id);if(!(v instanceof TextView)||v.getVisibility()!=View.VISIBLE)return "Unavailable in this configuration";String s=((TextView)v).getText().toString();int n=s.indexOf(" · ");if(n>=0)return s.substring(n+3);n=s.indexOf(": ");return n>=0?s.substring(n+2):"Open";}
-    private boolean categoryContext(){return a.getIntent().getBooleanExtra("category_context",false)||HomeCategories.enabled(a);}
+    private boolean categoryContext(){return !ExperienceChoice.enabled(a)&&(a.getIntent().getBooleanExtra("category_context",false)||HomeCategories.enabled(a));}
+    private boolean experienceContext(){return ExperienceChoice.enabled(a);}
     private boolean categoryAction(int id){
         if(!categoryContext())return false;
         if(id==R.id.reorderChoice){HomeCategories.show(a);return true;}
@@ -61,15 +63,16 @@ final class SettingsNavigation {
         Item layout=page("Layout","Position, extra rows and dock background control the existing app grid. Category rows are arranged in Apps & rows → Categories.","Position, rows and Home styles",
             source(R.id.positionChoice,"App position",a.getString(R.string.help_position)),
             numeric("Apps per row","More apps per row makes each tile smaller. Your app order stays saved.",R.id.settingsColumnsCaption,new int[]{R.id.columns4,R.id.columns5,R.id.columns6,R.id.columns7,R.id.columns8},new String[]{"4","5","6","7","8"}),
-            categoryContext()?null:numeric("Rows below favorites","Choose how many additional grid rows fit below favorites.",R.id.settingsRowsCaption,new int[]{R.id.rows0,R.id.rows1,R.id.rows2,R.id.rows3},new String[]{"0","1","2","3"}),
-            categoryContext()?null:numeric("Favorites background","Control the favorites dock background opacity.",R.id.settingsOpacityCaption,new int[]{R.id.dock100,R.id.dock70,R.id.dock50,R.id.dock30},new String[]{"100%","70%","50%","30%"}),
-            source(R.id.stylesChoice,"Home style","Preview an existing layout. Keep it or let the countdown revert it."),source(R.id.styleUndoChoice,"Undo Home style","Return to the previous committed style."));
+            categoryContext()||experienceContext()?null:numeric("Rows below favorites","Choose how many additional grid rows fit below favorites.",R.id.settingsRowsCaption,new int[]{R.id.rows0,R.id.rows1,R.id.rows2,R.id.rows3},new String[]{"0","1","2","3"}),
+            categoryContext()||experienceContext()?null:numeric("Favorites background","Control the favorites dock background opacity.",R.id.settingsOpacityCaption,new int[]{R.id.dock100,R.id.dock70,R.id.dock50,R.id.dock30},new String[]{"100%","70%","50%","30%"}),
+            experienceContext()?null:source(R.id.stylesChoice,"Home style","Preview an existing layout. Keep it or let the countdown revert it."),experienceContext()?null:source(R.id.styleUndoChoice,"Undo Home style","Return to the previous committed style."));
         Item text=page("Text & clock","Make Home readable from your seat.","Text color, names and size preview",
             source(R.id.adaptiveHeaderChoice,"Home text",a.getString(R.string.help_text)),source(R.id.appNamesChoice,"App names",a.getString(R.string.help_names)),
             item("Text sizes","Preview clock, header and app-name sizes independently. Apply saves this profile only.",()->"Preview before applying",()->HomeAppearance.show(a)));
         Item motion=page("Focus & motion","Keep selection clear and motion comfortable.","Outline, spacing and idle view",
             source(R.id.focusOutlineChoice,"Focus outline",a.getString(R.string.help_focus)),source(R.id.tileSpacingChoice,"Extra tile spacing",a.getString(R.string.help_spacing)),source(R.id.refinedMotionChoice,"Focus motion","Use a calmer focus transition; reduced-motion preferences are respected."),source(R.id.animationsChoice,"Animations","Enable or disable the existing Home animations."),source(R.id.cinematicIdleChoice,"Cinematic idle",a.getString(R.string.help_idle)),source(R.id.previewIdleChoice,"Preview idle view","Preview the quiet Home presentation. The first navigation press restores controls."),source(R.id.advancedChoice,"Advanced effects",a.getString(R.string.advanced_effects_warning)));
         return page("Launcher settings","Make Home comfortable to use.","",
+            item("Home experience","Preview Freedom Glass, Clean or Cinema before keeping a look. Your saved app order, wallpaper and layout choices stay in place.",()->ExperiencePolicy.name(ExperienceChoice.saved(a)),()->ExperienceChoice.show(a)),
             page("Appearance","Choose a layout, readable text and comfortable focus behavior.","Layout, text and motion",layout,text,motion),
             page("Apps & rows","Organize apps without changing their accounts or installed data.","Customize apps and create categories",
                 item("Customize apps","Rename an app or change its artwork. Your app layout stays saved.",()->"Name, icon and banner",()->NativeTileEditor.show(a)),
