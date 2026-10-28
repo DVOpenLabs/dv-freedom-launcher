@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="freedom_app_name" translatable="false">DV Freedom Launcher</string>
+    <string name="freedom_tagline">Your TV. Your way.</string>
+    <string name="freedom_about">About DV Freedom Launcher</string>
+    <string name="freedom_credits">Credits and licence</string>
+    <string name="freedom_home_settings_help">Select your original home to stop using DV Freedom Launcher as Home, or DV Freedom Launcher to switch back. The original launcher must be enabled and your TV must provide a home picker; use the restore script first if it was disabled.</string>
+    <string name="home_settings_help">@string/freedom_home_settings_help</string>
+    <string name="stock_home_redirect_name">DV Freedom Home redirect</string>
+    <string name="stock_home_redirect_description">Opens DV Freedom Launcher when Google TV Home appears and when this helper connects. Watches only Google Home’s window name; cannot read screen contents or filter remote buttons.</string>
+</resources>
