@@ -30,3 +30,7 @@ setup_app/*.spec
 *.exe
 
 setup_app/release_bundle/
+
+# Generated Samsung pilot archives and private staging.
+*.wgt
+platforms/tizen/build/

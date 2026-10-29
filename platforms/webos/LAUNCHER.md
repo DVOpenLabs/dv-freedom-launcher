@@ -60,3 +60,11 @@ The native `PalmServiceBridge` boundary follows LG’s [official SDK source](htt
 LG CLI 3.2.6 validates the staged app with no problems and produces a 9,944-byte IPK without private
 media. Forty local policy/storage/service checks and the browser's review/Back flow pass. These are
 packaging/source results only; no LG installation, app launching or physical remote/video test is claimed.
+
+
+## Shared-policy extraction
+
+The portable core is now in `platforms/shared-web/core.js`; the webOS wrapper retains the LG public
+Bridge, original `dv-freedom.webos.v1` key and v1 mappings. Staging copies the shared asset into the
+package and rewrites its script path. Existing 40 policy/storage/service checks remain the regression
+baseline. This source refactor does not update an installed LG app or establish new hardware acceptance.

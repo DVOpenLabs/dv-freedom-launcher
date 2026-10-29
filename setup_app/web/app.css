@@ -17,3 +17,5 @@ html{scroll-padding-block:20px 130px}.footer{position:sticky;bottom:0;z-index:5;
 .recovery{margin-top:22px}.recovery .secondary{margin:8px 6px 8px 0}.summary>.primary{margin-top:16px}.wallpaper-option[data-value=keep]{background:#edf2f6;color:#334f68}.recovery select{max-width:100%}
 
 .license-text{white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:16px;font:13px/1.55 Outfit,'Segoe UI',sans-serif;background:#f4f7fa}
+
+@media(min-width:751px){.devices{grid-template-columns:repeat(2,minmax(0,1fr))}}

@@ -20,6 +20,9 @@ def prepare(output,profiles=None):
         for p in doc['profiles']:product_profiles.export_profile(doc,p['id'],'webos')
     output=Path(output).resolve();output.mkdir(parents=True,exist_ok=False)
     for name in ('appinfo.json','index.html','style.css','core.js','app.js','media.js','bootstrap.js'):shutil.copyfile(SOURCE/name,output/name)
+    shutil.copyfile(SOURCE.parents[1]/'shared-web/core.js',output/'shared-core.js')
+    html=(output/'index.html').read_text(encoding='utf-8').replace('../../shared-web/core.js','shared-core.js')
+    (output/'index.html').write_text(html,encoding='utf-8')
     (output/'icon.png').write_bytes(icon())
     if profiles:(output/'bootstrap.js').write_text('window.FREEDOM_BOOTSTRAP='+json.dumps(doc,ensure_ascii=True,separators=(',',':'))+';\n',encoding='utf-8')
     return output
