@@ -16,6 +16,12 @@ Device-specific fan artwork and personal videos are not included or licensed by 
 
 ## Desktop setup app
 
+The optional hosted VIDAA adapter uses Eclipse Paho MQTT **2.1.0**, under the Eclipse Distribution
+License 1.0 / BSD-style option of its dual licence. The full [EDL notice](product/licenses/Paho-EDL-1.0.txt)
+and distribution metadata are retained in the Windows package. It is not part of the Android APK.
+No vendor client certificate, private key, static password or reverse-engineered credential generator
+is bundled. BrighterScript 0.73.8 is a development-only source check, not a runtime dependency.
+
 The desktop setup uses adb-shell, rsa and cryptography with their transitive runtime dependencies;
 these are separate from the Android APK. The Windows build collects their distribution metadata and
 licence files, the Python runtime licence, PyInstaller notices and the Outfit OFL notice. Source

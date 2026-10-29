@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="FreedomScene" extends="Scene">
+  <script type="text/brightscript" uri="pkg:/components/FreedomScene.brs" />
+  <children>
+    <Group id="clockGroup" translation="[180,220]">
+      <Label id="greeting" width="1500" height="70" text="Your time. Your space." />
+      <Label id="clock" translation="[0,90]" width="1500" height="160" font="font:ExtraLargeBoldSystemFont" />
+      <Label id="date" translation="[0,250]" width="1500" height="100" />
+    </Group>
+    <Label translation="[180,920]" width="1550" height="80" text="DV Freedom Ambient  |  OK: change background  |  Back/Home: Roku" />
+    <Timer id="minute" duration="60" repeat="true" />
+  </children>
+</component>

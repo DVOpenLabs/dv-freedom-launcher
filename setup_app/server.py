@@ -38,8 +38,17 @@ def serve(session=None,port=0):
         def do_GET(self):
             if not self.allowed(self.path.startswith('/api/')):return
             if self.path=='/api/state':self.send(session.public());return
+            if self.path=='/platforms.js':
+                from .capabilities import catalogue
+                self.send(('window.DVPlatforms='+json.dumps(catalogue())+';').encode(),'text/javascript; charset=utf-8');return
+            if self.path.startswith('/api/companion-package/'):
+                try:
+                    file=session.companion.package_file(self.path.rsplit('/',1)[-1])
+                    self.send(file.read_bytes(),'application/zip')
+                except (SetupError,OSError):self.send({'error':'Build a new package in this session.'},status=400)
+                return
             assets={'/':(WEB/'index.html','text/html; charset=utf-8'),'/app.css':(WEB/'app.css','text/css; charset=utf-8'),
-               '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/native.js':(WEB/'native.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
+               '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/native.js':(WEB/'native.js','text/javascript; charset=utf-8'),'/companion.js':(WEB/'companion.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
             if self.path not in assets:self.send({'error':'Page not found.'},status=404);return
             file,mime=assets[self.path]
             try:
@@ -66,7 +75,17 @@ def serve(session=None,port=0):
                     if session.installer.lock.locked():raise SetupError('Wait for the current installer step, or request Stop. Installation cannot be interrupted halfway through an Android package commit.')
                     if session.tools.lock.locked():raise SetupError('Pairing support is being prepared. Keep this app open until the download finishes.')
                     if session.job['status']=='running':raise SetupError('Wait for the current connection check to finish.')
-                    if self.path=='/api/native-info':
+                    if session.companion.server and not self.path.startswith('/api/companion-') and self.path!='/api/quit':raise SetupError('Stop the current hosted Home before starting another TV operation.')
+                    if self.path.startswith('/api/companion-'):
+                        actions={'info':lambda v:session.companion.info() if v=={} else (_ for _ in ()).throw(SetupError('Unexpected fields.')),
+                            'connect':session.companion.connect,'trust':session.companion.trust_vizio,'pair':session.companion.pair,'capture':session.companion.capture,
+                            'review':session.companion.review,'start':session.companion.start,'open-vizio':session.companion.open_vizio,
+                            'roku':session.companion.roku,'stop':lambda v:session.companion.stop() if v=={} else (_ for _ in ()).throw(SetupError('Unexpected fields.')),
+                            'disconnect':lambda v:session.companion.disconnect() or session.companion.public() if v=={} else (_ for _ in ()).throw(SetupError('Unexpected fields.'))}
+                        action=actions.get(self.path.removeprefix('/api/companion-'))
+                        if not action:raise SetupError('This companion action is unavailable.')
+                        reply=action(value)
+                    elif self.path=='/api/native-info':
                         if value!={}:raise SetupError('Unexpected tool check options.')
                         reply=session.native.info()
                     elif self.path=='/api/native-config':reply=session.native.configure(value)
@@ -96,6 +115,8 @@ def serve(session=None,port=0):
                         reply=session.installer.action({'/api/restore':'restore','/api/choose-home':'home','/api/previous-home':'previous','/api/revert-preview':'revert','/api/home-redirect-settings':'accessibility'}[self.path],value)
                     elif self.path=='/api/quit':
                         if value!={}:raise SetupError('Unexpected close options.')
+                        if session.companion.server:raise SetupError('Hosted Home is running. Use Stop hosted Home first; closing this computer disconnects the TV page.')
+                        session.companion.disconnect()
                         self.send({'closed':True});threading.Thread(target=self.server.shutdown,daemon=True).start();return
                     else:self.send({'error':'This action is not available. No TV changes were made.'},status=404);return
                     self.send(reply)

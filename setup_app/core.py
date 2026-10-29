@@ -124,12 +124,14 @@ class Session:
         self.tools=PairingTools(self.root)
         from .native import NativeInstaller
         self.native=NativeInstaller(self.root)
+        from .companion import CompanionSetup
+        self.companion=CompanionSetup(self.root)
     def public(self):
         info=copy.deepcopy(self.inventory)
         if info:info.pop('raw',None)
         install=self.installer.state()
         return {'mode':self.mode,'device':info,'backup':self.backup,'job':copy.deepcopy(self.job),'tools':self.tools.state(),**install,
-          'native':self.native.public(),'installAvailable':install['release']['available'] and self.mode=='device' and bool(self.inventory),'releaseMessage':install['release'].get('message','Offline signed launcher ready. Default Home changes only through your TV’s chooser.')}
+          'native':self.native.public(),'companion':self.companion.public(),'installAvailable':install['release']['available'] and self.mode=='device' and bool(self.inventory),'releaseMessage':install['release'].get('message','Offline signed launcher ready. Default Home changes only through your TV’s chooser.')}
     def preview(self):
         self.mode='preview';self.backup=None;self.job={'status':'idle'};self.connection=None;self.installer.reviewed=None
         self.inventory={'model':'Example Google TV','android':'14','api':34,'apps':copy.deepcopy(DEMO_APPS),'existingLauncher':False,'checks':{'android':True,'connection':True}}

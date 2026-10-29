@@ -114,6 +114,31 @@ class ServerTest(unittest.TestCase):
         headers={'Origin':self.origin,'Content-Type':'application/json','X-Setup-Token':self.token}
         self.assertEqual(self.request('POST','/api/preview','{"a":1,"a":2}',headers)[0],400)
         self.assertEqual(self.request('POST','/api/preview','x'*8193,headers)[0],413)
+    def test_all_platform_catalogue_and_authenticated_ambient_package_download(self):
+        self.assertEqual(self.request('GET','/platforms.js')[0],200)
+        self.assertEqual(self.request('GET','/companion.js')[0],200)
+        self.assertEqual(self.post('/api/companion-info',{})[0],200)
+        self.assertEqual(self.post('/api/companion-roku',dict(theme='ocean',clock='24h',confirmed=False))[0],400)
+        status,raw,_=self.post('/api/companion-roku',dict(theme='ocean',clock='24h',confirmed=True));self.assertEqual(status,200)
+        package=json.loads(raw);self.assertFalse(package['installed'])
+        self.assertEqual(self.request('GET',package['download'])[0],403)
+        status,body,headers=self.request('GET',package['download'],headers={'X-Setup-Token':self.token});self.assertEqual(status,200);self.assertTrue(body.startswith(b'PK'));self.assertEqual(headers['Content-Type'],'application/zip')
+        self.assertIsNone(self.session.inventory);self.assertIsNone(self.session.companion.bridge)
+    def test_companion_routes_reject_unreviewed_actions_and_generic_commands(self):
+        for route in ('start','open-vizio','capture','pair'):
+            self.assertEqual(self.post('/api/companion-'+route,{})[0],400)
+        self.assertEqual(self.post('/api/companion-info',{}, {'Origin':'https://external.invalid'})[0],403)
+        self.assertEqual(self.post('/api/companion-shell',{'command':'anything'})[0],400)
+    def test_active_hosted_session_blocks_quit_or_another_tv_operation(self):
+        from types import SimpleNamespace
+        self.session.companion.server=SimpleNamespace(close=lambda:None)
+        try:
+            self.assertEqual(self.post('/api/quit',{})[0],400)
+            self.assertEqual(self.post('/api/preview',{})[0],400)
+            self.assertEqual(self.post('/api/native-connect',{})[0],400)
+            self.assertEqual(self.post('/api/companion-stop',{})[0],200)
+            self.assertEqual(self.post('/api/preview',{})[0],200)
+        finally:self.session.companion.server=None
     def test_useful_errors_survive_http(self):
         status,data,_=self.post('/api/connect',{'host':'not-an-address','port':5555});self.assertEqual(status,400);self.assertIn('local IPv4',json.loads(data)['error'])
 

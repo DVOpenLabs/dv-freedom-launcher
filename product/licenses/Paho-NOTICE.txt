@@ -1,0 +1,8 @@
+Eclipse Paho MQTT Python client 2.1.0
+Copyright (c) 2012-2019 Roger Light and others
+Contributors include Roger Light (initial API and implementation) and Ian Craggs (MQTT V5 support).
+
+The upstream library is dual-licensed under EPL 2.0 and EDL 1.0.
+This distribution uses the EDL 1.0 option. Its full terms are in Paho-EDL-1.0.txt.
+Source and original notices: https://github.com/eclipse-paho/paho.mqtt.python/tree/v2.1.0
+No upstream code modifications are distributed by DV Freedom Setup.

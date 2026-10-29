@@ -12,7 +12,7 @@ def self_check():
     from adb_shell.auth.keygen import keygen
     from adb_shell.auth.sign_pythonrsa import PythonRSASigner
     assert FONT.is_file()
-    assert all((WEB/name).is_file() for name in ['index.html','app.css','app.js','install.js','native.js','scene.svg'])
+    assert all((WEB/name).is_file() for name in ['index.html','app.css','app.js','install.js','native.js','companion.js','scene.svg'])
     from platforms.webos.prepare_launcher import SOURCE as lg_source
     from platforms.tizen.prepare_launcher import SOURCE as samsung_source
     assert (lg_source/'appinfo.json').is_file() and (samsung_source/'config.xml').is_file()
@@ -22,6 +22,11 @@ def self_check():
         stage_lg(Path(folder)/'lg');stage_samsung(Path(folder)/'samsung')
         assert (Path(folder)/'lg/shared-core.js').is_file()
         assert (Path(folder)/'samsung/fonts/outfit.ttf').is_file()
+        from platforms.hosted.prepare_launcher import prepare as stage_hosted
+        from platforms.roku.prepare_channel import prepare as stage_roku
+        stage_hosted(Path(folder)/'vidaa','vidaa');stage_hosted(Path(folder)/'vizio','vizio')
+        assert stage_roku(Path(folder)/'roku.zip')['installed'] is False
+        import paho.mqtt.client
     from setup_app.release import Catalog
     Catalog().verify()
     with TemporaryDirectory() as folder:
@@ -35,11 +40,13 @@ def main():
     parser.add_argument('--self-check',action='store_true')
     args=parser.parse_args()
     if args.self_check:self_check();return
-    http,_=serve(port=args.port);url=f'http://127.0.0.1:{http.server_port}/'
+    http,session=serve(port=args.port);url=f'http://127.0.0.1:{http.server_port}/'
     if sys.stdout:print(url,flush=True)
     if not args.no_browser:webbrowser.open(url)
     try:http.serve_forever()
     except KeyboardInterrupt:pass
-    finally:http.server_close()
+    finally:
+        http.server_close()
+        session.companion.disconnect()
 
 if __name__=='__main__':main()
