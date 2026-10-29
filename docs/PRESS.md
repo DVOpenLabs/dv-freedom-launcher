@@ -1,5 +1,8 @@
 # CleanYourTV in the press
 
+> Historical coverage of upstream CleanYourTV, retained with its original attribution.
+> These articles do not describe or endorse DV Freedom Launcher. This page is not a DV Freedom press kit.
+
 Every article about CleanYourTV (called tv-vibehack until 19 October 2026) that we could open and check: **197 articles**, 159 of them from outlets in 32 countries, 9 from Spanish-language sites in Latin America and 29 from newsletters, blogs and AI news sites. Headlines are in the language they were published in. Syndicated copies and auto-generated listings are left out. [41 videos](#videos) follow the articles.
 
 Wrote about it and not here? Open an issue or a pull request with the link.

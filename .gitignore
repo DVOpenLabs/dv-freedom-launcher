@@ -34,3 +34,14 @@ setup_app/release_bundle/
 # Generated Samsung pilot archives and private staging.
 *.wgt
 platforms/tizen/build/
+
+# Local environments and generated platform packages, never source assets.
+.venv/
+platforms/webos/build/
+platforms/hosted/build/
+platforms/roku/build/
+*.ipk
+platforms/roku/*.zip
+*.pem
+*.p12
+*.pfx

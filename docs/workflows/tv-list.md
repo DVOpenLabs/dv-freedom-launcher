@@ -1,5 +1,8 @@
 # Workflow: Add or update a TV list
 
+> Inherited catalogue workflow. Generated upstream README tables are not part of the DV Freedom
+> front page, and GitHub Actions remain disabled. Follow the active [contribution policy](../../CONTRIBUTING.md).
+
 **When to use this:** you tested a TV's debloat list for a few days and want to share it, or you have a second unit or a fix for a list that exists.
 
 1. Check `examples/README.md` first. The same product code and firmware as an existing folder is usually a

@@ -1,0 +1,56 @@
+{
+  "name": "Feature suggestion",
+  "description": "Suggest an improvement to DV Freedom.",
+  "body": [
+    {
+      "type": "dropdown",
+      "id": "platform",
+      "attributes": {
+        "label": "Platform",
+        "options": [
+          "Android TV / Google TV",
+          "Google TV Streamer / Android box",
+          "LG webOS",
+          "Samsung Tizen",
+          "Hisense VIDAA",
+          "Vizio SmartCast",
+          "Roku / Roku TV",
+          "Setup GUI / browser preview",
+          "Other / unsure"
+        ]
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "need",
+      "attributes": {
+        "label": "What would this help you do?",
+        "description": "Describe the task or problem before proposing a control."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "idea",
+      "attributes": {
+        "label": "Your suggestion"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "context",
+      "attributes": {
+        "label": "Examples or context",
+        "description": "Link public references; do not upload proprietary code, personal media or private account information."
+      }
+    }
+  ]
+}

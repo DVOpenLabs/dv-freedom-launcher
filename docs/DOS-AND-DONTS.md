@@ -1,5 +1,8 @@
 # Do's and don'ts
 
+> Historical CleanYourTV review patterns, retained as reference. Upstream scope decisions and size
+> policies are not the full DV Freedom product policy; start with the current [contributor guide](../CONTRIBUTING.md).
+
 These are the reasons pull requests most often came back for changes or were closed. They come from the
 maintainer's reviews, and each line links an example. None of this replaces [CONTRIBUTING.md](../CONTRIBUTING.md):
 it is the short list of mistakes to skip. When in doubt, ask in an issue before you build. "Thanks for asking

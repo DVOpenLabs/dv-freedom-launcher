@@ -1,8 +1,15 @@
-blank_issues_enabled: true
-contact_links:
-  - name: DV Freedom setup and current support
-    url: https://github.com/DVOpenLabs/dv-freedom-launcher/blob/main/README.md
-    about: Current platforms, setup instructions and testing limits for DV Freedom Launcher.
-  - name: Samsung Tizen integration review
-    url: https://github.com/DVOpenLabs/dv-freedom-launcher/blob/main/product/SAMSUNG-REVIEW.md
-    about: Planned Samsung support, model-specific limits and the staged no-root approach.
+{
+  "blank_issues_enabled": true,
+  "contact_links": [
+    {
+      "name": "Setup paths and platform limits",
+      "url": "https://github.com/DVOpenLabs/dv-freedom-launcher/blob/main/setup_app/ALL-PLATFORMS.md",
+      "about": "Compare native Android, LG/Samsung pilots, hosted VIDAA/Vizio and Roku ambient setup."
+    },
+    {
+      "name": "Current validation and remaining checks",
+      "url": "https://github.com/DVOpenLabs/dv-freedom-launcher/blob/main/product/VALIDATION.md",
+      "about": "Review dated source checks and hardware acceptance limits before testing."
+    }
+  ]
+}

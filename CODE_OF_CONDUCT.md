@@ -1,7 +1,7 @@
 # Code of conduct
 
-This project exists because a few thousand people helped each other fix their TVs in the replies
-to a tweet. Keep it like that.
+DV Freedom is an independent project derived from CleanYourTV. Help people improve their TV setup
+with patience, useful evidence and respect for their choices.
 
 ## Expected
 
@@ -11,9 +11,8 @@ to a tweet. Keep it like that.
   hurt anyone.
 - Say what you tested on. Specifics ("Android TV 11, build RTT1, Hisense A4") help; verdicts
   ("doesn't work") do not.
-- Respect the maintainers' decisions on scope. The launcher stays small, offline and without
-  prebuilt binaries; if your idea does not fit, a fork with a SHOWCASE row is a good outcome, not a
-  rejection of you.
+- Respect decisions on scope and explain the resource cost, privacy implications and platform limits
+  of new features. A declined suggestion is not a rejection of the person proposing it.
 
 ## Not accepted
 
@@ -28,9 +27,10 @@ to a tweet. Keep it like that.
 ## Enforcement
 
 Maintainers may edit, hide or remove content and block accounts that break these rules, with a
-short explanation. To report something, open an issue, or if it is private, message
-[@gathint on X](https://x.com/gathint). Reports are read by the maintainer and handled within a
-few days.
+short explanation. Report non-sensitive problems in this repository's issue tracker. For private
+reports, contact the DVOpenLabs repository owner through an existing private channel; do not post
+personal information in public issues. There is no dedicated reporting inbox or guaranteed response
+time. Upstream CleanYourTV contacts do not handle reports for this independent project.
 
 This is a short, plain-language code adapted in spirit from the
 [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
