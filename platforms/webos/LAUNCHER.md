@@ -68,3 +68,17 @@ The portable core is now in `platforms/shared-web/core.js`; the webOS wrapper re
 Bridge, original `dv-freedom.webos.v1` key and v1 mappings. Staging copies the shared asset into the
 package and rewrites its script path. Existing 40 policy/storage/service checks remain the regression
 baseline. This source refactor does not update an installed LG app or establish new hardware acceptance.
+
+
+## Guided first-install pilot — 29 October 2026
+
+The [Windows GUI](../../setup_app/NATIVE-SETUP.md) now prepares/checks LG tools, explains Developer Mode,
+pairs locally, builds/reviews an IPK and verifies a separately confirmed first installation. It retains
+LG Home. There is no helper, root, automatic reboot or existing-app overwrite. The current official CLI
+package is 11,562 bytes without private media/starter data; hardware acceptance remains pending.
+Forty-five source policy/storage/service/starter assertions pass; packaging does not prove LG behavior.
+
+Optional starter apps come only from the checked TV's developer catalog. A private setup package can
+include them for a first-run review: **Use these apps** saves an initial empty Home; Back saves nothing.
+The prompt cannot overwrite existing profiles/preferences. The TV may expose a limited developer app
+list; unreported app IDs are not guessed. Native launch still checks actual installation separately.

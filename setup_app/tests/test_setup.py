@@ -99,6 +99,17 @@ class ServerTest(unittest.TestCase):
         draft=dict(style='clean',position='top',size='small',spacing='wide',wallpaper='dusk',apps=['example.music'])
         status,data,_=self.post('/api/plan',draft);self.assertEqual(status,200);self.assertFalse(json.loads(data)['applied'])
         self.assertEqual(json.loads(data)['choices'],draft)
+    def test_native_routes_keep_session_boundaries_and_do_not_offer_shell_or_unreviewed_install(self):
+        self.assertEqual(self.request('GET','/native.js')[0],200)
+        self.assertEqual(self.post('/api/native-info',{})[0],200)
+        self.assertEqual(self.post('/api/native-info',{}, {'X-Setup-Token':'wrong'})[0],403)
+        self.assertEqual(self.post('/api/native-info',{'command':'reboot'})[0],400)
+        self.assertEqual(self.post('/api/native-install',{})[0],400)
+        self.assertEqual(self.post('/api/native-shell',{'command':'anything'})[0],404)
+        self.session.native.lock.acquire()
+        try:self.assertEqual(self.post('/api/quit',{})[0],400)
+        finally:self.session.native.lock.release()
+
     def test_bounded_and_duplicate_json(self):
         headers={'Origin':self.origin,'Content-Type':'application/json','X-Setup-Token':self.token}
         self.assertEqual(self.request('POST','/api/preview','{"a":1,"a":2}',headers)[0],400)

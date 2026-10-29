@@ -30,8 +30,8 @@ callback means a request was accepted, not that foreground display or protected 
 The first 100 visible apps are listed; if the TV reports more, the limitation is shown.
 
 Not in this pilot: automatic Home return/startup, weather, Android TV content shelves, layout PINs,
-portable Android/LG profile import or a one-click Samsung installer. The Windows setup GUI now identifies
-the Samsung path and links here; its install/update engine remains Android-only. Samsung profiles are
+portable Android/LG profile import or an unattended Samsung installer. The Windows setup GUI now has a [guided first-install path](../../setup_app/NATIVE-SETUP.md)
+using the owner’s local SDK and existing certificate profile; native updates/backups remain pending. Samsung profiles are
 native local state; existing portable-v1 readers are unchanged.
 
 ## Preview and stage

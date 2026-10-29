@@ -12,7 +12,16 @@ def self_check():
     from adb_shell.auth.keygen import keygen
     from adb_shell.auth.sign_pythonrsa import PythonRSASigner
     assert FONT.is_file()
-    assert all((WEB/name).is_file() for name in ['index.html','app.css','app.js','install.js','scene.svg'])
+    assert all((WEB/name).is_file() for name in ['index.html','app.css','app.js','install.js','native.js','scene.svg'])
+    from platforms.webos.prepare_launcher import SOURCE as lg_source
+    from platforms.tizen.prepare_launcher import SOURCE as samsung_source
+    assert (lg_source/'appinfo.json').is_file() and (samsung_source/'config.xml').is_file()
+    from platforms.webos.prepare_launcher import prepare as stage_lg
+    from platforms.tizen.prepare_launcher import prepare as stage_samsung
+    with TemporaryDirectory() as folder:
+        stage_lg(Path(folder)/'lg');stage_samsung(Path(folder)/'samsung')
+        assert (Path(folder)/'lg/shared-core.js').is_file()
+        assert (Path(folder)/'samsung/fonts/outfit.ttf').is_file()
     from setup_app.release import Catalog
     Catalog().verify()
     with TemporaryDirectory() as folder:

@@ -27,3 +27,13 @@ The app verifies the archive against Google's HTTPS-delivered metadata checksum 
 records extracted-file SHA-256 hashes and extracts only allowlisted Windows files. It does not accept
 terms on the user's behalf. The alpha's download checks use mock archives; no real tool download or
 licence acceptance was performed during this development pass.
+
+
+The native guided installer uses separately installed vendor tools. Optional LG tool preparation pins
+LG Electronics' `@webos-tools/cli` 3.2.6 (Apache-2.0, with separately licensed dependencies) from the npm
+registry, disables install scripts and retains package lockfiles/licences/notices in the private tools
+folder. No CLI dependency or Node executable is bundled/copied into this repository's runtime. Node.js
+is installed by the user from its official distribution. Samsung Tizen Studio, TV extensions and
+certificate services are separately installed/configured by the owner under their applicable terms;
+the installer does not accept those terms or redistribute SDK/certificate material. All new adapter/UI
+code here is independent DVOpenLabs code. See [native setup](setup_app/NATIVE-SETUP.md).

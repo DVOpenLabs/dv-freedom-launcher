@@ -39,7 +39,7 @@ def serve(session=None,port=0):
             if not self.allowed(self.path.startswith('/api/')):return
             if self.path=='/api/state':self.send(session.public());return
             assets={'/':(WEB/'index.html','text/html; charset=utf-8'),'/app.css':(WEB/'app.css','text/css; charset=utf-8'),
-               '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
+               '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/native.js':(WEB/'native.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
             if self.path not in assets:self.send({'error':'Page not found.'},status=404);return
             file,mime=assets[self.path]
             try:
@@ -55,35 +55,50 @@ def serve(session=None,port=0):
                     self.close_connection=True;self.send({'error':'Request is too large.'},status=413);return
                 if self.headers.get('Content-Type','').split(';')[0]!='application/json':self.send({'error':'JSON required.'},status=415);return
                 value=json.loads(self.rfile.read(length).decode(),object_pairs_hook=unique,parse_constant=lambda _:(_ for _ in ()).throw(SetupError('Invalid number.')))
-                if self.path=='/api/cancel-install':
-                    if value!={}:raise SetupError('Unexpected stop options.')
-                    session.installer.cancelled.set();self.send({'requested':True});return
-                if session.installer.lock.locked():raise SetupError('Wait for the current installer step, or request Stop. Installation cannot be interrupted halfway through an Android package commit.')
-                if session.tools.lock.locked():raise SetupError('Pairing support is being prepared. Keep this app open until the download finishes.')
-                if session.job['status']=='running':raise SetupError('Wait for the current connection check to finish.')
-                if self.path=='/api/preview':
-                    if value!={}:raise SetupError('Unexpected preview options.')
-                    reply=session.preview()
-                elif self.path=='/api/connect':reply=session.connect(value)
-                elif self.path=='/api/backup':
-                    if value!={}:raise SetupError('Unexpected backup options.')
-                    reply=session.snapshot()
-                elif self.path=='/api/plan':reply=session.plan(value)
-                elif self.path=='/api/review-install':reply=session.installer.review(value)
-                elif self.path=='/api/tools-info':
-                    if value!={}:raise SetupError('Unexpected tools options.')
-                    reply=session.tools.info()
-                elif self.path=='/api/tools-install':reply=session.tools.install(value)
-                elif self.path=='/api/install':reply=session.installer.start(value)
-                elif self.path=='/api/check-install':reply=session.installer.check(value)
-                elif self.path=='/api/continue-install':reply=session.installer.continue_preview(value)
-                elif self.path in ['/api/restore','/api/choose-home','/api/previous-home','/api/revert-preview','/api/home-redirect-settings']:
-                    reply=session.installer.action({'/api/restore':'restore','/api/choose-home':'home','/api/previous-home':'previous','/api/revert-preview':'revert','/api/home-redirect-settings':'accessibility'}[self.path],value)
-                elif self.path=='/api/quit':
-                    if value!={}:raise SetupError('Unexpected close options.')
-                    self.send({'closed':True});threading.Thread(target=self.server.shutdown,daemon=True).start();return
-                else:self.send({'error':'This action is not available. No TV changes were made.'},status=404);return
-                self.send(reply)
+                with session.dispatch_lock:
+                    if self.path=='/api/native-cancel':
+                        if value!={}:raise SetupError('Unexpected stop options.')
+                        session.native.cancelled.set();self.send({'requested':True});return
+                    if session.native.lock.locked():raise SetupError('Wait for the current LG/Samsung step. Package installation cannot be interrupted halfway through.')
+                    if self.path=='/api/cancel-install':
+                        if value!={}:raise SetupError('Unexpected stop options.')
+                        session.installer.cancelled.set();self.send({'requested':True});return
+                    if session.installer.lock.locked():raise SetupError('Wait for the current installer step, or request Stop. Installation cannot be interrupted halfway through an Android package commit.')
+                    if session.tools.lock.locked():raise SetupError('Pairing support is being prepared. Keep this app open until the download finishes.')
+                    if session.job['status']=='running':raise SetupError('Wait for the current connection check to finish.')
+                    if self.path=='/api/native-info':
+                        if value!={}:raise SetupError('Unexpected tool check options.')
+                        reply=session.native.info()
+                    elif self.path=='/api/native-config':reply=session.native.configure(value)
+                    elif self.path=='/api/native-tools':reply=session.native.prepare_tools(value)
+                    elif self.path=='/api/native-connect':reply=session.native.connect(value)
+                    elif self.path=='/api/native-prepare':reply=session.native.prepare(value)
+                    elif self.path=='/api/native-install':reply=session.native.install(value)
+                    elif self.path=='/api/native-check':reply=session.native.check(value)
+                    elif self.path=='/api/native-launch':reply=session.native.check(value,launch=True)
+                    elif self.path=='/api/preview':
+                        if value!={}:raise SetupError('Unexpected preview options.')
+                        reply=session.preview()
+                    elif self.path=='/api/connect':reply=session.connect(value)
+                    elif self.path=='/api/backup':
+                        if value!={}:raise SetupError('Unexpected backup options.')
+                        reply=session.snapshot()
+                    elif self.path=='/api/plan':reply=session.plan(value)
+                    elif self.path=='/api/review-install':reply=session.installer.review(value)
+                    elif self.path=='/api/tools-info':
+                        if value!={}:raise SetupError('Unexpected tools options.')
+                        reply=session.tools.info()
+                    elif self.path=='/api/tools-install':reply=session.tools.install(value)
+                    elif self.path=='/api/install':reply=session.installer.start(value)
+                    elif self.path=='/api/check-install':reply=session.installer.check(value)
+                    elif self.path=='/api/continue-install':reply=session.installer.continue_preview(value)
+                    elif self.path in ['/api/restore','/api/choose-home','/api/previous-home','/api/revert-preview','/api/home-redirect-settings']:
+                        reply=session.installer.action({'/api/restore':'restore','/api/choose-home':'home','/api/previous-home':'previous','/api/revert-preview':'revert','/api/home-redirect-settings':'accessibility'}[self.path],value)
+                    elif self.path=='/api/quit':
+                        if value!={}:raise SetupError('Unexpected close options.')
+                        self.send({'closed':True});threading.Thread(target=self.server.shutdown,daemon=True).start();return
+                    else:self.send({'error':'This action is not available. No TV changes were made.'},status=404);return
+                    self.send(reply)
             except SetupError as error:self.send({'error':str(error)},status=400)
             except (ValueError,TypeError,UnicodeError):self.send({'error':'Check the form details and try again.'},status=400)
             except OSError:self.send({'error':'Could not save the local record. Check free space and folder access.'},status=400)
