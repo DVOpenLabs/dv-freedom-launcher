@@ -21,3 +21,10 @@ launcher/hs_err_pid*.log
 launcher/replay_pid*.log
 product/private/
 product/build/
+
+# Standalone setup builds and local development environments.
+setup_app/.venv/
+setup_app/build/
+setup_app/dist/
+setup_app/*.spec
+*.exe
