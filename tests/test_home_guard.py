@@ -128,7 +128,11 @@ class HomeGuardTest(unittest.TestCase):
         for client in (self.tools / "venv" / "bin" / "python",
                        self.tools / "venv" / "Scripts" / "python.exe"):
             client.parent.mkdir(parents=True, exist_ok=True)
-            client.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
+            if os.name == 'nt' and client.suffix == '.exe':
+                shutil.copy2(sys.executable, client)
+                (client.parent.parent / 'pyvenv.cfg').write_text('home = '+sys.base_prefix+'\ninclude-system-site-packages = true\n')
+            else:
+                client.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
             client.chmod(0o755)
 
         self.home = self.base / "home"

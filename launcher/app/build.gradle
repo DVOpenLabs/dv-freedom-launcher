@@ -26,8 +26,8 @@ android {
         applicationId selectedId
         minSdk 26
         targetSdk 34
-        versionCode communityFeatures ? 14 : 13
-        versionName communityFeatures ? '3.0-freedom-alpha13' : '3.0-community-alpha5'
+        versionCode communityFeatures ? 15 : 13
+        versionName communityFeatures ? '3.1-freedom-alpha14' : '3.0-community-alpha5'
     }
 
     signingConfigs {
@@ -92,7 +92,7 @@ tasks.configureEach { task ->
             keep.text = names.join('\n') + '\n'
             def suffix = System.getProperty('os.name').toLowerCase().contains('windows') ? '.exe' : ''
             def aapt = new File(android.sdkDirectory, 'build-tools/' + android.buildToolsVersion + '/aapt2' + suffix)
-            exec { commandLine aapt, 'optimize', '--collapse-resource-names', '--deduplicate-entry-values', '--resources-config-path', keep,
+            exec { commandLine aapt, 'optimize', '--collapse-resource-names', '--shorten-resource-paths', '--deduplicate-entry-values', '--resources-config-path', keep,
                     '-o', temporary, archive }
             java.nio.file.Files.move(temporary.toPath(), archive.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
         }

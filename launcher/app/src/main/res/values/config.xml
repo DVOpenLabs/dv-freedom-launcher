@@ -478,4 +478,7 @@
          faint outer glow), rim (the crisp rim alone, no sheen, fill or glow, for a quiet focus over a wallpaper) or
          halo (the rim with a lighter outer glow). Can also be set with "glass_style": "rim" in a theme's config.json. -->
     <string name="glass_style" translatable="false">glass</string>
+    <!-- Upstream 3.1: optional source folding and per-package icon banners, off by default. -->
+    <bool name="inputs_connected_only">false</bool>
+    <string-array name="icon_tiles" translatable="false"/>
 </resources>

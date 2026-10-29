@@ -179,6 +179,7 @@ final class Config {
     int tileGap;
     boolean inputVisibilityChoice;
     boolean hideInactiveHdmi;
+    boolean inputsConnectedOnly;
     boolean tvButtonPicker;
     /** The Settings button opens the quick settings panel instead of the TV's Settings (settings_key_panel). */
     final boolean settingsKeyPanel;
@@ -482,6 +483,7 @@ final class Config {
         boolean powerOnHome = res.getBoolean(R.bool.power_on_home);
         boolean homeLongPressHome = res.getBoolean(R.bool.home_long_press_home);
         boolean powerOnHomeAlways = res.getBoolean(R.bool.power_on_home_always);
+        boolean inputsConnectedOnly = ProductFeatures.upstreamExtras() && res.getBoolean(R.bool.inputs_connected_only);
         boolean homeStylePicker = res.getBoolean(R.bool.home_style_picker);
         boolean dockGlass = res.getBoolean(R.bool.dock_glass);
         boolean dockEvenPadding = res.getBoolean(R.bool.dock_even_padding);
@@ -602,6 +604,7 @@ final class Config {
             powerOnHome = bool(json, "power_on_home", powerOnHome);
             homeLongPressHome = bool(json, "home_long_press_home", homeLongPressHome);
             powerOnHomeAlways = bool(json, "power_on_home_always", powerOnHomeAlways);
+            inputsConnectedOnly = ProductFeatures.upstreamExtras() && bool(json, "inputs_connected_only", inputsConnectedOnly);
             homeStylePicker = bool(json, "home_style_picker", homeStylePicker);
             dockGlass = bool(json, "dock_glass", dockGlass);
             dockEvenPadding = bool(json, "dock_even_padding", dockEvenPadding);
@@ -746,7 +749,7 @@ final class Config {
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
                 dateBelowClock, vpnPill, locale, powerOnHomeAlways, homeStylePicker);
         result.carousel=carousel; result.appearanceControls=appearanceControls; result.tileGap=tileGap;
-        result.inputVisibilityChoice=inputVisibilityChoice; result.hideInactiveHdmi=hideInactiveHdmi;
+        result.inputsConnectedOnly=inputsConnectedOnly; result.inputVisibilityChoice=inputVisibilityChoice; result.hideInactiveHdmi=hideInactiveHdmi;
         result.tvButtonPicker=tvButtonPicker; result.desktopOrder=desktop!=null&&desktop.priority; return result;
     }
 

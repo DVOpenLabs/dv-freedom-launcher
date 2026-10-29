@@ -135,4 +135,9 @@ public class WallpaperRotationTest {
         for (int i = 0; i < out.length; i++) out[i] = files.get(i).getName();
         return Arrays.asList(out);
     }
+    @org.junit.Test public void minuteTickAllowsOnlyBoundedSchedulingSlack() {
+        org.junit.Assert.assertTrue(WallpaperRotation.due(60_000,119_800,60_000));
+        org.junit.Assert.assertFalse(WallpaperRotation.due(60_000,117_999,60_000));
+        org.junit.Assert.assertFalse(WallpaperRotation.due(60_000,60_500,1_000));
+    }
 }

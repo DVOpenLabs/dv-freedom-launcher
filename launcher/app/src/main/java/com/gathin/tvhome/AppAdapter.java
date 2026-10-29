@@ -219,6 +219,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Map<String, String> appLabels, appBanners;
     /** Every app tile is its icon on a card tinted from that icon, never its banner (config.xml, uniform_tiles). */
     private final boolean uniformTiles;
+    private final Set<String> iconTiles;
     private final List<Entry> items = new ArrayList<>();
 
     AppAdapter(Context ctx, TileListener listener, int dockSize, Config cfg) {
@@ -245,6 +246,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.restNameAlpha = PolishPolicy.nameAlpha(nameMode,cfg.alwaysShowNames ? (ProfileStore.preferences(ctx).getBoolean(HomePolish.HEADER,false)?1f:0.75f) : 0f);
         this.cinematic = cfg.cinematicHome;
         this.launchActions = cfg.launchActions;
+        this.iconTiles = ProductFeatures.upstreamExtras() ? new HashSet<>(Arrays.asList(ctx.getResources().getStringArray(R.array.icon_tiles))) : Collections.emptySet();
         this.tileMenu = cfg.tileMenu;
         this.appLabels = cfg.appLabels;
         this.appBanners = cfg.appBanners;
@@ -303,7 +305,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (!(uniformTiles && card == null)) {
                 banner = card==null?ProductFeatures.banner(ctx,pkg):null;
                 if(banner==null)banner = bundledBanner(appBanners.get(pkg));
-                if (banner == null) banner = loadBanner(pm, ri);
+                if (banner == null) banner = ProductFeatures.upstreamExtras() && card == null && iconTiles.contains(pkg) ? iconBanner(ri.loadIcon(pm)) : loadBanner(pm, ri);
             }
             // The icon is only drawn (and sampled for the glow) when there is no banner, so a tile with a
             // banner skips loading and decoding it.
@@ -341,6 +343,15 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         items.clear();
         items.addAll(fresh);
         notifyDataSetChanged();
+    }
+
+    /** Upstream icon_tiles; manual artwork and module cards keep priority. */
+    private Drawable iconBanner(Drawable icon) {
+        int w=320,h=180,side=104;
+        android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(w,h,android.graphics.Bitmap.Config.ARGB_8888);
+        android.graphics.Canvas canvas=new android.graphics.Canvas(bitmap);canvas.drawColor(0xFF15202B);
+        icon.setBounds((w-side)/2,(h-side)/2,(w+side)/2,(h+side)/2);icon.draw(canvas);
+        return new android.graphics.drawable.BitmapDrawable(ctx.getResources(),bitmap);
     }
 
     /** A banner_* drawable bundled with the launcher, or null for none or a name that is not one. */

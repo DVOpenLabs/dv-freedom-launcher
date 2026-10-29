@@ -83,6 +83,7 @@ final class WallpaperRotation {
     }
 
     static boolean due(long previous, long now, long interval) {
-        return interval > 0 && (previous == 0 || now < previous || now - previous >= interval);
+        long slack = Math.min(2_000L, interval / 10);
+        return interval > 0 && (previous == 0 || now < previous || now - previous >= interval - slack);
     }
 }

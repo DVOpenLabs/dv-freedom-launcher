@@ -144,7 +144,7 @@ public final class CategoryHomeActivity extends Activity {
             List<TvInputInfo> inputs=new ArrayList<>(manager.getTvInputList());Set<String> parents=new HashSet<>();for(TvInputInfo info:inputs)if(info.getParentId()!=null)parents.add(info.getParentId());
             inputs.sort((a,b)->String.valueOf(a.loadLabel(this)).compareToIgnoreCase(String.valueOf(b.loadLabel(this))));
             for(TvInputInfo info:inputs)if(info.isPassthroughInput()&&!parents.contains(info.getId())&&available.size()<32){
-                boolean bare=info.getType()==TvInputInfo.TYPE_HDMI&&info.getParentId()==null;if(bare&&!HdmiVisibility.visible(!showAll&&config.hideInactiveHdmi,manager.getInputState(info.getId()))){hidden++;continue;}
+                boolean hdmi=info.getType()==TvInputInfo.TYPE_HDMI,bare=hdmi&&info.getParentId()==null;int inputState=-1;try{inputState=manager.getInputState(info.getId());}catch(IllegalArgumentException ignored){}if(!showAll&&((config.inputsConnectedOnly&&InputFold.folds(hdmi,inputState))||(bare&&!HdmiVisibility.visible(config.hideInactiveHdmi,inputState)))){hidden++;continue;}
                 Intent intent=new Intent(Intent.ACTION_VIEW,TvContract.buildChannelUriForPassthroughInput(info.getId()));if(getPackageManager().resolveActivity(intent,0)==null)continue;
                 available.add(info);CharSequence custom=info.loadCustomLabel(this);labels.add(String.valueOf(custom==null?info.loadLabel(this):custom));
             }

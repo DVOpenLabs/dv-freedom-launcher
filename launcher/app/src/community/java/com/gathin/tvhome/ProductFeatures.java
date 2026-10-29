@@ -12,6 +12,7 @@ import org.json.*;
 
 /** Optional full-product features, compiled into the existing APK and data identity. */
 final class ProductFeatures {
+    static boolean upstreamExtras(){return true;}
     private static Context app;
     private static boolean initialized;
     static void init(Context c){app=c.getApplicationContext();InstallerTransfer.recover(c);if(!initialized){initialized=true;HomeHistory.initialize(c);}}

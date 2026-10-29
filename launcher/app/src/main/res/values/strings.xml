@@ -249,4 +249,5 @@
     <string name="profile_delete_help">Delete this launcher profile and its saved choices? Streaming accounts and app data stay as they are.</string>
     <string name="inputs_shortcut">Inputs shortcut</string>
     <string name="inputs_external_help">This streamer cannot list the TV’s HDMI ports. Use Input/Source on your TV remote. On Google TV Streamer, the star remote button can switch inputs after remote setup. Open TV system settings, then Remotes &amp; accessories, to configure remote buttons.</string>
+    <string name="more_inputs">More inputs</string>
 </resources>

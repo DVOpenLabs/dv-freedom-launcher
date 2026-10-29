@@ -151,6 +151,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private LiveVideo liveVideo;
     private boolean carousel;
     private boolean hideInactiveHdmi;
+    private boolean inputsConnectedOnly;
     private TvButtonController tvButton;
     private CompanionControls companionControls;
     private GlassView glass;
@@ -427,6 +428,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         singleRow = cfg.singleRow;
         carousel = cfg.carousel;
         hideInactiveHdmi = cfg.hideInactiveHdmi;
+        inputsConnectedOnly = cfg.inputsConnectedOnly;
         tvButton = cfg.tvButtonPicker ? new TvButtonController(this, cfg) : null;
         companionControls = new CompanionControls(this);
         focusOvershoot = cfg.focusOvershoot;
@@ -1911,6 +1913,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             }
         } else {
             hero.setY(y);
+            // Upstream #1988: finish cancelled fades after a second Home on the same tile.
+            if (hero.getAlpha() < 1f) hero.animate().alpha(1f).setDuration(260).start();
+            if (ambientGlow && color == ambientColor && ambient.getAlpha() < 1f)
+                ambient.animate().alpha(1f).setDuration(600).start();
         }
     }
 
@@ -3234,6 +3240,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                         String deviceLabel = name == null || name.length() == 0 ? label : name + " \u00B7 " + label;
                         final String deviceId = device.getId();
                         int state = hdmiStateBogus ? -1 : inputState(tim, deviceId);
+                        if (!showAll && inputsConnectedOnly && InputFold.folds(true, state)) { hiddenHdmi++; continue; }
                         addInputRow(rows, popup, R.drawable.ic_input, deviceLabel, state, () -> openInput(deviceId));
                     }
                     continue;
@@ -3244,7 +3251,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 // Analog AV jacks have no hotplug detection, and some TVs report them as always connected
                 // (TCL Smart TV Pro G03 says "Connected" with nothing plugged in), so AV rows show no state.
                 int state = !hdmi || hdmiStateBogus ? -1 : inputState(tim, id);
-                if (hdmi && !HdmiVisibility.visible(hideInactiveHdmi && !showAll, state)) {
+                if (!showAll && ((inputsConnectedOnly && InputFold.folds(hdmi, state))
+                        || (hdmi && !HdmiVisibility.visible(hideInactiveHdmi, state)))) {
                     hiddenHdmi++;
                     continue;
                 }
