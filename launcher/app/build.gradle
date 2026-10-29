@@ -2,6 +2,9 @@ plugins {
     id 'com.android.application'
 }
 def communityFeatures = providers.gradleProperty('communityFeatures').map { it.toBoolean() }.getOrElse(false)
+def freedomRelease = providers.gradleProperty('freedomRelease').map { it.toBoolean() }.getOrElse(false)
+def selectedId = providers.gradleProperty('launcherApplicationId').getOrElse(communityFeatures ? 'com.dvopenlabs.freedomlauncher' : 'com.gathin.tvhome')
+if (freedomRelease && (!communityFeatures || selectedId != 'com.dvopenlabs.freedomlauncher')) throw new GradleException('Freedom release signing is only for the standalone product identity')
 
 android {
     namespace 'com.gathin.tvhome'
@@ -20,21 +23,33 @@ android {
 
     defaultConfig {
         // Opt-in identity for firmware with a package-name HOME allowlist; see docs/devices/xiaomi-mitv-aetp0-dofus.md.
-        applicationId providers.gradleProperty('launcherApplicationId').getOrElse('com.gathin.tvhome')
+        applicationId selectedId
         minSdk 26
         targetSdk 34
-        versionCode 13
-        versionName communityFeatures ? '3.0-freedom-alpha12' : '3.0-community-alpha5'
+        versionCode communityFeatures ? 14 : 13
+        versionName communityFeatures ? '3.0-freedom-alpha13' : '3.0-community-alpha5'
     }
 
+    signingConfigs {
+        if (freedomRelease) {
+            freedom {
+                if (!System.getenv('DVFREEDOM_KEYSTORE') || !System.getenv('DVFREEDOM_KEY_PASSWORD')) throw new GradleException('Release signing material is required outside the repository')
+                storeFile file(System.getenv('DVFREEDOM_KEYSTORE'))
+                storeType 'PKCS12'
+                storePassword System.getenv('DVFREEDOM_KEY_PASSWORD')
+                keyAlias 'dv-freedom'
+                keyPassword System.getenv('DVFREEDOM_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
             // R8 strips and optimises the code (AndroidX included): smaller APK, faster start on a slow TV CPU.
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Sideloaded over ADB, never published: sign with the debug key so it installs over a debug build.
-            signingConfig signingConfigs.debug
+            // Explicit standalone releases use the external release key; compatible development pilots retain debug signing.
+            signingConfig freedomRelease ? signingConfigs.freedom : signingConfigs.debug
         }
     }
 

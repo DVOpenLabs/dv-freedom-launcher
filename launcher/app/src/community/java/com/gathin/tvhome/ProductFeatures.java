@@ -14,7 +14,7 @@ import org.json.*;
 final class ProductFeatures {
     private static Context app;
     private static boolean initialized;
-    static void init(Context c){app=c.getApplicationContext();if(!initialized){initialized=true;HomeHistory.initialize(c);}}
+    static void init(Context c){app=c.getApplicationContext();InstallerTransfer.recover(c);if(!initialized){initialized=true;HomeHistory.initialize(c);}}
     static void beforeChange(String reason){if(app!=null)HomeHistory.before(app,reason);}
     static int tileWidth(Context c,int width){return IconSizePolicy.width(width,IconSizes.current(c));}
     static boolean settingsAccess(Activity a){Config.load(a);boolean ready=LauncherLock.require(a,a::recreate);LauncherLock.watch(a,ready);return ready;}
@@ -22,7 +22,7 @@ final class ProductFeatures {
     static boolean profilePicker(Activity a,boolean allowImport){ProfileAvatars.show(a,allowImport);return true;}
     static boolean allowEdit(Activity a,Runnable after){return LauncherLock.require(a,after);}
     static boolean layoutEditable(Context c){return LauncherLock.open(c);}
-    static Bundle setupOperation(Context c,String method,String arg)throws Exception{return SetupTransfer.call(c,method,arg);}
+    static Bundle setupOperation(Context c,String method,String arg)throws Exception{Bundle result=InstallerTransfer.call(c,method,arg);return result!=null?result:SetupTransfer.call(c,method,arg);}
     static void beforeChange(Context c,String reason){HomeHistory.before(c,reason);}
     static boolean routeHome(MainActivity a){return ExperienceChoice.route(a);}
     static boolean homeAction(MainActivity a,Intent intent){
@@ -37,6 +37,7 @@ final class ProductFeatures {
         if(a instanceof ExperienceHomeActivity||(a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&(HomeCategories.enabled(a)||ExperienceChoice.enabled(a))))WallpaperPlaylist.attach(a);
         a.getWindow().getDecorView().postDelayed(()->{
             if(a.isDestroyed()||a.isFinishing()||!a.hasWindowFocus())return;
+            InstallerTransfer.maybePrompt(a);
             HomeAppearance.apply(a);
             if(a instanceof MainActivity&&!ExperienceChoice.enabled(a)&&PlacementSession.preview()==null&&StyleSession.preview()==null&&HomeCategories.enabled(a)){CategoryHomeActivity.openIfEnabled((MainActivity)a,Config.load(a));return;}
         },240);

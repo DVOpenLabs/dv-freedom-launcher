@@ -135,7 +135,7 @@ final class SettingsNavigation {
     private void credits(){
         StringBuilder notice=new StringBuilder();
         try(java.io.BufferedReader reader=new java.io.BufferedReader(new java.io.InputStreamReader(a.getResources().openRawResource(R.raw.freedom_notices),java.nio.charset.StandardCharsets.UTF_8))){String line;while((line=reader.readLine())!=null)notice.append(line).append('\n');}
-        catch(java.io.IOException failure){notice.append("Licence and source credits: github.com/DVOpenLabs/cleanyourtv");}
+        catch(java.io.IOException failure){notice.append("Licence and source credits: github.com/DVOpenLabs/dv-freedom-launcher");}
         new AlertDialog.Builder(a).setTitle(R.string.freedom_credits).setMessage(notice.toString()).setPositiveButton(android.R.string.ok,null).show();
     }
     private Item current(){Item node=root;for(int i:path){if(i<0||i>=node.children.length)throw new IllegalArgumentException();node=node.children[i];}return node;}

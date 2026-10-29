@@ -28,3 +28,5 @@ setup_app/build/
 setup_app/dist/
 setup_app/*.spec
 *.exe
+
+setup_app/release_bundle/

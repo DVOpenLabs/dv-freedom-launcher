@@ -6,5 +6,6 @@
         <activity android:name="com.gathin.tvhome.ExperienceHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
         <activity android:name="com.gathin.tvhome.ContentShelfActivity" android:exported="false" android:screenOrientation="landscape" />
         <activity android:name="com.gathin.tvhome.GuidedSetupActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name="com.gathin.tvhome.InstallerPreviewActivity" android:exported="false" android:screenOrientation="landscape" android:theme="@style/Freedom.InstallerPreview" />
     </application>
 </manifest>

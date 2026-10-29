@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="ReferenceType">
     <string name="freedom_heading_font" translatable="false">@font/freedom_semibold</string>
     <style name="Theme.Freedom" parent="Theme.TvHome"><item name="android:alertDialogTheme">@style/Freedom.Dialog</item></style>
+    <style name="Freedom.InstallerPreview" parent="Theme.Freedom"><item name="android:windowIsTranslucent">true</item><item name="android:windowBackground">@android:color/transparent</item><item name="android:windowNoTitle">true</item><item name="android:backgroundDimEnabled">false</item></style>
     <style name="Freedom.Dialog" parent="android:Theme.Material.Dialog.Alert">
         <item name="android:windowBackground">@drawable/freedom_dialog_background</item>
         <item name="android:colorBackground">#182332</item>

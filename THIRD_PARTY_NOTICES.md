@@ -21,5 +21,9 @@ these are separate from the Android APK. The Windows build collects their distri
 licence files, the Python runtime licence, PyInstaller notices and the Outfit OFL notice. Source
 requirements and the exact dated build environment are in `setup_app/`. The starter scene in
 `setup_app/web/scene.svg` is original DVOpenLabs SVG artwork, under this repository's MIT terms.
-No platform-tools executable is bundled or downloaded. Optional pairing uses the user's existing
-local `adb` installation.
+No platform-tools executable is bundled. Optional pairing uses an existing local `adb`, or an explicit
+user-consented download from Google's official HTTPS repository after showing Google's actual licence.
+The app verifies the archive against Google's HTTPS-delivered metadata checksum (currently SHA-1),
+records extracted-file SHA-256 hashes and extracts only allowlisted Windows files. It does not accept
+terms on the user's behalf. The alpha's download checks use mock archives; no real tool download or
+licence acceptance was performed during this development pass.

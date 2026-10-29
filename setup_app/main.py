@@ -12,7 +12,9 @@ def self_check():
     from adb_shell.auth.keygen import keygen
     from adb_shell.auth.sign_pythonrsa import PythonRSASigner
     assert FONT.is_file()
-    assert all((WEB/name).is_file() for name in ['index.html','app.css','app.js','scene.svg'])
+    assert all((WEB/name).is_file() for name in ['index.html','app.css','app.js','install.js','scene.svg'])
+    from setup_app.release import Catalog
+    Catalog().verify()
     with TemporaryDirectory() as folder:
         key=Path(folder)/'test-key';keygen(str(key))
         signer=PythonRSASigner(key.with_suffix('.pub').read_text(),key.read_text())

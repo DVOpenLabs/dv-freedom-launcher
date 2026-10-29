@@ -47,7 +47,8 @@ class Device:
     def __init__(self,host,port,root,paired=False):
         self.host,self.port=address(host,port);self.root=root;self.paired=paired;self.device=None
     def _adb(self,args,code=None):
-        adb=shutil.which('adb')
+        from .platform_tools import find_adb
+        adb=find_adb(self.root)
         if not adb: raise SetupError('Pairing-code connections need Android Platform Tools on this computer. Use the official download linked in Help, or a TV’s supported USB/network debugging option.')
         try:
             r=subprocess.run([adb,*args],input=code,capture_output=True,text=True,timeout=30,
@@ -93,15 +94,17 @@ def inspect(device):
     if api<26:raise SetupError('This launcher needs Android 8 or newer. Nothing was changed on your TV.')
     packages=set(re.findall(r'^package:([\w.]+)$',values['packages'],re.M))
     apps=sorted(set(re.findall(r'^([\w.]+)/[^\s]+$',values['apps'],re.M)))
-    apps=[{'package':p,'name':APP_NAMES.get(p,p)} for p in apps if p in packages and p not in {'com.gathin.tvhome','com.dvopenlabs.cytv.usabilitytest'}]
+    apps=[{'package':p,'name':APP_NAMES.get(p,p)} for p in apps if p in packages and p not in {'com.gathin.tvhome','com.dvopenlabs.cytv.usabilitytest','com.dvopenlabs.freedomlauncher'}]
     return {'model':values['model'][:120],'android':values['android'][:24],'api':api,'apps':apps[:256],
-       'existingLauncher':bool(packages & {'com.gathin.tvhome','com.dvopenlabs.cytv.usabilitytest'}),
+       'existingLauncher':bool(packages & {'com.gathin.tvhome','com.dvopenlabs.cytv.usabilitytest','com.dvopenlabs.freedomlauncher'}),
+       'standaloneInstalled':'com.dvopenlabs.freedomlauncher' in packages,
+       'legacyLauncher':bool(packages & {'com.gathin.tvhome','com.dvopenlabs.cytv.usabilitytest'}),
        'checks':{'android':True,'connection':True},'raw':values}
 
 def validate_plan(value,apps):
     if not isinstance(value,dict) or set(value)!={'style','position','size','spacing','wallpaper','apps'}: raise SetupError('The setup plan is incomplete. Review your Home choices again.')
     enums={'style':['classic','clean','glass','cinema'],'position':['top','middle','bottom'],
-        'size':['small','medium','large'],'spacing':['compact','comfortable','wide'],'wallpaper':['coast','dusk','forest']}
+        'size':['small','medium','large'],'spacing':['compact','comfortable','wide'],'wallpaper':['keep','coast','dusk','forest']}
     for key,choices in enums.items():
         if value[key] not in choices:raise SetupError('Choose a supported '+key+'.')
     selected=value['apps'];available={a['package'] for a in apps}
@@ -113,13 +116,19 @@ class Session:
     def __init__(self,root=None,device_factory=Device):
         self.root=Path(root) if root else private_dir();self.factory=device_factory;self.lock=threading.Lock()
         self.mode='preview';self.inventory=None;self.backup=None;self.job={'status':'idle'}
+        self.connection=None
+        from .installer import Installer
+        self.installer=Installer(self)
+        from .platform_tools import PairingTools
+        self.tools=PairingTools(self.root)
     def public(self):
         info=copy.deepcopy(self.inventory)
         if info:info.pop('raw',None)
-        return {'mode':self.mode,'device':info,'backup':self.backup,'job':copy.deepcopy(self.job),
-          'installAvailable':False,'releaseMessage':'Production installation is not available in this alpha. You can connect, save a device record and export your Home plan. No TV settings are changed.'}
+        install=self.installer.state()
+        return {'mode':self.mode,'device':info,'backup':self.backup,'job':copy.deepcopy(self.job),'tools':self.tools.state(),**install,
+          'installAvailable':install['release']['available'] and self.mode=='device' and bool(self.inventory),'releaseMessage':install['release'].get('message','Offline signed launcher ready. Default Home changes only through your TV’s chooser.')}
     def preview(self):
-        self.mode='preview';self.backup=None;self.job={'status':'idle'}
+        self.mode='preview';self.backup=None;self.job={'status':'idle'};self.connection=None;self.installer.reviewed=None
         self.inventory={'model':'Example Google TV','android':'14','api':34,'apps':copy.deepcopy(DEMO_APPS),'existingLauncher':False,'checks':{'android':True,'connection':True}}
         return self.public()
     def connect(self,value):
@@ -131,13 +140,13 @@ class Session:
             address(host,value['pairPort'])
             if not isinstance(value['code'],str) or not re.fullmatch(r'\d{6}',value['code']):raise SetupError('Enter the six-digit code shown on the TV.')
         if not self.lock.acquire(blocking=False):raise SetupError('A connection check is already running. Wait for it to finish.')
-        self.mode='device';self.inventory=None;self.backup=None;self.job={'status':'running','message':'Waiting for the TV. Choose Allow if a prompt appears.'}
+        self.mode='device';self.inventory=None;self.backup=None;self.connection=None;self.installer.reviewed=None;self.job={'status':'running','message':'Waiting for the TV. Choose Allow if a prompt appears.'}
         def run():
             device=None
             try:
                 device=self.factory(host,port,self.root,paired)
                 if paired:device.pair(value['pairPort'],value['code'])
-                device.connect();self.inventory=inspect(device);self.job={'status':'done','message':'TV details read. Nothing has been installed or changed.'}
+                device.connect();self.inventory=inspect(device);self.connection={'host':host,'port':port,'paired':paired};self.job={'status':'done','message':'TV details read. Nothing has been installed or changed.'}
             except SetupError as error:self.job={'status':'error','message':str(error)}
             except Exception:self.job={'status':'error','message':'The TV stopped responding. Keep it on, check debugging and reconnect. Nothing was installed.'}
             finally:

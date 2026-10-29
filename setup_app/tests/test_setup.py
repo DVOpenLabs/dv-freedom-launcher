@@ -84,10 +84,10 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(self.post('/api/preview',{}, {'X-Setup-Token':'wrong'})[0],403)
         self.assertEqual(self.request('GET','/',headers={'Host':'external.invalid'})[0],403)
         self.assertEqual(self.request('GET','/api/state')[0],403)
-    def test_no_install_or_shell_endpoint(self):
-        for path in ['/api/install','/api/shell','/api/reboot','/api/home']:
+    def test_no_unreviewed_install_or_arbitrary_shell_endpoint(self):
+        self.assertEqual(self.post('/api/install',{})[0],400)
+        for path in ['/api/shell','/api/reboot','/api/home']:
             self.assertEqual(self.post(path,{})[0],404)
-        self.assertFalse(self.session.public()['installAvailable'])
     def test_no_open_file_route_and_strict_assets(self):
         for path in ['/../LICENSE','/files?path=secret','/app.js?path=secret']:
             self.assertEqual(self.request('GET',path)[0],404)
