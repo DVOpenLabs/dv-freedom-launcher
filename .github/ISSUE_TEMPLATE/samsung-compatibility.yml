@@ -1,0 +1,69 @@
+{
+  "name": "Samsung compatibility / interest",
+  "description": "Share a Samsung model for the planned Tizen edition. No native Samsung build is available yet.",
+  "title": "[Samsung] ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "DV Freedom does not yet have a native Samsung build. This form collects model information and observations only; it does not ask you to enable Developer Mode, change settings or install another launcher. Keep serial numbers, DUID, IP/MAC addresses, tokens, certificates and account information out of the report."
+      }
+    },
+    {
+      "type": "input",
+      "id": "model",
+      "attributes": {
+        "label": "Full Samsung model code",
+        "description": "Use the product model code, not the serial number."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "input",
+      "id": "software",
+      "attributes": {
+        "label": "Installed firmware and Tizen version",
+        "description": "Enter the versions shown by your TV, or say unknown. Model year alone is insufficient."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "dropdown",
+      "id": "device",
+      "attributes": {
+        "label": "Where do the apps run?",
+        "options": [
+          "Directly on Samsung (Tizen)",
+          "On an external Google TV / Android TV box",
+          "Unsure"
+        ]
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "goal",
+      "attributes": {
+        "label": "What would you like to use or test?",
+        "description": "For example: manual dashboard, profiles, wallpapers, app return or startup. Existing Android support is separate."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "observations",
+      "attributes": {
+        "label": "Existing observations (optional)",
+        "description": "If you already tested another project, name it and distinguish app launch, Home, Back/app exit, standby and cold boot. State not tested where appropriate; no new tests are required to submit this form."
+      }
+    }
+  ]
+}
