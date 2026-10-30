@@ -1,0 +1,170 @@
+{
+  "formatVersion": 1,
+  "androidBase": {
+    "repository": "https://github.com/Gathin23/cleanyourtv",
+    "commit": "f592b6d2db0cfa0e28779660f25ff65386a5ff9b",
+    "prototypeCommit": "8509d07c47b4f05afe7ba19ee0fcd2bc915218c9",
+    "path": "launcher",
+    "license": "MIT"
+  },
+  "upstreamRelease": {
+    "repository": "https://github.com/Gathin23/cleanyourtv",
+    "tag": "v3.1.0",
+    "commit": "1684678064aa7bbb4881e6069e4cfbd4b5fc9df7",
+    "license": "MIT",
+    "optionalAddons": [
+      {
+        "path": "addons/tv-inspector",
+        "author": "shaharukhs"
+      },
+      {
+        "path": "addons/bluetooth-toggle",
+        "author": "justin-newman",
+        "adaptation": "Panel-only on open, no auto-close by default"
+      }
+    ]
+  },
+  "allPlatformReferences": {
+    "implementation": "Independent adapters and ambient app; no external launcher code, credential generator or vendor secrets imported",
+    "entries": [
+      {
+        "name": "CleanFrame Hisense",
+        "repository": "https://github.com/mcncl/cleanframe-hisense",
+        "commit": "e680a0c1b07d33a20b8a2c2ac3cfaa3149322540",
+        "use": "Experimental server-assisted VIDAA architecture; not imported"
+      },
+      {
+        "name": "vidaa-launcher",
+        "repository": "https://github.com/Zfinix/vidaa-launcher",
+        "commit": "ca622fdef41e66564e46ddd816ef1714453270a2",
+        "use": "RemoteNow topic/app payload and debug-tile reference only; credentials, TLS bypass and watcher excluded"
+      },
+      {
+        "name": "vizaio-conjure",
+        "repository": "https://github.com/joebeeson/vizaio-conjure",
+        "commit": "df511318d936bbe36030378fee46a5755fb0c030",
+        "use": "Normal Conjure app 17/namespace 4 reference; independent bounded implementation"
+      },
+      {
+        "name": "vizaio",
+        "repository": "https://github.com/raman325/vizaio",
+        "commit": "aa737707836ac1d97df753192640595583e7823e",
+        "use": "Pairing/current-app protocol reference only; no code/dependency imported"
+      },
+      {
+        "name": "Roku developer documentation",
+        "url": "https://developer.roku.com/dev/docs/external-control-api",
+        "use": "No in-app ECP or control relay; independent ambient app only"
+      }
+    ]
+  },
+  "phonePairingDependencies": [
+    {
+      "name": "python-qrcode",
+      "version": "8.2",
+      "repository": "https://github.com/lincolnloop/python-qrcode",
+      "license": "BSD-3-Clause with original MIT notice",
+      "reuse": "Local address-only SVG QR generation"
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "repository": "https://github.com/tartley/colorama",
+      "license": "BSD-3-Clause",
+      "reuse": "Windows transitive dependency of qrcode"
+    }
+  ],
+  "optionalCompanions": {
+    "implementation": "Independent DVOpenLabs code; upstream Smart Home, Game Day and Webmote are feature references, not copied implementations",
+    "dependencies": [
+      {
+        "name": "biweekly",
+        "version": "0.6.8",
+        "repository": "https://github.com/mangstadt/biweekly/tree/0.6.8",
+        "license": "BSD-2-Clause; embedded google-rfc-2445 and codec notices retained"
+      },
+      {
+        "name": "vinnie",
+        "version": "2.0.2",
+        "repository": "https://github.com/mangstadt/vinnie",
+        "license": "BSD notices in distributed LICENSES"
+      },
+      {
+        "name": "OkHttp",
+        "version": "4.12.0",
+        "repository": "https://github.com/square/okhttp/tree/parent-4.12.0",
+        "license": "Apache-2.0"
+      },
+      {
+        "name": "Okio",
+        "version": "3.6.0",
+        "repository": "https://github.com/square/okio/tree/parent-3.6.0",
+        "license": "Apache-2.0"
+      },
+      {
+        "name": "Kotlin stdlib",
+        "version": "1.9.10",
+        "repository": "https://github.com/JetBrains/kotlin/tree/v1.9.10",
+        "license": "Apache-2.0"
+      },
+      {
+        "name": "JetBrains annotations",
+        "version": "13.0",
+        "repository": "https://github.com/JetBrains/java-annotations",
+        "license": "Apache-2.0"
+      },
+      {
+        "name": "Apache Commons Codec",
+        "version": "1.23.0",
+        "repository": "https://commons.apache.org/proper/commons-codec/",
+        "license": "Apache-2.0"
+      }
+    ]
+  },
+  "alpha18Integrations": {
+    "implementation": "Independent DVOpenLabs code; no proprietary launcher or unlicensed provider source copied",
+    "tmdb": {
+      "api": "https://developer.themoviedb.org/reference/discover-movie",
+      "attribution": "https://developer.themoviedb.org/docs/faq",
+      "logoGeometrySource": "https://github.com/dracu-lah/TMPlayer/blob/c716e99dc88e11e2fce5c2f2e8b162e8b91050ba/ui/src/shared/kotlin/com/tmplayer/ui/about/TmdbLogo.kt",
+      "logoRights": "TMDB trademark, attribution use only; Android vector format conversion"
+    },
+    "immich": {
+      "schema": "https://github.com/immich-app/immich/blob/main/open-api/immich-openapi-specs.json",
+      "routes": [
+        "GET /api/albums/{id}",
+        "GET /api/assets/{id}/thumbnail?size=preview"
+      ]
+    },
+    "gemini": {
+      "api": "https://ai.google.dev/api/generate-content"
+    }
+  },
+  "purpose": "Integrated source provenance and bundled dependency licences. Internal research and validation records are not published.",
+  "android32Adaptations": {
+    "repository": "https://github.com/Gathin23/cleanyourtv",
+    "license": "MIT",
+    "release": "v3.2.0",
+    "releaseCommit": "42fe7b09d61fb9175cb03b8c659cd63c9c1dd9a4",
+    "sourcePullRequests": [
+      2304,
+      2330,
+      2359,
+      2180,
+      1764,
+      2178
+    ],
+    "components": [
+      "Classic idle lifecycle and date measurement",
+      "remote hold ownership and ignored actions",
+      "RTL App Library alignment",
+      "Bluetooth Android-version permission guard"
+    ],
+    "independentProductCode": [
+      "Profile-owned browser exclusions",
+      "Foreground startup wait coordinator",
+      "Bounded app-link policy and editors",
+      "Optional tool routing and signed Setup catalogue"
+    ]
+  }
+}

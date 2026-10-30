@@ -7,9 +7,9 @@
       "about": "Compare native Android, LG/Samsung pilots, hosted VIDAA/Vizio and Roku ambient setup."
     },
     {
-      "name": "Current validation and remaining checks",
-      "url": "https://github.com/DVOpenLabs/dv-freedom-launcher/blob/main/product/VALIDATION.md",
-      "about": "Review dated source checks and hardware acceptance limits before testing."
+      "name": "Development status and limitations",
+      "url": "https://github.com/DVOpenLabs/dv-freedom-launcher#alpha-limitations",
+      "about": "Review public platform capabilities and alpha limitations before testing."
     }
   ]
 }

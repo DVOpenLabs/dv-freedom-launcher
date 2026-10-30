@@ -132,6 +132,8 @@ class AuditTest(unittest.TestCase):
         self.assertNotIn("declares RECORD_AUDIO", written)
 
 
+
+
 class CatalogueTest(unittest.TestCase):
     def test_they_are_telemetry_rows(self):
         for name in NEW:
@@ -139,34 +141,12 @@ class CatalogueTest(unittest.TestCase):
                 self.assertEqual(privacy.CATALOGUE[name][0], "telemetry")
                 self.assertFalse(privacy.NAME_HINT.search(name), "the catalogue is what finds it")
 
+
     def test_no_row_is_a_package_disable_sh_refuses(self):
         # --write puts every catalogue row the TV has into the list, and tools/disable.sh refuses a
         # list that names a core package (#884).
         self.assertEqual(recovery.core_packages(list(privacy.CATALOGUE)), [])
 
-    def test_the_lists_a_note_names_disable_the_package(self):
-        folders = disabled_by_folder()
-        named = {
-            LOGGING: ("Chromecast HD and 4K and Google TV Streamer lists",
-                      ("google-chromecast-gtv-hd", "google-chromecast-gtv-4k",
-                       "google-tv-streamer-4k-kirkwood")),
-            NETOSCOPE: ("Chromecast with Google TV 4K lists", ("google-chromecast-gtv-4k",)),
-        }
-        for name, (words, expected) in named.items():
-            self.assertIn(words, privacy.CATALOGUE[name][1])
-            for folder in expected:
-                with self.subTest(package=name, folder=folder):
-                    self.assertIn(name, folders[folder])
-
-    def test_the_shares_in_the_notes_match_examples(self):
-        folders = disabled_by_folder()
-        total = len(folders)
-        both = sum(1 for names in folders.values() if CONSENT in names and FEEDBACK in names)
-        partner = sum(1 for names in folders.values() if PARTNER in names)
-        self.assertIn("about one in five lists", privacy.CATALOGUE[CONSENT][1])
-        self.assertTrue(0.15 <= both / total <= 0.25, f"{both} of {total} lists")
-        self.assertIn("about a third of the lists", privacy.CATALOGUE[PARTNER][1])
-        self.assertTrue(0.28 <= partner / total <= 0.4, f"{partner} of {total} lists")
 
 
 if __name__ == "__main__":

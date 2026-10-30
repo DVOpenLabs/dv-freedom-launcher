@@ -8,14 +8,16 @@ ROOT=Path(__file__).resolve().parents[2]
 INTERNAL={'AGENTS.md','CLAUDE.md','GEMINI.md','product/ROADMAP.md','product/VALIDATION.md',
  'product/LG-HELPER-REVIEW.md','product/SAMSUNG-REVIEW.md','product/UPSTREAM-3.1.0-REVIEW.md',
  'setup_app/VALIDATION.md','setup_app/DESIGN.md','product/ANDROID-APPEARANCE.md',
- 'product/ANDROID-USABILITY.md','product/ANDROID-POLISH.md'}
+ 'product/ANDROID-USABILITY.md','product/ANDROID-POLISH.md','product/LG-NEXT.md',
+ 'product/INSTALLER.md','product/PROJECT-SETUP.md','product/SHOWCASE-LIGHTWEIGHT.md',
+ 'product/PROJECTIVY-REVIEW.md','product/SHOWCASE-REVIEW-2026-10.md','docs/REPOSITORY-AUDIT.md'}
 
 class PublicationTests(unittest.TestCase):
     def tracked(self):
         return set(subprocess.check_output(['git','ls-files','-z'],cwd=ROOT).decode().strip('\0').split('\0'))
     def test_internal_records_are_not_tracked(self):
         self.assertFalse(self.tracked() & INTERNAL)
-        private_names=re.compile(r'^(?:AGENTS|CLAUDE|GEMINI|ROADMAP[^/]*|VALIDATION[^/]*|[^/]*-REVIEW[^/]*)\.md$',re.I)
+        private_names=re.compile(r'^(?:AGENTS|CLAUDE|GEMINI|ROADMAP[^/]*|VALIDATION[^/]*|[^/]*-(?:REVIEW|AUDIT)[^/]*)\.md$',re.I)
         self.assertEqual([],sorted(p for p in self.tracked() if private_names.match(Path(p).name)
                                   or any(part in {'.agents','.codex'} for part in Path(p).parts)))
     def test_internal_records_are_ignored(self):
@@ -24,8 +26,9 @@ class PublicationTests(unittest.TestCase):
     def test_public_guides_do_not_link_internal_records(self):
         import posixpath
         for name in self.tracked():
-            if not name.endswith('.md'):continue
+            if not name.endswith(('.md','.json','.yml','.yaml','.html')):continue
             text=subprocess.check_output(['git','show',':'+name],cwd=ROOT).decode('utf-8')
+            self.assertNotRegex(text,r'https://github\.com/DVOpenLabs/dv-freedom-launcher/blob/[^/]+/(?:product/(?:ROADMAP|VALIDATION|LG-NEXT|[^/]*REVIEW[^/]*)|setup_app/(?:DESIGN|VALIDATION))\.md',name)
             for link in re.findall(r'\]\(([^)]+)\)',text):
                 if '://' in link:
                     if 'github.com/DVOpenLabs/dv-freedom-launcher/blob/' in link:

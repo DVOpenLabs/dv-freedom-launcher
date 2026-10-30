@@ -332,15 +332,6 @@ class SetThemeFolderTest(unittest.TestCase):
         self.assertIsNone(self.set_key(folder=mine))
         self.assertIs(json.loads((mine / "config.json").read_text(encoding="utf-8"))["dock_band"], True)
 
-    def test_every_folder_that_ships_a_config_json_is_one_set_refuses(self):
-        # A third kind of folder with a config.json in it (a new add-on contract, say) has to be added to
-        # PROJECT_FOLDERS, or set would rewrite it the way examples/ used to be rewritable.
-        shipped = {}
-        for path in sorted(ROOT.glob("*/*/config.json")):
-            shipped.setdefault(path.relative_to(ROOT).parts[0], set()).add(path)
-        self.assertGreaterEqual(sum(len(v) for v in shipped.values()), 60, "no config.json files were found")
-        self.assertEqual({"examples", "themes"}, set(shipped), "a folder with a config.json that set does not guard")
-        self.assertEqual(set(shipped), set(manage.PROJECT_FOLDERS))
 
 
     def test_the_page_that_hands_out_set_names_the_refusal(self):

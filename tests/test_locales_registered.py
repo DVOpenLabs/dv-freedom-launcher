@@ -143,12 +143,6 @@ class LocaleConfigTest(unittest.TestCase):
         text = MANIFEST.read_text(encoding="utf-8")
         self.assertIn('android:localeConfig="@xml/locales_config"', text)
 
-    def test_the_readme_names_every_language(self):
-        block = languages_block(FRONT.read_text(encoding="utf-8"))
-        self.assertTrue(block, "README.md has no Languages block")
-        self.assertEqual([], unnamed(block),
-                         "README.md's Languages list leaves these out, though the count above it "
-                         "includes them")
 
     def test_the_name_table_covers_every_folder(self):
         # NAMES is the only map from a qualifier to a name. A language it does not know would be

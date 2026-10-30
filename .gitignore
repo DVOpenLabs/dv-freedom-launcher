@@ -75,3 +75,9 @@ platforms/roku/*.zip
 **/ROADMAP*.md
 **/VALIDATION*.md
 **/*-REVIEW*.md
+**/*-AUDIT*.md
+/product/LG-NEXT.md
+/product/INSTALLER.md
+/product/PROJECT-SETUP.md
+/product/SHOWCASE-LIGHTWEIGHT.md
+/product/experience-preview/

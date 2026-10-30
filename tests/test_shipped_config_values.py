@@ -103,30 +103,7 @@ class ShippedConfigValuesTest(unittest.TestCase):
         self.assertEqual(self.kinds.get("wifi_label_width"), ("integer", (0, 300)),
                          "wifi_label_width's bounds moved; the example and the Keys row follow them")
 
-    def test_no_shipped_value_is_one_the_launcher_drops(self):
-        files = config_files()
-        self.assertGreaterEqual(len(files), 50, "fewer config.json files found than the tree ships")
-        checked = 0
-        for path in files:
-            values = json.loads(path.read_text(encoding="utf-8"))
-            checked += sum(1 for key in values if key in self.kinds)
-            for key, why in problems(values, self.kinds):
-                with self.subTest(file=str(path.relative_to(ROOT)), key=key):
-                    self.fail(f"{path.relative_to(ROOT)} sets `{key}` and {why}: the launcher shows its "
-                              f"built-in value instead, and nothing says so")
-        self.assertGreaterEqual(checked, 150, "the sweep read far fewer values than the tree carries")
 
-    def test_the_acer_example_keeps_the_network_name_it_documents(self):
-        # The fix for the 320 above is to ask for a width the launcher keeps, not to stop asking: the
-        # folder's README says the Wi-Fi pill shows the network name.
-        path = ROOT / "examples" / "acer-ar55ar2851udpro" / "config.json"
-        values = json.loads(path.read_text(encoding="utf-8"))
-        self.assertTrue(values.get("icon_only_buttons"), "the name only matters with icon_only_buttons")
-        width = values.get("wifi_label_width")
-        low, high = self.kinds["wifi_label_width"][1]
-        self.assertIsInstance(width, int, "wifi_label_width has to be a number the launcher reads")
-        self.assertGreater(width, 0, "0 is icon only: the README says the name shows")
-        self.assertLessEqual(width, high, f"{width} is past the {high} the launcher keeps")
 
     def test_the_readers_read_the_shipped_files(self):
         values = {"dock_band": True, "greeting_name": "Hall", "columns": 6, "dock_apps": ["a.b"],

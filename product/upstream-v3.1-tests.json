@@ -41,12 +41,6 @@
     "test_adb_key_created_private.py",
     "test_adb_key_permissions.py"
   ],
-  "excludedFixtures": {
-    "test_adb_closed_only_a_refusal.TheDocsTest.test_the_readme_row_gives_exit_0_for_a_refusal_only": "Upstream root README Tools table is not our product README.",
-    "test_addons.AddonFolderTest.test_every_addon_has_a_screenshot": "We link original public upstream captures rather than publishing new screenshots.",
-    "test_locales_registered.LocaleConfigTest.test_the_readme_names_every_language": "Upstream root README Languages block is not part of our product README.",
-    "test_manage_set.SetThemeFolderTest.test_every_folder_that_ships_a_config_json_is_one_set_refuses": "Original fixture requires at least 60 configurations and an examples tree; catalogue retired. Product DistributedThemeTest validates every remaining theme and both legacy/current write guards.",
-    "test_shipped_config_keys_are_read.ShippedConfigKeysTest.test_the_readers_and_the_files_were_really_read": "Original data-breadth fixture assumes the retired catalogue. Product DistributedThemeTest inspects actual Config.java readers and every distributed theme without changing this inherited assertion."
-  },
-  "scope": "Retained upstream implementation checks after the owner-approved catalogue/publication retirement. Not the entire inherited collection; POSIX-only integration files remain available for a POSIX host."
+  "excludedFixtures": {},
+  "scope": "Retained cross-platform implementation checks. Retired catalogue/README-only assertions are removed; POSIX integration tests require a POSIX host. Product and Setup suites are separate."
 }

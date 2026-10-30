@@ -252,13 +252,6 @@ class TheDocsTest(unittest.TestCase):
         self.assertIn("nothing listened on 127.0.0.1", doc)
         self.assertNotIn("or does not answer", doc)
 
-    def test_the_readme_row_gives_exit_0_for_a_refusal_only(self):
-        rows = [line for line in README.read_text(encoding="utf-8").splitlines()
-                if line.startswith("| [`tools/adb-closed.py`]")]
-        self.assertEqual(len(rows), 1, "the README's Tools row for adb-closed.py moved")
-        self.assertIn("exits 0 when the TV refuses the connection", rows[0])
-        self.assertIn("2 when nothing answered or the check itself could not run", rows[0])
-        self.assertNotIn("nothing answers", rows[0])
 
     def test_the_relay_guide_sends_the_closing_check_to_an_ordinary_terminal(self):
         guide = " ".join((ROOT / "tools" / "relay.md").read_text(encoding="utf-8").split())

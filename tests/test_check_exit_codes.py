@@ -180,22 +180,7 @@ class CheckExitCodeTest(unittest.TestCase):
         self.assertTrue(host_note in result.stderr or loader_note in result.stderr, result.stderr)
         self.assertNotIn("could not read the TV", result.stderr)
 
-    def test_the_readme_names_every_code_the_checker_can_return(self):
-        section = readme_section(README.read_text(encoding="utf-8"))
-        self.assertIsNotNone(section, "%s is gone from README.md: the weekly job has no page" % HEADING)
-        self.assertGreaterEqual(len(paragraphs(section)), 4, "the section reads as nearly empty")
-        named = codes_named(section)
-        codes = literal_returns(CHECK.read_text(encoding="utf-8"))
-        missing = sorted(codes - named)
-        self.assertEqual(missing, [],
-                         "check.py returns %s and the section that hands out the weekly job names %s"
-                         % (sorted(codes), sorted(named)))
 
-    def test_the_readme_still_carries_the_weekly_job(self):
-        section = readme_section(README.read_text(encoding="utf-8"))
-        self.assertIsNotNone(section)
-        self.assertTrue(any(re.match(r"^\s*\d+\s+\d+\s+\*", line) for line in section),
-                        "the cron line a home server runs is gone from the section")
 
 
 class ReadmeReaderTest(unittest.TestCase):

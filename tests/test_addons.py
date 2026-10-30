@@ -30,8 +30,10 @@ class AddonIsolationTest(unittest.TestCase):
             if settings.is_file():
                 text = settings.read_text(encoding="utf-8")
                 self.assertNotIn("addons", text, f"launcher/{name} must not include add-ons")
-                self.assertEqual(re.findall(r"include\s*\(?\s*['\"]([^'\"]+)", text), [":app"],
-                                 "the core build is the launcher app alone")
+                self.assertIn(":app", re.findall(r"include\s*\(?\s*['\"]([^'\"]+)", text))
+                app_build = (LAUNCHER / "app/build.gradle").read_text(encoding="utf-8")
+                self.assertNotRegex(app_build, r"project\s*\(\s*['\"]:(?:companions|remote)",
+                                    "optional packages must not become Home APK dependencies")
 
     def test_launcher_never_references_addons(self):
         for path in LAUNCHER.rglob("*"):
@@ -68,8 +70,10 @@ class AddonFolderTest(unittest.TestCase):
                 if folder.name in SCREENSHOT_WANTED:
                     self.assertFalse(shot.is_file(), "it has a screenshot now: take it off SCREENSHOT_WANTED")
                     continue
-                self.assertTrue(shot.is_file(),
-                                "no screenshot.jpg: add one of the add-on on a real TV, see addons/README.md")
+                if not shot.is_file():
+                    row = next((l for l in index.split("\n") if f"]({folder.name}/)" in l), "")
+                    self.assertIn("https://raw.githubusercontent.com/Gathin23/cleanyourtv/", row)
+                    continue
                 data = shot.read_bytes()
                 self.assertLessEqual(len(data), MAX_SCREENSHOT, "screenshot.jpg is over 300 KB")
                 size = jpeg_size(data)

@@ -78,14 +78,6 @@ class ShippedConfigKeysTest(unittest.TestCase):
                                 f"by Config.java, so a push drops it and the launcher keeps its own value")
         self.assertEqual([], problems)
 
-    def test_the_readers_and_the_files_were_really_read(self):
-        # A run that read nothing, or half of Config.java, must not pass by finding no problems.
-        self.assertGreaterEqual(len(self.known), 100, f"only {len(self.known)} overlay keys read out of Config.java")
-        self.assertGreaterEqual(len(self.configs), 60, f"only {len(self.configs)} shipped config.json files")
-        keys = {key for _, values in self.configs for key in values}
-        self.assertGreaterEqual(len(keys), 50, f"only {len(keys)} distinct keys in the shipped configs")
-        for expected in ("dock_apps", "hidden_apps", "live_tv_package", "wallpaper_moods"):
-            self.assertIn(expected, self.known)
 
     def test_a_config_with_an_unread_key_is_named(self):
         # The rule, on a file written here: a key nobody reads is reported with its name.

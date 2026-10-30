@@ -1,12 +1,10 @@
-# README capture notes
-
-Captured 29 October 2026 from source based on `5b3b4dbe17c262d0d5f9997f1b01ae713af2ed09`.
+# Screenshot attribution
 
 | File | Actual surface | Data |
 | --- | --- | --- |
-| `setup-paths.png` | Unified Setup GUI, device chooser | Fresh isolated session; no connection |
-| `web-home-preview.png` | Samsung pilot web renderer in a desktop browser | Built-in eight example apps |
-| `web-settings-preview.png` | Same renderer, Appearance draft | Unapplied demo choices |
+| `setup-paths.jpg` | Unified Setup GUI, device chooser | Fresh isolated session; no connection |
+| `web-home-preview.jpg` | Samsung pilot web renderer in a desktop browser | Built-in eight example apps |
+| `web-settings-preview.jpg` | Same renderer, Appearance draft | Unapplied demo choices |
 
 These are actual UI captures, not AI mockups or physical Android/TV acceptance evidence. No TV was
 contacted. No private app inventory, owner artwork, location, pairing data or credentials are shown.
