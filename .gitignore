@@ -67,3 +67,11 @@ platforms/roku/*.zip
 /product/ANDROID-POLISH.md
 /.agents/
 /.codex/
+
+# The same private-note boundary applies in future component directories.
+**/AGENTS.md
+**/CLAUDE.md
+**/GEMINI.md
+**/ROADMAP*.md
+**/VALIDATION*.md
+**/*-REVIEW*.md

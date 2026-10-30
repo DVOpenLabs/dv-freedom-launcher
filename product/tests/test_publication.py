@@ -15,6 +15,9 @@ class PublicationTests(unittest.TestCase):
         return set(subprocess.check_output(['git','ls-files','-z'],cwd=ROOT).decode().strip('\0').split('\0'))
     def test_internal_records_are_not_tracked(self):
         self.assertFalse(self.tracked() & INTERNAL)
+        private_names=re.compile(r'^(?:AGENTS|CLAUDE|GEMINI|ROADMAP[^/]*|VALIDATION[^/]*|[^/]*-REVIEW[^/]*)\.md$',re.I)
+        self.assertEqual([],sorted(p for p in self.tracked() if private_names.match(Path(p).name)
+                                  or any(part in {'.agents','.codex'} for part in Path(p).parts)))
     def test_internal_records_are_ignored(self):
         for name in INTERNAL:
             self.assertEqual(subprocess.run(['git','check-ignore','-q','--',name],cwd=ROOT).returncode,0,name)
