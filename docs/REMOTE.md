@@ -125,7 +125,7 @@ before you remove the access: once the tunnel is gone, nobody can check from out
    Wireless debugging screen again just before they switch it off; mDNS doesn't cross the tunnel, so
    only they can see it. Don't reuse the connect port from Connecting: Wireless debugging takes a new
    port each time it starts, and on a
-   [TCL 65Q7D Pro](../examples/tcl-q7c-google-tv/README.md#connecting-wireless-debugging-only-and-its-port-moves)
+   [TCL 65Q7D Pro](https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/examples/tcl-q7c-google-tv/README.md#connecting-wireless-debugging-only-and-its-port-moves)
    it changed as soon as `tcpip 5555` restarted adbd. Check that port straight after Wireless
    debugging goes off, before the reboot: `python3 tools/adb-closed.py <tv ip> <port>` must say that
    port is closed.
@@ -133,7 +133,7 @@ before you remove the access: once the tunnel is gone, nobody can check from out
    the port is closed, and Wireless debugging must still be off in Developer options. If it came
    back, they switch it off and you check its new port as in step 1. With option A they may have to
    open Tailscale on the TV again first: on an
-   [XGIMI Horizon S Pro](../examples/xgimi-horizon-s-pro/debloat.txt) it did not come back after a
+   [XGIMI Horizon S Pro](https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/examples/xgimi-horizon-s-pro/debloat.txt) it did not come back after a
    reboot by itself. Until it is back, "did not answer" proves nothing.
 3. Then remove the access: they revoke the share, or you remove the TV or the helper from your tailnet
    (or turn off its routes) in the admin console. Uninstall Tailscale from the TV unless they use it.

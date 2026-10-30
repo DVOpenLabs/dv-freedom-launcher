@@ -33,8 +33,8 @@ the core bigger or change how it behaves. You install an add-on only if you want
 | [Flock](flock/) | An interactive flocking simulation using separation, alignment and cohesion, controlled with the TV remote | CleanYourTV contributors | TCL 32S5K (Android TV 14) | None | <img src="flock/screenshot.jpg" width="240" alt="Flock on TCL Android TV"> |
 | [News screensaver](news-screensaver/) | Headlines from your own RSS and Atom feeds as the TV's screensaver and as a card, one at a time with source, age, a QR code to the article and Left/Right paging; feeds (with names), seconds per headline and idle time are set with `setup.sh` or on the TV | [@modist](https://github.com/modist) | Philips 2021/22 UHD Android TV (Android 11) | `INTERNET` | <img src="news-screensaver/screenshot.jpg" width="240" alt="News screensaver on a TV"> |
 | [Digital Rain](digital-rain/) | A Matrix-style screensaver: mirrored katakana and digits falling in green trails with bright heads, drawn on the TV with no network; the card starts it at once | [@dennis-oleary](https://github.com/dennis-oleary) | NVIDIA SHIELD Android TV Pro 2019 (Android TV 11) | None | <img src="digital-rain/screenshot.jpg" width="240" alt="Digital Rain on a TV"> |
-| [Bluetooth Toggle](bluetooth-toggle/) | For Android 12 and older (13 and newer do not let apps switch Bluetooth). A one-press Bluetooth switch: the tile turns Bluetooth off or on, a small panel says which, and Pair accessory is one press away | [@justin-newman](https://github.com/justin-newman) | Hisense 75U75N (hengshan), Google TV 12 | Bluetooth (`BLUETOOTH_CONNECT`) | <img src="bluetooth-toggle/screenshot.jpg" width="240" alt="Bluetooth Toggle on a TV"> |
-| [TV Inspector](tv-inspector/) | What the remote sends (key name, key code, scan code, device) and what the TV can play: display modes, HDR, video decoders, audio outputs and formats, input devices; every line also in logcat for a `tv.json` or a bug report | [@shaharukhs](https://github.com/shaharukhs) | Sansui TV (Skyworth eleonas, MediaTek MT9676), Android TV 14 | None | <img src="tv-inspector/screenshot.jpg" width="240" alt="TV Inspector on a TV"> |
+| [Bluetooth Toggle](bluetooth-toggle/) | For Android 12 and older (13 and newer do not let apps switch Bluetooth). A one-press Bluetooth switch: the tile turns Bluetooth off or on, a small panel says which, and Pair accessory is one press away | [@justin-newman](https://github.com/justin-newman) | Hisense 75U75N (hengshan), Google TV 12 | Bluetooth (`BLUETOOTH_CONNECT`) | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/1684678064aa7bbb4881e6069e4cfbd4b5fc9df7/addons/bluetooth-toggle/screenshot.jpg" width="240" alt="Bluetooth Toggle on a TV"> |
+| [TV Inspector](tv-inspector/) | What the remote sends (key name, key code, scan code, device) and what the TV can play: display modes, HDR, video decoders, audio outputs and formats, input devices; every line also in logcat for a `tv.json` or a bug report | [@shaharukhs](https://github.com/shaharukhs) | Sansui TV (Skyworth eleonas, MediaTek MT9676), Android TV 14 | None | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/1684678064aa7bbb4881e6069e4cfbd4b5fc9df7/addons/tv-inspector/screenshot.jpg" width="240" alt="TV Inspector on a TV"> |
 
 A widget, an info tile, a storage or smart-home card: if it can live as its own small app, it can live
 here. See the rules below.
@@ -43,7 +43,7 @@ here. See the rules below.
 
 An add-on is a normal Android TV app with its own Gradle project in `addons/<name>/`. It declares a
 card with the existing module-card contract: the how-to is [`docs/modules.md`](../docs/modules.md)
-and the spec is [`docs/specs/card.md`](../docs/specs/card.md). The launcher finds the card, asks the
+and the spec is [`docs/specs/card.md`](https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/docs/specs/card.md). The launcher finds the card, asks the
 TV owner once, and shows it as a tile with the add-on's label, caption and glow colour. Nothing else
 connects the two.
 
@@ -121,7 +121,7 @@ TV_HOST=<tv ip> tools/venv/bin/python -I tools/manage.py install weather
   before this rule; a screenshot for one of them is welcome.
 - **The author maintains it.** Issues about an add-on are assigned to its author. An add-on that
   breaks on current Android TV versions, or goes unmaintained, may be removed. Its history stays in
-  git, and you can keep it going in a fork listed in [`SHOWCASE.md`](../SHOWCASE.md).
+  git, and you can keep it going in a fork listed in [`SHOWCASE.md`](https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/SHOWCASE.md).
 
 ## Adding one
 

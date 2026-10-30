@@ -10,5 +10,5 @@ configuration; they are not a production trust channel. Do not expose TV debuggi
 Enable only the permissions needed for an explicitly selected feature. Personal configuration and
 signing material belong outside the source repository.
 
-The upstream project's [security guide](UPSTREAM-SECURITY.md) is retained for attribution/history;
+The upstream project's [security guide](https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/UPSTREAM-SECURITY.md) is retained for attribution/history;
 its reporting contacts are not DV Freedom Launcher's support contacts.

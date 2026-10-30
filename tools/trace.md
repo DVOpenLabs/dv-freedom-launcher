@@ -43,7 +43,7 @@ folder goes, a path through a file and an empty `--out` are refused before the T
   activities. They do not clear the other app's data or force-stop it. Check that it is responsive
   after a long session; an already accumulated history is not removed by this flag.
 - **The package:** `--package` names the launcher, `com.gathin.tvhome` unless your build has another one
-  (a fork: [SHOWCASE.md](../SHOWCASE.md) lists several). It decides which process the recording follows and
+  (a fork: [SHOWCASE.md](https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/SHOWCASE.md) lists several). It decides which process the recording follows and
   which one the report reads, so a fork has to pass it to `trace.py`, `trace_report.py` and
   `flamechart.py` alike: with the wrong name the report prints `–` for every step instead of saying the
   package was not in the trace, and the chart stops at `no <package> process in the trace`.
