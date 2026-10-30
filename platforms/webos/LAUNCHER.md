@@ -85,3 +85,11 @@ Optional starter apps come only from the checked TV's developer catalog. A priva
 include them for a first-run review: **Use these apps** saves an initial empty Home; Back saves nothing.
 The prompt cannot overwrite existing profiles/preferences. The TV may expose a limited developer app
 list; unreported app IDs are not guessed. Native launch still checks actual installation separately.
+
+## Picture framing and family view
+
+Appearance/Background offers Fill, Fit and Matte for bundled media. The saved default stays Fill;
+browsing does not save a choice. Favourite-only family view simplifies this profile’s app chooser.
+It does not provide Android’s parent PIN or Accessibility guard: profile switching, vendor Home and
+system settings remain available. These are native-runtime source/browser features; physical TV
+rendering, remote navigation and decoding require separate acceptance.

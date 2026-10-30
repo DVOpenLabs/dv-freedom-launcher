@@ -114,3 +114,11 @@ isolated test profiles; retain original TV/Home settings. Do not infer Samsung b
 Report non-sensitive results using the [TV compatibility form](https://github.com/DVOpenLabs/dv-freedom-launcher/issues/new?template=compatibility.yml).
 Automatic Home return and cloud startup are not supported. No Garage Home, Vetro or Skylight code,
 service, media or font is bundled in this pilot.
+
+## Picture framing and family view
+
+Appearance/Background offers Fill, Fit and Matte for bundled media. The saved default stays Fill;
+browsing does not save a choice. Favourite-only family view simplifies this profile’s app chooser.
+It does not provide Android’s parent PIN or Accessibility guard: profile switching, vendor Home and
+system settings remain available. These are native-runtime source/browser features; physical TV
+rendering, remote navigation and decoding require separate acceptance.

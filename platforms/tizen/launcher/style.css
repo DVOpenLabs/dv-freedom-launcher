@@ -7,3 +7,6 @@ nav>button+button{margin-left:24px}.rail>button+button{margin-left:0;margin-top:
 .ink-auto.label-dark #apps:before{background:linear-gradient(transparent 30%,#eaf3fa66 65%,#eaf3fa66 90%,transparent)}
 
 .mini-dock>span+span{margin-left:8px}
+
+/* Optional local picture framing; defaults leave existing scenes unchanged. */
+.media-fit #scene,.media-matte #scene{background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#101923}.media-fit #motion,.media-matte #motion{object-fit:contain}.media-matte #scene,.media-matte #motion{top:5%;left:7%;right:auto;bottom:auto;width:86%;height:90%;box-shadow:0 8px 22px #0008}.media-matte{background:#e5dfd4}
