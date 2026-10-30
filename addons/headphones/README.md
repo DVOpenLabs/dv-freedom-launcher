@@ -1,5 +1,9 @@
 # Headphones
 
+DV Freedom builds keep the disconnect guard **off until explicitly enabled**. Nearby devices access
+is a separate Android choice. Installing or opening this app never pairs headphones. Fixed-volume
+and ARC outputs may permit pausing but not muting; check with your own hardware.
+
 Bluetooth headphones on the TV, made easy to keep quiet: one screen that shows where the sound goes now, your
 paired headphones with their battery, a shortcut to pairing, and a **quiet guard** that pauses and mutes the
 speakers when headphones drop, so a flat battery doesn't send a film's sound into a room where someone is

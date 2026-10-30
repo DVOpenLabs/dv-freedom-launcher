@@ -19,10 +19,19 @@ PACKAGES={
  'quiet-hours':'io.github.maxhayim.quiethours',
  'companions':'com.dvopenlabs.freedom.companions',
  'phone-remote':'com.dvopenlabs.freedom.remote',
+ 'camera':'com.dvopenlabs.freedom.camera',
  'tv-inspector':'io.github.shaharukhs.tvinspector',
  'bluetooth-connect':'com.gathin.btconnect',
  'digital-rain':'io.github.dennisoleary.digitalrain',
  'news-screensaver':'com.gathin.newsdream',
+ 'headphones':'io.github.maxhayim.headphones',
+ 'capacity-stats':'com.lionlev.tv.capacity',
+ 'tv-hub':'io.github.maxhayim.tvhub',
+ 'ad-blocking':'io.github.maxhayim.adblocking',
+ 'flock':'io.github.cleanyourtv.flock',
+ 'jewish-calendar':'com.lionlev.tv.jewishcalendar',
+ 'nepali-calendar':'com.oneyuv.tv.nepalicalendar',
+ 'prayer-times':'com.majnioui.tv.prayer',
 }
 
 class AddonCatalog:
@@ -55,6 +64,18 @@ class AddonCatalog:
         except SetupError as error:return {'available':False,'message':str(error)}
 
 class AddonDevice(InstallerDevice):
+    def status(self,package):
+        if package not in PACKAGES.values():raise SetupError('Unsupported companion package.')
+        info=self.metadata(package)
+        if not info:return {'installed':False,'versionCode':None,'access':'not-installed'}
+        raw=self._shell('dumpsys package '+package)
+        # Only runtime grants can be reported reliably here. Special access remains an on-TV choice.
+        missing=sorted(set(re.findall(r'^\s*(android\.permission\.[A-Z_]+): granted=false',raw,re.M)))
+        return {'installed':True,'versionCode':info['versionCode'],'access':'needs-access' if missing else 'check-on-tv','missingPermissions':missing}
+    def settings(self,package):
+        if package not in PACKAGES.values():raise SetupError('Unsupported companion package.')
+        if not self.metadata(package):raise SetupError('Install this companion before opening its settings.')
+        self._shell('am start -a android.settings.APPLICATION_DETAILS_SETTINGS -d package:'+package)
     def metadata(self,package):
         if package not in PACKAGES.values():raise SetupError('Unsupported companion package.')
         paths=self._shell('pm path '+package).strip().splitlines()
@@ -76,24 +97,51 @@ class AddonDevice(InstallerDevice):
 
 class AddonCenter:
     def __init__(self,session,catalog=None,factory=AddonDevice):
-        self.session=session;self.catalog=catalog or AddonCatalog();self.factory=factory;self.reviewed=None
+        self.session=session;self.catalog=catalog or AddonCatalog();self.factory=factory;self.reviewed=None;self.checked={};self.checked_connection=None
     def catalogue(self):
-        names={'weather':('Weather','Forecast and Home/screensaver weather sharing. Internet; sharing requires a separate choice in Weather.'),
-          'sleep-timer':('Sleep timer','A remote-friendly timer. Exact alarms, overlay and standby accessibility are separate optional Android choices.'),
-          'world-clock':('World clock','Local time zones and a clock screensaver. No network permission.'),
-          'quiet-hours':('Quiet hours','An optional scheduled volume cap. Foreground service and boot receiver; starts only when configured.'),
-          'companions':('DV Freedom Companions','Home/calendar, Discover/watchlist, personal photos and optional Gemini setup drafts. Internet; keys, connections, sharing and paid requests require separate choices.'),
-          'phone-remote':('Phone remote & keyboard','TV-hosted local pairing server. Internet and foreground service; broad accessibility needs separate consent. Android 11/12 navigation is limited.'),
-          'tv-inspector':('TV Inspector','Read remote keycodes, display modes and media capabilities. No permissions or network; diagnostic logs stay on the TV.'),
-          'bluetooth-connect':('Bluetooth Connect','List paired speakers/headphones. Nearby devices permission is separate. Connect/disconnect works only where the firmware allows it; nothing pairs or connects automatically.'),
-          'digital-rain':('Digital Rain','Optional local ambient scene and screensaver. No permissions or network. Installing never selects or changes the system screensaver.'),
-          'news-screensaver':('News & RSS ambient','Your own HTTPS RSS/Atom feeds and article QR codes. Internet; starts without feeds and fetches only while open. Installing never selects the system screensaver.')}
-        return {'schema':1,'connected':self.session.mode=='device' and bool(self.session.connection),'note':'Optional apps, reviewed one at a time. Install keeps Home and launcher choices. Access and connections are configured separately on your TV. Native LG/Samsung cannot run Android companions.',
-          'items':[{'id':id,'name':names[id][0],'summary':names[id][1],'release':self.catalog.summary(id)} for id in PACKAGES]}
+        from .addon_directory import items
+        connected=self.session.mode=='device' and bool(self.session.connection)
+        checked=self.checked if connected and self.checked_connection==self.session.connection else {}
+        result=[]
+        api=(self.session.inventory or {}).get('api',0)
+        for item in items():
+            release=self.catalog.summary(item['id']) if item['id'] in PACKAGES else {'available':False,'message':'Separate build / guide; not installed by Setup.'}
+            device=checked.get(item['id'],{'installed':None,'access':'not-checked'})
+            status='guide' if item['distribution']!='signed' else 'unavailable'
+            if item['distribution']=='signed' and release['available']:
+                status='unsupported' if connected and api<release.get('minSdk',26) else 'available'
+                if status!='unsupported' and device.get('installed'):
+                    status='update' if device['versionCode']<release.get('versionCode',0) else 'installed'
+            result.append({**item,'release':release,'device':device,'status':status})
+        return {'schema':2,'connected':connected,'checked':bool(checked),'note':'Optional apps, reviewed one at a time. Home, wallpapers and app order stay saved. Access and connections are separate choices. Android apps cannot run on native LG/Samsung.', 'items':result}
+    def refresh(self,value):
+        if value!={}:raise SetupError('Unexpected status options.')
+        if not self.session.installer.lock.acquire(False):raise SetupError('Another installation is running.')
+        d=None
+        try:
+            connection=dict(self.session.connection or {});d=self._open()
+            checked={id:d.status(pkg) for id,pkg in PACKAGES.items()}
+            if connection!=self.session.connection:raise SetupError('TV connection changed. Check again.')
+            self.checked=checked;self.checked_connection=connection
+            return self.catalogue()
+        finally:
+            if d:d.close()
+            self.session.installer.lock.release()
+    def settings(self,value):
+        if not isinstance(value,dict) or set(value)!={'id'} or value['id'] not in PACKAGES:raise SetupError('Choose a companion.')
+        if not self.session.installer.lock.acquire(False):raise SetupError('Another installation is running.')
+        d=None
+        try:
+            d=self._open();d.settings(PACKAGES[value['id']]);return {'message':'App settings opened on TV. Choose access there; Setup did not grant anything.'}
+        finally:
+            if d:d.close()
+            self.session.installer.lock.release()
     def _open(self):
         s=self.session
         if s.mode!='device' or not s.inventory or not s.connection:raise SetupError('Connect to an Android TV first. Native LG/Samsung use separate adapters; preview mode cannot install.')
-        c=s.connection;d=self.factory(c['host'],c['port'],s.root,c['paired']);d.connect();return d
+        c=s.connection;d=self.factory(c['host'],c['port'],s.root,c['paired'])
+        try:d.connect();return d
+        except Exception:d.close();raise
     def _installed(self,d,item,folder):
         info=d.metadata(item['package'])
         if info is None:return None
@@ -137,7 +185,7 @@ class AddonCenter:
             if not current or current['versionCode']!=item['versionCode']:raise SetupError('Install result needs review.')
             d.pull(current['path'],folder/'installed.apk')
             if digest(folder/'installed.apk')!=item['sha256']:raise SetupError('Installed APK does not match the reviewed companion.')
-            record['state']='verified';self._save(folder,record);return {'installed':True,'id':r['id'],'message':'Installed and verified. Connections, runtime permissions and optional services were not enabled. Open on TV to configure.'}
+            record['state']='verified';self._save(folder,record);self.checked.pop(r['id'],None);return {'installed':True,'id':r['id'],'message':'Installed and verified. Connections, runtime permissions and optional services were not enabled. Open on TV to configure.'}
         except Exception:
             record['state']='needs-attention';self._save(folder,record);raise
         finally:
@@ -145,6 +193,7 @@ class AddonCenter:
             self.session.installer.lock.release()
     def launch(self,value):
         if not isinstance(value,dict) or set(value)!={'id'} or value['id'] not in PACKAGES:raise SetupError('Choose a companion.')
+        if not self.session.installer.lock.acquire(False):raise SetupError('Another installation is running.')
         d=None
         try:
             item=self.catalog.verify(value['id']);d=self._open();current=d.metadata(item['package'])
@@ -154,6 +203,7 @@ class AddonCenter:
             d.open_addon(item['package']);return {'opened':True,'message':'Opened on TV. Configure private connection details there. No grants or services were enabled by Setup.'}
         finally:
             if d:d.close()
+            self.session.installer.lock.release()
     @staticmethod
     def _save(folder,record):
         temp=folder/'record.tmp';temp.write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8');temp.replace(folder/'record.json')

@@ -6,16 +6,16 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 19; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 20; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 30 October 2026:** alpha 19 adds app-browser exclusions, network-aware startup,
-package-scoped app links, protected ignore-button rules and an expanded optional Add-on Center.
-It also fixes held-key cleanup, idle-clock lifecycle and long-date/App Library layout.
-Folders, Simple/All settings, Control Center, Wallpaper Studio, Discover, phone drafts and offline/optional
-AI setup remain available. Updates preserve existing choices; online sources and sharing are opt-ins.
-Platform capabilities and current limitations are described below and in the feature guides.
+**Latest update — 30 October 2026:** alpha 20 expands the searchable Add-on Centre, adds photo/art
+ambient views, richer Discover filters and reviewed service links, child-friendly Homes, optional
+colour-key volume presets and a foreground wake rule. A separate Android phone Setup app uses paired
+TLS and the same signed TV release. Native LG/Samsung gain favourite-only views and picture framing.
+Optional [Camera](launcher/camera/README.md) adds silent personal-stream viewing and a separately
+authorized timed corner window. All new connections and restricted modes start off. See the guides for requirements and testing limits.
 
 [Try Setup](#try-the-setup-gui) · [Platform comparison](#choose-your-platform) ·
 [Feature guide](product/ANDROID-COMMUNITY.md) ·
@@ -69,14 +69,19 @@ compatibility. Read the [complete setup comparison](setup_app/ALL-PLATFORMS.md) 
   Device/OEM availability varies; a Streamer cannot enumerate the connected television’s HDMI inputs.
 - **Wallpaper Studio:** select local/USB files or a folder, preview fit/fill/focal point, then add to the
   library without selecting the item. Optional Immich/WebDAV sources live in Companions and refresh
-  only on request. File-picker availability and URI access depend on the TV.
-- **Optional Discover:** TMDB catalogue, service/region filters and a TV-local watchlist. Bring your own
+  on request or, separately enabled, every 30 minutes while ambient is visible.
+  [Photo & Art ambient](product/ANDROID-COMPANION.md#photo--art-ambient) adds portrait pairs, mats, captions
+  and explicitly downloaded credited public-domain museum art. File-picker availability and URI access depend on the TV.
+- **Optional Discover:** TMDB catalogue, genre/rating/sort/service/region filters, browse pages and
+  a TV-local watchlist. Optional manually saved HTTPS title links stay scoped to the selected service. Bring your own
   read key. Availability is advisory; installed services offer search or app-open fallbacks, not guaranteed
   direct playback. No private streaming history is read.
 - **Local backgrounds:** still images or silent video, still fallback and rotating wallpaper playlists.
   Optional scene schedules change the displayed background while Home is visible. Media pauses/releases
   resources away from Home.
-- **Personal Homes:** local profiles, avatars, layout edit locks and saved restore points.
+- **Personal Homes:** local profiles, avatars, layout edit locks and saved restore points. Optional
+  [Family Homes](product/ANDROID-PROFILES.md#family-homes) add an app allowlist and parent approval;
+  a separate Accessibility guard is an additional opt-in, not secure parental control.
   An edit PIN protects launcher edits; it is not a streaming-account or system security boundary.
 - **Optional weather:** the separate companion shows current conditions and a forecast, with editable
   temperature units and forecast details. The public source now includes an opt-in local bridge for Home
@@ -90,12 +95,15 @@ compatibility. Read the [complete setup comparison](setup_app/ALL-PLATFORMS.md) 
 - **Optional Now Playing:** an app-aware Home status and supported media controls. Requires a separate
   Android Notification access choice and profile opt-in. Notification text is ignored; media-session
   listeners run only while Home or the player panel is visible. No history or upload.
+- **Native Android phone Setup:** a [separate Android 10+ app](mobile/README.md) for TVs with
+  pairing-code Wireless debugging. Signed TV APK, peer confirmation, phone-lock approval and a timed
+  TV profile preview; original Home stays selected. Legacy ADB and native LG/Samsung use desktop.
 - **Phone-assisted setup:** explicitly start a temporary paired phone session from Setup. Send a draft
   or a picture/short MP4 to the computer; review before any TV change. Wallpaper import adds a library
   item and never selects it automatically. The trusted-network HTTP session expires after 15 minutes.
-- **Add-on Center:** review signed offline Weather, Sleep Timer, World Clock, Quiet Hours, Home &
-  Calendar, Phone Remote, TV Inspector, Bluetooth Connect, Digital Rain and News/RSS packages before
-  installing. Signer/downgrade checks and private recovery
+- **Add-on Center:** search 48 curated apps and references, with 19 signed package definitions,
+  clear requirements and explicit connected-TV status checks. [See the package guide](product/ADDONS.md)
+  for included tools and separate-project limits. Review each signed offline package before installing. Signer/downgrade checks and private recovery
   records protect updates; optional grants and connections are separate.
   Diagnostic/Bluetooth/ambient tools stay in All apps and Optional TV tools until explicitly added to Home.
 - **Home & calendar companion:** optional Home Assistant favorites and scenes, family iCalendar events
@@ -240,3 +248,7 @@ use only demo apps and the project's original coast illustration; [capture detai
 
 DV Freedom is independent and is not an official CleanYourTV, Google, LG, Samsung, Apple, Roku or
 Projectivy release. Required source and licence attribution remains included.
+
+The optional native **Android phone Setup** under `mobile/` has a separate GPL-3.0-or-later licence
+and dependency/source obligations. It is not linked into the MIT TV launcher or desktop Setup. See
+[mobile licensing](mobile/README.md#licensing-and-corresponding-source) before redistributing its APK.

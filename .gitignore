@@ -81,3 +81,9 @@ platforms/roku/*.zip
 /product/PROJECT-SETUP.md
 /product/SHOWCASE-LIGHTWEIGHT.md
 /product/experience-preview/
+
+# Generated output from any new Android module (including optional packs and phone Setup).
+**/build/
+**/.gradle/
+**/.kotlin/
+**/local.properties

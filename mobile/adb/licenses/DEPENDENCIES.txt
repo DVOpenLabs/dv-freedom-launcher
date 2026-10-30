@@ -1,0 +1,17 @@
+DV Freedom Phone Setup dependency notices
+
+LibADB Android 3.1.1: Copyright Muntashir Al-Islam and named source contributors.
+Retained SPDX notices select GPL-3.0-or-later OR Apache-2.0, with BSD-3-Clause/MIT parts.
+DV changes are marked in modified runtime source. Full licence texts are in this directory.
+SPAKE2-Java Android 2.2.1: Copyright 2021 Muntashir Al-Islam, LGPL-3.0.
+Its Ed25519 implementation derives from str4d/ed25519-java (CC0), as credited by upstream.
+Conscrypt Android 2.5.3: Copyright The Android Open Source Project, Apache-2.0;
+see conscrypt-NOTICE.txt and the retained BoringSSL, Netty and Harmony notices/licences.
+Bouncy Castle 1.81: Copyright The Legion of the Bouncy Castle Inc.; MIT, bouncycastle-1.81.html.
+AndroidX annotation 1.9.1: Copyright The Android Open Source Project; Apache-2.0.
+Kotlin stdlib 1.9.24 and JetBrains annotations 13.0: Copyright JetBrains s.r.o. and contributors;
+Apache-2.0, with source/licence links in mobile/README.md and product/sources.json.
+Outfit: SIL OFL 1.1, separate FONT-LICENSE-OFL.txt asset.
+
+Corresponding source and rebuild/relink instructions: mobile/README.md.
+The standalone phone application is GPL-3.0-or-later; the separate TV/desktop keep their own licences.

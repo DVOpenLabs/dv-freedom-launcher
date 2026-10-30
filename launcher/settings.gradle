@@ -16,3 +16,5 @@ rootProject.name = "tvhome"
 include ':app'
 include ':companions'
 include ':remote'
+
+include ':camera'

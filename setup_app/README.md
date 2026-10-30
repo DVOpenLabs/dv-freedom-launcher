@@ -88,7 +88,7 @@ and signs the bounded offline catalog. Keys and binaries must stay out of source
 
 Put the environment's Python on PATH, then run `setup_app/build-windows.ps1`. PyInstaller's
 [one-file/windowed build](https://pyinstaller.org/en/stable/usage.html) bundles the verified APK/catalog,
-UI/font/runtime and distribution licences. Only the two explicit release files are bundled, not keys.
+UI/font/runtime and distribution licences. Only explicit verified release artifacts are bundled, never keys. Optional native phone APK/catalogue and companion packages are built separately.
 Build on Windows. The Android APK is release-signed; the **Windows EXE is unsigned** and is a private
 alpha, not a public release. Do not advise bypassing OS security warnings.
 
@@ -174,7 +174,7 @@ APK/recovery data is ignored by Git; do not commit binaries, private connection 
 
 ## Optional features
 
-The signed alpha 19 launcher includes folders, Simple/All settings, Control Center, Wallpaper Studio
+The signed alpha 20 launcher includes folders, Simple/All settings, Control Center, Wallpaper Studio
 and offline setup help. Add-on Center’s **DV Freedom Companions** entry also explains Discover,
 Immich/WebDAV photos and explicitly reviewed Gemini drafts. Bring your own credentials in the private
 TV forms; installing or opening the panel never enables a connection. Phone Remote’s optional setup/
@@ -189,3 +189,24 @@ The launcher can open installed tools from **System → Optional TV tools**.
 
 Source publication is separate from public binary distribution. The locally rebuilt Windows alpha
 continues to be unsigned; no new release is published automatically. See the [alpha limitations](../README.md#alpha-limitations).
+
+## Native Android phone alternative
+
+**Use a phone → Native Android phone Setup → Check native phone app** verifies the fixed signed phone
+APK if included. Download and transfer it to your Android 10+ phone, review Android’s installation
+prompt and follow its pairing-code wizard. This does not start a LAN server or install anything
+automatically. TVs without pairing-code Wireless debugging, and native LG/Samsung, use desktop Setup.
+The phone app is separately GPL-3.0-or-later; the TV/desktop remain MIT. Read its
+[build, recovery and licence guide](../mobile/README.md).
+
+After building the signed current launcher bundle, developers can build optional artifacts with the
+same existing external keys:
+
+```sh
+python -m setup_app.build_addons --key-dir <same-private-directory>
+python -m setup_app.build_phone --key-dir <same-private-directory>
+```
+
+The Add-on Centre contains 48 curated package/source/guide entries and 19 supported signed package
+definitions. Only verified artifacts included in the bundle can be installed. New runtime/special
+access and configured network sources remain separate choices. See [Add-ons](../product/ADDONS.md).

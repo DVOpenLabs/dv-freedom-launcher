@@ -18,6 +18,8 @@
   function draw(){
     const focused=document.activeElement?.dataset.phoneAction;content.replaceChildren();
     if(qrUrl){URL.revokeObjectURL(qrUrl);qrUrl=null;}
+    const native=make('section',null,'essential-row');native.append(make('h3','Android phone app · no computer during TV setup'),make('p','For Android 10+ phones and TVs with pairing-code Wireless debugging. Legacy ADB-only TVs and native LG/Samsung use desktop Setup. The phone APK contains its verified TV installer; Home and permissions stay separate choices.'));
+    action(native,'Check native phone app',async()=>{const info=await call('app-info');native.replaceChildren(make('h3','Native Android phone Setup'),make('p',info.available?info.versionName+' · '+Math.ceil(info.bytes/1048576)+' MB · signed APK':info.message));if(info.available){action(native,'Download signed phone APK',async()=>{const r=await fetch('/api/phone-app-apk',{headers:{'X-Setup-Token':token()}});if(!r.ok)throw new Error('Phone APK verification failed. Nothing downloaded.');const blob=await r.blob(),url=URL.createObjectURL(blob),link=make('a');link.href=url;link.download='dv-freedom-phone-setup.apk';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});native.append(make('p','Transfer this APK to your Android phone, review its source and normal Android installation prompt, then follow the app. Setup never installs it automatically.'));}});content.append(native,make('h3','Or use a phone with this computer'));
     if(snapshot.active){
       content.append(make('p',snapshot.paired?'Phone paired. New drafts and files will appear below.':'Scan the QR code or open this address on your phone, then enter the code.'));
       const url=make('p',snapshot.url,'phone-address');content.append(url);

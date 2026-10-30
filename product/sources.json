@@ -166,5 +166,47 @@
       "Bounded app-link policy and editors",
       "Optional tool routing and signed Setup catalogue"
     ]
+  },
+  "ecosystemAdditions": {
+    "nepaliCalendar": {
+      "repository": "https://github.com/Gathin23/cleanyourtv",
+      "commit": "fe9ad3204b945d3aadfb6876ee6ea78c20a1fe73",
+      "path": "addons/nepali-calendar",
+      "license": "MIT plus retained algorithm notice"
+    },
+    "phoneSetup": {
+      "path": "mobile",
+      "license": "GPL-3.0-or-later",
+      "libadb": {
+        "repository": "https://github.com/MuntashirAkon/libadb-android",
+        "commit": "c849886ebc6d48e7b46d967e78a6bb65c90c3b74",
+        "version": "3.1.1",
+        "license": "GPL-3.0-or-later OR Apache-2.0; BSD/MIT parts"
+      },
+      "dependencies": {
+        "spake2-android": "2.2.1 LGPL-3.0",
+        "conscrypt-android": "2.5.3 Apache-2.0 and bundled notices",
+        "bcprov/bcpkix/bcutil-jdk15to18": "1.81 MIT",
+        "androidx.annotation": "1.9.1 Apache-2.0",
+        "kotlin-stdlib": "1.9.24 Apache-2.0",
+        "JetBrains annotations": "13.0 Apache-2.0"
+      },
+      "boringSslRevision": "49f0329110a1d93a5febc2bceceedc655d995420"
+    },
+    "museum": {
+      "api": "https://metmuseum.github.io/",
+      "use": "Explicit public-domain image downloads with CC0 credits; no images bundled"
+    },
+    "maintainerChecks": {
+      "reference": "https://github.com/Gathin23/maintainer-bot",
+      "use": "Deterministic check concept only; independent checker, no copied source or automation activation"
+    },
+    "camera": {
+      "path": "launcher/camera",
+      "implementation": "Independent MIT DV code; no Corner Player code copied",
+      "media3": "1.4.1 Apache-2.0",
+      "transport": "OkHttp 4.12.0; private RTSP-over-TCP, same-origin HTTPS",
+      "licenseNotices": "product/licenses/media3-1.4.1-LICENSE.txt"
+    }
   }
 }

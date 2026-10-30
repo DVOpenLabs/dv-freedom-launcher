@@ -1,0 +1,39 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.dvopenlabs.freedom.setup'
+    compileSdk 34
+    defaultConfig { applicationId 'com.dvopenlabs.freedom.setup'; minSdk 29; targetSdk 34; versionCode 1; versionName '0.1-alpha1' }
+    buildTypes { release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'; signingConfig signingConfigs.debug } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    testOptions { unitTests.returnDefaultValues=true }
+}
+dependencies {
+    implementation project(':adb')
+    implementation 'org.conscrypt:conscrypt-android:2.5.3'
+    implementation 'org.bouncycastle:bcprov-jdk15to18:1.81'
+    implementation 'org.bouncycastle:bcpkix-jdk15to18:1.81'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20231013'
+}
+configurations.configureEach {
+    resolutionStrategy.force 'org.bouncycastle:bcprov-jdk15to18:1.81', 'org.bouncycastle:bcpkix-jdk15to18:1.81', 'org.bouncycastle:bcutil-jdk15to18:1.81'
+}
+def bundle=layout.buildDirectory.dir('generated/release-assets')
+def sharedRes=layout.buildDirectory.dir('generated/brand-res')
+android.sourceSets.main.assets.srcDir bundle
+android.sourceSets.main.res.srcDir sharedRes
+tasks.register('phoneBundle') {
+    def source=rootProject.file('../setup_app/release_bundle')
+    inputs.files(new File(source,'catalog.json'),new File(source,'launcher.apk'),rootProject.file('../setup_app/trust.json'),rootProject.file('../launcher/app/src/main/res/font/outfit.ttf'))
+    inputs.files(fileTree(rootProject.file('adb/licenses')))
+    outputs.dirs(bundle,sharedRes)
+    doLast {
+        if(!new File(source,'launcher.apk').isFile())throw new GradleException('Build the signed desktop launcher bundle first. No placeholder APK is installed.')
+        copy { from source; include 'catalog.json','launcher.apk'; into new File(bundle.get().asFile,'release') }
+        copy { from rootProject.file('../setup_app/trust.json'); into new File(bundle.get().asFile,'release') }
+        copy { from rootProject.file('../launcher/app/src/main/res/font/outfit.ttf'); into new File(sharedRes.get().asFile,'font') }
+        copy { from rootProject.file('../launcher/FONT-LICENSE-OFL.txt'); into bundle }
+        copy { from rootProject.file('adb/licenses'); into new File(bundle.get().asFile,'licences') }
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'phoneBundle' }

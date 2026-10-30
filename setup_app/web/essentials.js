@@ -1,91 +1,34 @@
 'use strict';
 (() => {
-  const dialog = document.querySelector('#help-dialog'), body = document.querySelector('#help-body');
-  const title = document.querySelector('#help-title');
-  let generation = 0;
-  function element(tag, text, className) {
-    const node = document.createElement(tag); node.textContent = text;
-    if (className) node.className = className;
-    return node;
+ const dialog=document.querySelector('#help-dialog'),body=document.querySelector('#help-body'),title=document.querySelector('#help-title');let generation=0;
+ const names={available:'Ready to review',installed:'Installed',update:'Update available',unsupported:'Device unsupported',unavailable:'Build not included',guide:'Guide / separate project'};
+ function el(tag,text,cls){const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n;}
+ function link(text,url){const n=el('a',text);n.href=url;n.target='_blank';n.rel='noopener noreferrer';return n;}
+ async function request(path,value){const o={headers:{'X-Setup-Token':document.querySelector('meta[name="setup-token"]').content}};if(value!==undefined){o.method='POST';o.headers['Content-Type']='application/json';o.body=JSON.stringify(value);}const r=await fetch('/api/'+path,o),d=await r.json();if(!r.ok)throw new Error(d.error||'Reopen Setup and try again.');return d;}
+ function addons(data,current){
+  dialog.classList.add('addon-centre');body.replaceChildren(el('p',data.note));const native=typeof state!=='undefined'&&!['android','streamer'].includes(state.platform);
+  const filters=el('div','','addon-filters'),search=el('input'),category=el('select'),availability=el('select');search.id='addon-search';search.type='search';search.placeholder='Search features or access';category.id='addon-category';availability.id='addon-availability';
+  for(const s of ['All categories',...new Set(data.items.map(x=>x.category))]){const o=el('option',s);o.value=s;category.append(o);}
+  for(const [v,t] of [['all','All options'],['signed','Setup packages'],['installed','Installed'],['needs-access','Needs access'],['guide','Guides & source']]){const o=el('option',t);o.value=v;availability.append(o);}
+  availability.value='signed';
+  for(const [input,label] of [[search,'Find an add-on'],[category,'Category'],[availability,'Availability']]){const f=el('div'),l=el('label',label);l.htmlFor=input.id;f.append(l,input);filters.append(f);}
+  const refresh=el('button','Check connected TV','secondary'),count=el('p','','addon-count'),status=el('p','','addon-status'),list=el('div','','addon-list');refresh.disabled=!data.connected||native;count.setAttribute('role','status');status.setAttribute('role','status');body.append(filters,refresh,count,status,list);
+  if(native)status.textContent='Android options cannot be installed on native LG/Samsung. Use the platform-specific setup path.';else if(!data.connected)status.textContent='Browse freely. Connect an Android TV to check apps or review installation.';
+  refresh.onclick=async()=>{refresh.disabled=true;status.textContent='Reading installed versions and runtime access. Nothing changes…';try{const next=await request('addon-status',{});if(current===generation&&dialog.open)addons(next,current);}catch(e){status.textContent=e.message;refresh.disabled=false;}};
+  async function action(name,item){try{status.textContent=(await request('addon-'+name,{id:item.id})).message;}catch(e){status.textContent=e.message;}}
+  function draw(){list.replaceChildren();const q=search.value.toLowerCase().trim(),selected=data.items.filter(x=>(!q||[x.name,x.summary,x.access].join(' ').toLowerCase().includes(q))&&(category.value==='All categories'||x.category===category.value)&&(availability.value==='all'||(availability.value==='signed'?x.distribution==='signed':availability.value==='installed'?x.device.installed===true:availability.value==='needs-access'?x.device.access==='needs-access':x.distribution!=='signed')));count.textContent=selected.length+' of '+data.items.length+' options';
+   if(!selected.length){list.append(el('p','No matching options. Try a broader search or choose All options.'));const clear=el('button','Clear filters','secondary');clear.onclick=()=>{search.value='';category.selectedIndex=0;availability.selectedIndex=0;draw();search.focus();};list.append(clear);}
+   for(const item of selected){const row=el('section','','essential-row addon-row'),info=el('div'),heading=el('div','','addon-heading');heading.append(el('h3',item.name),el('span',native?'Android only':names[item.status],'essential-status'));info.append(heading,el('p',item.summary));const details=el('details'),facts=el('dl','','addon-facts');details.append(el('summary','Requirements, access & recovery'));for(const [k,v] of [['Requires',item.requirements],['Access',item.access],['Background',item.background],['Recovery',item.recovery]])facts.append(el('dt',k),el('dd',v));details.append(facts,link('Source & full guide',item.source));info.append(details);
+    if(item.device.installed)info.append(el('small','Installed code '+item.device.versionCode+' · '+(item.device.access==='needs-access'?'Some runtime access is off':'Check optional access on TV')));
+    const r=item.release;info.append(el('small',r.available?r.versionName+' · '+Math.ceil(r.bytes/1024)+' KB · signed offline app':item.distribution==='signed'?r.message:'Separate source / guide; Setup does not install this project.'));
+    const actions=el('div','','addon-actions');if(item.distribution==='signed'){const review=el('button',item.status==='update'?'Review update':'Review installation','secondary');review.disabled=native||!data.connected||!r.available||item.status==='unsupported';review.onclick=()=>reviewApp(item,current);actions.append(review);if(item.device.installed){for(const [name,label] of [['open','Open on TV'],['settings','App access on TV']]){const b=el('button',label,'secondary');b.disabled=native;b.onclick=()=>action(name,item);actions.append(b);}}}else actions.append(link('Read build / setup guide',item.source));row.append(info,actions);list.append(row);
+   }
   }
-  async function show(kind) {
-    const current = ++generation;
-    title.textContent = kind === 'support' ? 'Check your setup.' : 'Add-on Center.';
-    body.replaceChildren(element('p', 'Loading…'));
-    if (!dialog.open) dialog.showModal();
-    try {
-      const response = await fetch('/api/' + (kind === 'extras' ? 'addons' : kind), {headers: {'X-Setup-Token': document.querySelector('meta[name="setup-token"]').content}});
-      if (!response.ok) throw new Error('Could not load this view. Reopen Setup and try again.');
-      const data = await response.json();
-      if (generation !== current || !dialog.open) return;
-      body.replaceChildren();
-      if (kind === 'support') {
-        body.append(element('p', 'These checks stay on this computer. The downloadable report omits private device details.'));
-        for (const check of data.checks) {
-          const row = element('section', '', 'essential-row');
-          row.append(element('h3', check.name), element('span', check.status.replaceAll('-', ' '), 'essential-status'), element('p', check.next));
-          body.append(row);
-        }
-        body.append(element('p', data.privacy));
-        const button = element('button', 'Download shareable report', 'primary');
-        button.onclick = () => {
-          const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
-          const link = document.createElement('a'); link.href = url; link.download = 'dv-freedom-support.json'; link.click();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-        };
-        body.append(button);
-      } else {
-        body.append(element('p', data.note));
-        const list = element('div', '', 'addon-list'); body.append(list);
-        const status = element('p', '', 'addon-status'); status.setAttribute('role', 'status'); body.append(status);
-        async function action(path, value) {
-          const r = await fetch('/api/addon-' + path, {method: 'POST', headers: {'Content-Type':'application/json', 'X-Setup-Token':document.querySelector('meta[name="setup-token"]').content}, body:JSON.stringify(value)});
-          const result = await r.json(); if (!r.ok) throw new Error(result.error || 'This action could not finish.'); return result;
-        }
-        for (const item of data.items) {
-          const row = element('section', '', 'essential-row addon-row'), info = element('div');
-          info.append(element('h3', item.name), element('p', item.summary));
-          const release = item.release;
-          info.append(element('small', release.available ? release.versionName + ' · ' + Math.ceil(release.bytes/1024) + ' KB · signed offline app' : release.message));
-          const review = element('button', 'Review installation', 'secondary'); review.disabled = !data.connected || !release.available;
-          review.onclick = async () => {
-            for (const button of list.querySelectorAll('button')) button.disabled = true;
-            status.textContent = 'Reading this TV and saving a recovery record. No installation yet…';
-            try {
-              const reviewed = await action('review', {id:item.id});
-              const detail = element('section', '', 'addon-review');
-              detail.append(element('h3', reviewed.operation + ' ' + item.name), element('p', 'Home and wallpaper stay saved. This does not enable optional access, services or connections.'), element('p', reviewed.note));
-              const access = element('ul'); for (const permission of reviewed.release.permissions) access.append(element('li', ({'android.permission.INTERNET':'Network access for optional connections', 'android.permission.FOREGROUND_SERVICE':'Keep an explicitly enabled feature running', 'android.permission.FOREGROUND_SERVICE_SPECIAL_USE':'Run the user-started remote or schedule service', 'android.permission.RECEIVE_BOOT_COMPLETED':'Resume a schedule you enabled after restart', 'android.permission.SCHEDULE_EXACT_ALARM':'Exact timers — separate Android approval', 'android.permission.SYSTEM_ALERT_WINDOW':'Warning overlays — separate Android approval'}[permission] || permission)));
-              detail.append(element('h4', 'Declared Android permissions'), access, element('small', 'Private recovery record: ' + reviewed.recoveryPath));
-              const install = element('button', reviewed.operation + ' reviewed app', 'primary'), cancel = element('button', 'Cancel', 'secondary');
-              cancel.onclick = () => show('extras');
-              install.onclick = async () => {
-                install.disabled = true; cancel.disabled = true; status.textContent = 'Installing and checking the signed APK. Keep Setup open…';
-                try { const result = await action('install', {id:reviewed.id, reviewToken:reviewed.reviewToken}); status.textContent = result.message; detail.replaceChildren(element('h3', item.name + ' is ready'), element('p', result.message));
-                  const open = element('button', 'Open on TV to configure', 'secondary'); open.onclick = async () => {try {const result = await action('open', {id:item.id});status.textContent=result.message;}catch(e){status.textContent=e.message;}};
-                  const back = element('button', 'Back to Add-on Center', 'secondary');back.onclick=()=>show('extras');detail.append(open,back);open.focus();
-                } catch(error) {status.textContent=error.message;cancel.disabled=false;}
-              };
-              detail.append(install, cancel); list.replaceChildren(detail); status.textContent='Review the access above. Install is a separate action.'; install.focus();
-            } catch(error) {status.textContent=error.message;for(const button of list.querySelectorAll('button'))button.disabled=false;}
-          };
-          row.append(info, review); list.append(row);
-        }
-        if (!data.connected) status.textContent='Connect to an Android TV or Google TV Streamer to review an installation. No apps can be installed in preview mode.';
-      }
-    } catch (error) { if (generation === current) body.replaceChildren(element('p', error.message, 'error')); }
-  }
-  const mobile = element('button', 'Help & extras', 'help-link essentials-mobile');
-  mobile.onclick = () => {
-    title.textContent = 'What would help?'; body.replaceChildren();
-    for (const [kind, label] of [['support', 'Setup health & support'], ['extras', 'Add-on Center']]) {
-      const button = element('button', label, 'help-link'); button.onclick = () => show(kind); body.append(button);
-    }
-    if (!dialog.open) dialog.showModal();
-  };
-  document.querySelector('.topbar').append(mobile);
-  const host = document.querySelector('.sidebar-bottom');
-  for (const [kind, label] of [['support', 'Setup health & support'], ['extras', 'Add-on Center']]) {
-    const button = element('button', label, 'help-link'); button.onclick = () => show(kind); host.append(button);
-  }
+  search.oninput=category.onchange=availability.onchange=draw;draw();
+ }
+ async function reviewApp(item,current){body.replaceChildren(el('p','Checking this TV and preparing a private recovery record. No installation yet…'));try{const r=await request('addon-review',{id:item.id});if(current!==generation||!dialog.open)return;body.replaceChildren(el('h3',r.operation+' '+item.name),el('p','Home, wallpaper and app order stay saved. Connections and optional access are separate choices.'),el('p',item.access),el('p',r.note));const access=el('ul');for(const p of r.release.permissions)access.append(el('li',p));body.append(el('h4','Declared Android permissions'),access,el('small','Private recovery record: '+r.recoveryPath));const consent=el('label','','checkbox-line'),check=el('input');check.type='checkbox';consent.append(check,document.createTextNode('I reviewed this app and its access. Install this app only.'));const install=el('button',r.operation+' reviewed app','primary'),cancel=el('button','Cancel','secondary'),status=el('p');status.setAttribute('role','status');install.disabled=true;check.onchange=()=>install.disabled=!check.checked;cancel.onclick=()=>show('extras');
+  install.onclick=async()=>{install.disabled=cancel.disabled=check.disabled=true;status.textContent='Installing and verifying the signed APK. Keep Setup open…';try{const result=await request('addon-install',{id:r.id,reviewToken:r.reviewToken});if(current!==generation||!dialog.open)return;body.replaceChildren(el('h3',item.name+' installed'),el('p',result.message));const open=el('button','Open on TV to configure','secondary'),back=el('button','Back to Add-on Centre','secondary'),message=el('p');message.setAttribute('role','status');open.onclick=async()=>{try{message.textContent=(await request('addon-open',{id:item.id})).message;}catch(e){message.textContent=e.message;}};back.onclick=()=>show('extras');body.append(open,back,message);back.focus();}catch(e){status.textContent=e.message;cancel.disabled=false;}};body.append(consent,install,cancel,status);check.focus();
+ }catch(e){if(current!==generation)return;body.replaceChildren(el('p',e.message,'error'));const back=el('button','Back to Add-on Centre','secondary');back.onclick=()=>show('extras');body.append(back);back.focus();}}
+ async function show(kind){const current=++generation;dialog.classList.remove('addon-centre');title.textContent=kind==='support'?'Check your setup':'Add-on Centre';body.replaceChildren(el('p','Loading…'));if(!dialog.open)dialog.showModal();try{const data=await request(kind==='extras'?'addons':kind);if(current!==generation||!dialog.open)return;if(kind!=='support'){addons(data,current);return;}body.replaceChildren(el('p','These checks stay on this computer. The report omits private device details.'));for(const c of data.checks){const row=el('section','','essential-row');row.append(el('h3',c.name),el('span',c.status.replaceAll('-',' '),'essential-status'),el('p',c.next));body.append(row);}body.append(el('p',data.privacy));const b=el('button','Download shareable report','primary');b.onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='dv-freedom-support.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);};body.append(b);}catch(e){if(current===generation)body.replaceChildren(el('p',e.message,'error'));}}
+ const mobile=el('button','Help & extras','help-link essentials-mobile');mobile.onclick=()=>{dialog.classList.remove('addon-centre');title.textContent='What would help?';body.replaceChildren();for(const [kind,label] of [['support','Setup health & support'],['extras','Add-on Centre']]){const b=el('button',label,'help-link');b.onclick=()=>show(kind);body.append(b);}if(!dialog.open)dialog.showModal();};document.querySelector('.topbar').append(mobile);for(const [kind,label] of [['support','Setup health & support'],['extras','Add-on Centre']]){const b=el('button',label,'help-link');b.onclick=()=>show(kind);document.querySelector('.sidebar-bottom').append(b);}
 })();

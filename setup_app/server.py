@@ -66,6 +66,14 @@ def serve(session=None,port=0):
                 self.send(catalogue());return
             if self.path=='/api/addons':
                 self.send(session.addons.catalogue());return
+            if self.path=='/api/phone-app-info':
+                from .phone_app import PhoneCatalog
+                self.send(PhoneCatalog().summary());return
+            if self.path=='/api/phone-app-apk':
+                from .phone_app import PhoneCatalog
+                try:self.send_file(PhoneCatalog().verify()['path'],'application/vnd.android.package-archive')
+                except SetupError as error:self.send({'error':str(error)},status=400)
+                return
             if self.path=='/platforms.js':
                 from .capabilities import catalogue
                 self.send(('window.DVPlatforms='+json.dumps(catalogue())+';').encode(),'text/javascript; charset=utf-8');return
@@ -123,6 +131,8 @@ def serve(session=None,port=0):
                     elif self.path=='/api/addon-review':reply=session.addons.review(value)
                     elif self.path=='/api/addon-install':reply=session.addons.install(value)
                     elif self.path=='/api/addon-open':reply=session.addons.launch(value)
+                    elif self.path=='/api/addon-status':reply=session.addons.refresh(value)
+                    elif self.path=='/api/addon-settings':reply=session.addons.settings(value)
                     elif self.path=='/api/native-info':
                         if value!={}:raise SetupError('Unexpected tool check options.')
                         reply=session.native.info()

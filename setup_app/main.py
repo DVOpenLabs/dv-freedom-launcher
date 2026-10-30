@@ -32,6 +32,9 @@ def self_check():
     assert b'<svg' in qrcode.make('http://127.0.0.1:1234',image_factory=SvgPathImage).to_string()
     from setup_app.release import Catalog
     Catalog().verify()
+    from setup_app.phone_app import PhoneCatalog
+    phone=PhoneCatalog()
+    if (phone.folder/"phone-catalog.json").exists():phone.verify()
     from setup_app.addons import AddonCatalog,PACKAGES
     for id in PACKAGES:AddonCatalog().verify(id)
     with TemporaryDirectory() as folder:

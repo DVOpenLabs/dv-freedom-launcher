@@ -22,7 +22,7 @@ def main():
     sdk=Path(env['ANDROID_HOME']);java=Path(env['JAVA_HOME'])/'bin/java.exe';signer=sdk/'build-tools/34.0.0/lib/apksigner.jar';aapt=sdk/'build-tools/34.0.0/aapt2.exe'
     bundle=ROOT/'setup_app/release_bundle/addons';bundle.mkdir(parents=True,exist_ok=True);items=[]
     for id,pkg in PACKAGES.items():
-        module={'companions':'companions','phone-remote':'remote'}.get(id,'app');project=ROOT/'launcher' if id in {'companions','phone-remote'} else ROOT/'addons'/id
+        module={'companions':'companions','phone-remote':'remote','camera':'camera'}.get(id,'app');project=ROOT/'launcher' if id in {'companions','phone-remote','camera'} else ROOT/'addons'/id
         gradle=ROOT/'launcher/gradlew.bat'
         subprocess.run([str(gradle),'-p',str(project),'--no-daemon',':'+module+':testReleaseUnitTest',':'+module+':lintRelease',':'+module+':assembleRelease'],cwd=ROOT,env=env,check=True)
         folder=project/module/'build/outputs/apk/release';metadata=json.loads((folder/'output-metadata.json').read_text(encoding='utf-8'));element=metadata['elements'][0];apk=folder/element['outputFile'];out=bundle/(id+'.apk')

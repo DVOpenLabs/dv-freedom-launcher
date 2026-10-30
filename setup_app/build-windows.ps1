@@ -7,6 +7,12 @@ try {
     if (-not (Test-Path -LiteralPath (Join-Path $projectRoot 'setup_app/release_bundle/catalog.json'))) { throw 'Prepare the signed offline launcher bundle with setup_app.build_release first.' }
     $pythonLicense = & python -c "import sys; from pathlib import Path; print(Path(sys.base_prefix) / 'LICENSE.txt')"
     if (-not (Test-Path -LiteralPath $pythonLicense)) { throw 'Python licence file is missing.' }
+    $phoneArtifacts = @()
+    if (Test-Path -LiteralPath (Join-Path $projectRoot 'setup_app/release_bundle/phone-catalog.json')) {
+        python -c "from setup_app.phone_app import PhoneCatalog; PhoneCatalog().verify()"
+        if ($LASTEXITCODE -ne 0) { throw 'The optional phone artifact failed verification.' }
+        $phoneArtifacts = @('--add-data', "${projectRoot}/setup_app/release_bundle/phone-catalog.json:setup_app/release_bundle", '--add-data', "${projectRoot}/setup_app/release_bundle/phone-setup.apk:setup_app/release_bundle", '--add-data', "${projectRoot}/mobile/LICENSE:licenses/phone", '--add-data', "${projectRoot}/mobile/README.md:licenses/phone", '--add-data', "${projectRoot}/mobile/adb/licenses:licenses/phone/dependencies")
+    }
     python -m PyInstaller --noconfirm --clean --onefile --windowed --name DV-Freedom-Setup `
       --distpath setup_app/dist --workpath setup_app/build --specpath setup_app/build `
       --paths . --hidden-import platforms.webos.prepare_launcher --hidden-import platforms.tizen.prepare_launcher --hidden-import platforms.hosted.prepare_launcher --hidden-import platforms.roku.prepare_channel --collect-all adb_shell --collect-all rsa --collect-all cryptography --collect-all paho --collect-all qrcode --collect-all colorama `
@@ -34,6 +40,6 @@ try {
       --add-data "${projectRoot}/product/licenses/python-qrcode-LICENSE.txt:licenses" `
       --add-data "${projectRoot}/product/licenses/colorama-LICENSE.txt:licenses" `
       --add-data "${projectRoot}/product/licenses:licenses/addons" `
-      --add-data "${projectRoot}/LICENSE:licenses" setup_app/main.py
+      --add-data "${projectRoot}/LICENSE:licenses" @phoneArtifacts setup_app/main.py
     if ($LASTEXITCODE -ne 0) { throw 'The setup build failed.' }
 } finally { Pop-Location }

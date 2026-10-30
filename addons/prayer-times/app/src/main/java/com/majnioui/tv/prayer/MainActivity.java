@@ -28,7 +28,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Today's prayer times for one city from Aladhan (free, no account or key; only the coordinates and
+ * Today's prayer times for one city from Aladhan (free, no account or key; only the configured city/country, method and
  * the date are sent), with the calculation method in res/values/config.xml. The next prayer is highlighted
  * with a countdown.
  */
@@ -52,7 +52,12 @@ public class MainActivity extends Activity {
     private String methodName = "";
     /** The day the times are for (yyyy-MM-dd), to reload after midnight. */
     private String loadedFor;
-    private boolean loading;
+    private java.util.TimeZone zone=java.util.TimeZone.getDefault();
+    private String formatted(String pattern){SimpleDateFormat f=new SimpleDateFormat(pattern,Locale.ENGLISH);f.setTimeZone(zone);return f.format(new Date());}
+    private boolean loading,visible;
+    private int generation;
+    private Thread requestThread;
+    private android.content.SharedPreferences source(){return getSharedPreferences("prayer-source",0);}
 
     private final Runnable tick = new Runnable() {
         @Override
@@ -80,7 +85,7 @@ public class MainActivity extends Activity {
 
         TextView place = text(18, 400, 0xB3FFFFFF);
         place.setLetterSpacing(0.25f);
-        place.setText(getString(R.string.place).toUpperCase(Locale.ROOT));
+        place.setText(source().getString("city","Choose your city").toUpperCase(Locale.ROOT));
         col.addView(place);
 
         next = text(52, 300, 0xFFFFFFFF);
@@ -100,43 +105,43 @@ public class MainActivity extends Activity {
         status.setText("Loading…");
         col.addView(status);
 
+        android.widget.Button configure=new android.widget.Button(this);configure.setText("Location & calculation method");configure.setAllCaps(false);configure.setOnClickListener(v->configure());col.addView(configure);
         setContentView(root);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        visible=true;generation++;
         load();
         main.postDelayed(tick, MINUTE_MS);
     }
 
     @Override
     protected void onPause() {
+        visible=false;generation++;loading=false;if(requestThread!=null)requestThread.interrupt();
         super.onPause();
         main.removeCallbacks(tick);
     }
 
-    private static String today() {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(new Date());
-    }
+    private String today() { return formatted("yyyy-MM-dd"); }
 
     private void load() {
-        if (loading) return;
-        loading = true;
-        final String day = today();
-        String url = "https://api.aladhan.com/v1/timings/"
-                + new SimpleDateFormat("dd-MM-yyyy", Locale.ROOT).format(new Date())
-                + "?latitude=" + getString(R.string.latitude) + "&longitude=" + getString(R.string.longitude)
-                + "&method=" + getString(R.string.method);
-        new Thread(() -> {
+        if(loading||!visible)return;
+        android.content.SharedPreferences config=source();if(!config.getBoolean("enabled",false)){status.setText("Not connected. Choose your city/country and calculation method first. No request has been made.");return;}
+        loading=true;final int token=generation;
+        final String day=today();String url;
+        try{url=PrayerSource.url(formatted("dd-MM-yyyy"),config.getString("city",""),config.getString("country",""),config.getInt("method",3));}catch(Exception bad){loading=false;status.setText("Check location and calculation method.");return;}
+        requestThread=new Thread(() -> {
             JSONObject json = null;
             try {
                 json = new JSONObject(fetch(url));
             } catch (Exception e) {
-                Log.w(TAG, "fetch: " + e);
+                // No request URL/location is written to Android logs.
             }
             final JSONObject result = json;
             main.post(() -> {
+                if(!visible||token!=generation)return;
                 loading = false;
                 if (result == null) {
                     status.setText("Can't reach Aladhan. Showing the last times, if any.");
@@ -145,13 +150,13 @@ public class MainActivity extends Activity {
                 try {
                     parse(result.getJSONObject("data"));
                     loadedFor = day;
+                    if(!day.equals(today())){loadedFor=null;load();return;}
                     render();
                 } catch (Exception e) {
-                    Log.w(TAG, "parse: " + e);
                     status.setText("Unexpected answer from Aladhan.");
                 }
             });
-        }).start();
+        },"Prayer source");requestThread.start();
     }
 
     private void parse(JSONObject data) throws Exception {
@@ -168,18 +173,21 @@ public class MainActivity extends Activity {
         minutes = m;
         times = s;
         JSONObject meta = data.optJSONObject("meta");
+        String timezone=meta!=null?meta.optString("timezone",""):"";
+        if(!java.util.Arrays.asList(java.util.TimeZone.getAvailableIDs()).contains(timezone))throw new java.io.IOException("Unknown provider timezone");
+        zone=java.util.TimeZone.getTimeZone(timezone);
         JSONObject method = meta != null ? meta.optJSONObject("method") : null;
         methodName = method != null ? method.optString("name", "") : "";
         JSONObject date = data.getJSONObject("date");
         JSONObject hijri = date.getJSONObject("hijri");
-        dates.setText(new SimpleDateFormat("EEEE d MMMM", Locale.ENGLISH).format(new Date()) + "  ·  "
+        dates.setText(formatted("EEEE d MMMM") + "  ·  "
                 + hijri.getString("day") + " " + hijri.getJSONObject("month").getString("en") + " "
                 + hijri.getString("year") + " AH");
     }
 
     private void render() {
         if (minutes == null) return;
-        Calendar c = Calendar.getInstance();
+        Calendar c = Calendar.getInstance(zone);
         int now = c.get(Calendar.HOUR_OF_DAY) * 60 + c.get(Calendar.MINUTE);
         int nextIdx = -1;
         for (int i = 0; i < NAMES.length; i++) {
@@ -230,17 +238,21 @@ public class MainActivity extends Activity {
             rows.addView(card, lp);
         }
         status.setText("Aladhan" + (methodName.isEmpty() ? "" : " · " + methodName) + " · updated "
-                + new SimpleDateFormat("HH:mm", Locale.ROOT).format(new Date()));
+                + formatted("HH:mm"));
     }
+
+    private void configure(){android.widget.LinearLayout body=new android.widget.LinearLayout(this);body.setOrientation(android.widget.LinearLayout.VERTICAL);body.setPadding(dp(24),dp(12),dp(24),dp(12));android.widget.EditText city=new android.widget.EditText(this),country=new android.widget.EditText(this),method=new android.widget.EditText(this);city.setSingleLine(true);country.setSingleLine(true);method.setSingleLine(true);city.setHint("City");country.setHint("Country name or code");method.setHint("Aladhan method ID, 0–23");method.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);city.setText(source().getString("city",""));country.setText(source().getString("country",""));method.setText(String.valueOf(source().getInt("method",3)));body.addView(city);body.addView(country);body.addView(method);android.app.AlertDialog dialog=new android.app.AlertDialog.Builder(this).setTitle("Prayer location & method").setMessage("Optional: sends this city/country and method to api.aladhan.com over HTTPS while this app is visible. No GPS, account, background alarms or boot service. Check the calculation method with your local mosque; 3 is Muslim World League.").setView(body).setNegativeButton("Cancel",null).setNeutralButton("Disconnect",(d,n)->{source().edit().clear().apply();recreate();}).setPositiveButton("Save & fetch",null).create();dialog.setOnShowListener(d->dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{try{int selected=Integer.parseInt(method.getText().toString());PrayerSource.url("01-01-2026",city.getText().toString().trim(),country.getText().toString().trim(),selected);source().edit().putString("city",city.getText().toString().trim()).putString("country",country.getText().toString().trim()).putInt("method",selected).putBoolean("enabled",true).apply();dialog.dismiss();recreate();}catch(Exception invalid){city.setError("Use a city/country up to 80 characters and method 0–23");}}));dialog.show();}
 
     private static String fetch(String url) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(8000);
         c.setReadTimeout(8000);
+        c.setInstanceFollowRedirects(false);
         try (InputStream in = c.getInputStream()) {
+            if(c.getResponseCode()!=200)throw new java.io.IOException("Provider unavailable");
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buf = new byte[4096];
-            for (int n; (n = in.read(buf)) > 0; ) out.write(buf, 0, n);
+            for(int n;(n=in.read(buf))>0;){if(Thread.currentThread().isInterrupted()||out.size()+n>262144)throw new java.io.IOException("Request stopped or too large");out.write(buf,0,n);}
             return out.toString("UTF-8");
         } finally {
             c.disconnect();

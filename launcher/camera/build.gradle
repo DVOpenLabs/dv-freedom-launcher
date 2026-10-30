@@ -1,0 +1,26 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.dvopenlabs.freedom.camera'; compileSdk 34
+    defaultConfig { applicationId 'com.dvopenlabs.freedom.camera'; minSdk 26; targetSdk 34; versionCode 1; versionName '0.1-alpha1' }
+    buildTypes { release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'); signingConfig signingConfigs.debug } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    testOptions { unitTests.returnDefaultValues = true }
+}
+dependencies {
+    implementation 'androidx.media3:media3-exoplayer:1.4.1'
+    implementation 'androidx.media3:media3-exoplayer-hls:1.4.1'
+    implementation 'androidx.media3:media3-exoplayer-rtsp:1.4.1'
+    implementation 'androidx.media3:media3-datasource-okhttp:1.4.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    testImplementation 'junit:junit:4.13.2'
+}
+apply from: rootProject.file('optional-ui.gradle')
+def notices=layout.buildDirectory.dir('generated/notices')
+android.sourceSets.main.assets.srcDir notices
+tasks.register('cameraNotices') {
+    inputs.files(fileTree('../../product/licenses')); outputs.dir(notices)
+    doLast {
+        copy { from '../../product/licenses'; include 'media3-*','okhttp-*','okio-*','kotlin-*','annotations-*'; into notices }
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'cameraNotices' }

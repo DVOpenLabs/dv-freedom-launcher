@@ -152,10 +152,10 @@ public class MainActivity extends Activity {
         Row guard = add(new Row(this, getString(R.string.guard_title),
                 getString(fixed ? R.string.guard_detail_fixed : R.string.guard_detail),
                 () -> {
-                    prefs.edit().putBoolean(QuietReceiver.GUARD, !prefs.getBoolean(QuietReceiver.GUARD, true)).apply();
+                    prefs.edit().putBoolean(QuietReceiver.GUARD, !prefs.getBoolean(QuietReceiver.GUARD, false)).apply();
                     build();
                 }));
-        guard.setValue(getString(prefs.getBoolean(QuietReceiver.GUARD, true) ? R.string.on : R.string.off));
+        guard.setValue(getString(prefs.getBoolean(QuietReceiver.GUARD, false) ? R.string.on : R.string.off));
         if (prefs.getBoolean(QuietReceiver.MUTED_BY_US, false)) {
             Row unmute = add(new Row(this, getString(R.string.unmute_title), getString(R.string.unmute_detail), () -> {
                 audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, AudioManager.FLAG_SHOW_UI);

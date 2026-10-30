@@ -109,3 +109,30 @@ attribution-only [TMPlayer mark](https://github.com/dracu-lah/TMPlayer/blob/c716
 Only the vector asset was converted to Android XML; its application/Compose implementation was not
 copied. The mark remains smaller than DV Freedom’s panel title and implies no endorsement. Configured
 provider/API acceptance and the user’s applicable service terms remain separate from local build tests.
+
+## Ecosystem additions and separate phone Setup
+
+Nepali Calendar is retained from the MIT CleanYourTV source at
+`fe9ad3204b945d3aadfb6876ee6ea78c20a1fe73`, including its separate algorithm licence/notice. Other
+optional add-ons keep their existing authorship. Headphones’ disconnect guard now defaults off;
+Prayer Times uses an explicit source form and foreground-only bounded requests. No reference artwork
+or commercial launcher implementation was copied. Discover filters, ambient framing, family policies,
+volume/wake integration and native platform presentation are independently implemented DV code.
+The local contributor checker takes the deterministic-check concept from the MIT maintainer-bot;
+no bot source, provider credentials or automatic PR actions are included.
+
+The **separate `mobile/` phone application is GPL-3.0-or-later**, with its licence and build/relink
+instructions in [mobile/README.md](../mobile/README.md). It vendors selected LibADB Android 3.1.1 runtime
+source at `c849886ebc6d48e7b46d967e78a6bb65c90c3b74`, preserving GPL/Apache/BSD/MIT notices and the LGPL-3
+SPAKE2 dependency notice. Phone code is not linked into the MIT TV launcher/desktop. Conscrypt, Bouncy
+Castle, AndroidX/JetBrains annotations, Kotlin and Outfit retain their own notices. A public phone
+binary distribution needs corresponding source and dependency source/notices, not just the APK.
+
+Museum art is requested only on demand from The Met Open Access API, restricted to records explicitly
+marked public domain. CC0 credit accompanies cached works; no museum image is committed or bundled.
+
+The optional independently implemented Camera app uses Media3 1.4.1, its AndroidX/Guava dependencies,
+OkHttp/Okio and Kotlin. Exact runtime versions and attribution are retained in
+[media3-NOTICE.txt](licenses/media3-NOTICE.txt), with Apache/other applicable licence texts copied into
+the app’s generated notices. No Corner Player code, camera imagery, native decoder extension or
+Frigate source is linked into the core launcher. It is MIT product code with separately reviewed access.

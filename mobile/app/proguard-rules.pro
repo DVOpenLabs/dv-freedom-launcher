@@ -1,0 +1,3 @@
+-keep class org.conscrypt.** { *; }
+-dontwarn org.conscrypt.**
+-keep class io.github.muntashirakon.crypto.spake2.** { *; }
