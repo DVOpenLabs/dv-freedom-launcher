@@ -21,7 +21,7 @@ final class HubStore {
         if(!p.getBoolean("calendar",false)||System.currentTimeMillis()-p.getLong("attempt",0)<12*3600000L||pending.contains("calendar"))return;
         String family=p.getString("family",""),sports=p.getString("sports","");pending.add("calendar");p.edit().putLong("attempt",System.currentTimeMillis()).apply();
         WORK.execute(()->{try{JSONArray result=new JSONArray();for(String key:new String[]{"family","sports"}){String url=key.equals("family")?family:sports;if(url.isEmpty())continue;String body=new String(Network.request(url,null,null,false,1024*1024),StandardCharsets.UTF_8);JSONArray events=CalendarFeed.parse(body,System.currentTimeMillis(),key.equals("sports")?"Game Day":"Family");for(int i=0;i<events.length();i++)result.put(events.get(i));}
-            if(p.getBoolean("calendar",false)&&family.equals(p.getString("family",""))&&sports.equals(p.getString("sports","")))p.edit().putString("events",result.toString()).putLong("updated",System.currentTimeMillis()).putBoolean("failed",false).apply();
+            if(p.getBoolean("calendar",false)&&family.equals(p.getString("family",""))&&sports.equals(p.getString("sports","")))p.edit().putString("events",EventDisplay.merge(result,System.currentTimeMillis()).toString()).putLong("updated",System.currentTimeMillis()).putBoolean("failed",false).apply();
         }catch(Exception unavailable){p.edit().putBoolean("failed",true).apply();}finally{synchronized(HubStore.class){pending.remove("calendar");}c.getContentResolver().notifyChange(URI,null);}});
     }
     static JSONArray events(Context c){try{return new JSONArray(prefs(c).getString("events","[]"));}catch(Exception bad){return new JSONArray();}}

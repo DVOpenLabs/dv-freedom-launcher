@@ -253,7 +253,7 @@ that every title has a universal playback link. **About & data credits** include
 required notice and JustWatch attribution. Commercial API use needs its own appropriate provider terms.
 
 **Personal photos** supports one explicitly selected Immich album or WebDAV folder. Credentials remain
-in private, backup-excluded storage. Refresh is manual, not a job/service. Immich requests only that
+in private, backup-excluded storage. Refresh is manual by default; optional ambient refresh is described below. There is no job/service. Immich requests only that
 album and image previews; WebDAV uses Depth 1, disables DTD/external entities, accepts direct image
 children only and never follows a supplied link to another origin. Redirects/proxies are disabled.
 Up to 12 decoded/re-encoded local pictures and 16 MB remain cached, available through the same-signer
@@ -274,3 +274,45 @@ Neither opting into setup nor installing an update grants Accessibility or start
 
 Optional Gemini drafting is described in [AI setup](AI-SETUP.md). No cloud credential is bundled and no
 paid inference occurs without an explicit request review.
+
+## Photo & Art ambient
+
+In **Companions → Personal photos**, enter your own Immich/WebDAV address and credentials. The explicit
+**Choose an Immich album** action requests album names; selecting one only fills the draft. Save, then
+Refresh to cache that album. An optional exact Immich tag filters images within that album. Up to twelve
+images/16 MB are retained. Date, place and people captions are private cache metadata and start hidden.
+Forget clears credentials and cached photos. Source changes never select a Home wallpaper.
+
+**Photo & Art appearance** offers fit/mat framing, portrait pairs, transitions, reduced motion and
+optional captions, with Apply/Cancel. Preview uses cached images. Selecting the optional system
+screensaver remains an Android choice; some Google TV devices do not expose its picker. Refresh every
+30 minutes is separately opt-in and only runs while ambient is visible. Leaving releases its worker,
+bitmaps and timer; it is not an unattended server sync.
+
+**Museum art** offers a small curated list from The Met Open Access API. Select a work and explicitly
+download it over HTTPS. Only API records marked public domain and the fixed museum image host are
+accepted. Credits/CC0 attribution stay with the cached work. Art has a separate cache; opening the
+list makes no network request. Your own photos and active Home wallpaper remain saved.
+
+## Discover filters and links
+
+**Browse filters** supports genre, minimum rating, popular/top-rated/recent ordering and pages 1–20.
+Apply/Cancel protects the draft. Top-rated uses a minimum vote count. Text search is global, with its
+limits shown rather than silently claiming the browse/provider filters apply to it.
+
+A service card can store a manually entered title URL for that service and title. Only approved HTTPS
+host/path forms are accepted: no credentials, query strings, fragments or arbitrary intents. Launch
+stays package-scoped; unavailable links offer search/Open app. Availability is advisory, and a valid
+link does not guarantee playback or subscription access. No streaming account is scraped.
+
+Home Assistant favourites now also show sensors, binary sensors, climate temperatures and cover
+positions read-only. Scene/light/switch/fan actions retain the existing confirmation and allowlist;
+adding a read-only entity does not grant a new remote control or start a new connection.
+
+These panels require Companions alpha 4. Native rendering, real provider accounts and device-specific
+screensaver behaviour need acceptance on the selected TV; JVM, lint and build checks do not prove them.
+
+Family/Game Day calendars merge duplicate titles at the same start time across the two subscriptions,
+keep upcoming timed events in order, and show minute/hour or Tomorrow countdowns rather than labelling
+every nearby event Today. All-day wording uses calendar dates across DST. This remains cached calendar
+information, not a live-score service; reload the panel to update the countdown wording.

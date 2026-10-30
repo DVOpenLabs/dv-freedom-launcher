@@ -7,6 +7,12 @@
         <activity android:name=".SetupCopilotActivity" android:exported="true" />
         <activity android:name=".DiscoverActivity" android:exported="true" />
         <activity android:name=".PhotoSourcesActivity" android:exported="true" />
+        <activity android:name=".AmbientSettingsActivity" android:exported="false" />
+        <activity android:name=".AmbientActivity" android:exported="false" />
+        <activity android:name=".ArtGalleryActivity" android:exported="false" />
+        <service android:name=".AmbientDream" android:label="DV Freedom Photos &amp; Art" android:exported="true" android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter><action android:name="android.service.dreams.DreamService" /></intent-filter>
+        </service>
         <activity android:name=".HubActivity" android:exported="true" />
         <provider android:name=".HubProvider" android:authorities="com.dvopenlabs.freedom.companions.snapshot" android:exported="true" android:permission="com.dvopenlabs.freedom.companions.READ" android:grantUriPermissions="false" />
     </application>
