@@ -22,11 +22,20 @@ def serve(session=None,port=0):
     class Handler(BaseHTTPRequestHandler):
         def setup(self):super().setup();self.connection.settimeout(8)
         def log_message(self,*args):pass
+        def send_file(self,file,mime):
+            size=file.stat().st_size
+            if not 0<size<=48*1024*1024:raise SetupError('Received file is invalid.')
+            self.send_response(200)
+            for key,value in {'Content-Type':mime,'Content-Length':str(size),'Cache-Control':'no-store',
+                'X-Content-Type-Options':'nosniff','Content-Disposition':'attachment'}.items():self.send_header(key,value)
+            self.end_headers()
+            with file.open('rb') as source:
+                while data:=source.read(65536):self.wfile.write(data)
         def send(self,data,mime='application/json; charset=utf-8',status=200):
             if not isinstance(data,bytes):data=json.dumps(data,ensure_ascii=False).encode()
             self.send_response(status);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)))
             for key,value in {'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY',
-              'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' blob:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}.items():self.send_header(key,value)
+              'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}.items():self.send_header(key,value)
             self.end_headers();self.wfile.write(data)
         def allowed(self,api=False,post=False):
             origin='http://127.0.0.1:'+str(self.server.server_port)
@@ -38,6 +47,17 @@ def serve(session=None,port=0):
         def do_GET(self):
             if not self.allowed(self.path.startswith('/api/')):return
             if self.path=='/api/state':self.send(session.public());return
+            if self.path=='/api/phone-info':self.send(session.phone.public());return
+            if self.path=='/api/phone-qr':
+                try:self.send(session.phone.qr(),'image/svg+xml')
+                except SetupError as error:self.send({'error':str(error)},status=400)
+                return
+            if self.path.startswith('/api/phone-file/'):
+                try:
+                    item,file=session.phone.file(self.path.rsplit('/',1)[-1])
+                    self.send_file(file,{'jpg':'image/jpeg','png':'image/png','mp4':'video/mp4'}[item['kind']])
+                except (SetupError,OSError):self.send({'error':'The received file is unavailable.'},status=400)
+                return
             if self.path=='/api/support':
                 from .support import report
                 self.send(report(session));return
@@ -54,7 +74,7 @@ def serve(session=None,port=0):
                 except (SetupError,OSError):self.send({'error':'Build a new package in this session.'},status=400)
                 return
             assets={'/':(WEB/'index.html','text/html; charset=utf-8'),'/app.css':(WEB/'app.css','text/css; charset=utf-8'),
-               '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/essentials.js':(WEB/'essentials.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/native.js':(WEB/'native.js','text/javascript; charset=utf-8'),'/companion.js':(WEB/'companion.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
+               '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/phone-desktop.js':(WEB/'phone-desktop.js','text/javascript; charset=utf-8'),'/essentials.js':(WEB/'essentials.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/native.js':(WEB/'native.js','text/javascript; charset=utf-8'),'/companion.js':(WEB/'companion.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
             if self.path not in assets:self.send({'error':'Page not found.'},status=404);return
             file,mime=assets[self.path]
             try:
@@ -71,6 +91,7 @@ def serve(session=None,port=0):
                 if self.headers.get('Content-Type','').split(';')[0]!='application/json':self.send({'error':'JSON required.'},status=415);return
                 value=json.loads(self.rfile.read(length).decode(),object_pairs_hook=unique,parse_constant=lambda _:(_ for _ in ()).throw(SetupError('Invalid number.')))
                 with session.dispatch_lock:
+                    if session.phone.server and not self.path.startswith('/api/phone-') and self.path!='/api/quit':raise SetupError('Stop phone sharing before changing the selected TV or running an installation.')
                     if self.path=='/api/native-cancel':
                         if value!={}:raise SetupError('Unexpected stop options.')
                         session.native.cancelled.set();self.send({'requested':True});return
@@ -82,7 +103,13 @@ def serve(session=None,port=0):
                     if session.tools.lock.locked():raise SetupError('Pairing support is being prepared. Keep this app open until the download finishes.')
                     if session.job['status']=='running':raise SetupError('Wait for the current connection check to finish.')
                     if session.companion.server and not self.path.startswith('/api/companion-') and self.path!='/api/quit':raise SetupError('Stop the current hosted Home before starting another TV operation.')
-                    if self.path.startswith('/api/companion-'):
+                    if self.path.startswith('/api/phone-'):
+                        actions={'start':session.phone.start,'claim':session.phone.claim,'remove':session.phone.remove,'transfer':session.phone.send_to_tv,
+                            'stop':lambda v:session.phone.stop() if v=={} else (_ for _ in ()).throw(SetupError('Unexpected fields.'))}
+                        action=actions.get(self.path.removeprefix('/api/phone-'))
+                        if not action:raise SetupError('This phone action is unavailable.')
+                        reply=action(value)
+                    elif self.path.startswith('/api/companion-'):
                         actions={'info':lambda v:session.companion.info() if v=={} else (_ for _ in ()).throw(SetupError('Unexpected fields.')),
                             'connect':session.companion.connect,'trust':session.companion.trust_vizio,'pair':session.companion.pair,'capture':session.companion.capture,
                             'review':session.companion.review,'start':session.companion.start,'open-vizio':session.companion.open_vizio,
@@ -123,6 +150,7 @@ def serve(session=None,port=0):
                         if value!={}:raise SetupError('Unexpected close options.')
                         if session.companion.server:raise SetupError('Hosted Home is running. Use Stop hosted Home first; closing this computer disconnects the TV page.')
                         session.companion.disconnect()
+                        session.phone.stop()
                         self.send({'closed':True});threading.Thread(target=self.server.shutdown,daemon=True).start();return
                     else:self.send({'error':'This action is not available. No TV changes were made.'},status=404);return
                     self.send(reply)

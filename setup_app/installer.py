@@ -120,14 +120,17 @@ class Installer:
             if current:
                 native=self._native(d)
                 if native['revision']!=point['beforeRevision'] or native['profile']!=point['beforeProfile']:raise SetupError('Home changed since review. Review the new setup before updating.')
+            home=d.read('home').strip().splitlines()
+            if not home or home[-1]!=point['originalHome']:raise SetupError('The default Home changed since review. Review again before installation.')
             self._step(point,'Verified release, TV identity and recovery point','verified')
             if self._check_cancel(point):return
             if not current or current['sha256']!=release['sha256']:
-                self._step(point,'Installing the signed launcher; original Home stays selected','installing')
+                self._step(point,'Installing the signed launcher; preserving your recorded Home','installing')
                 d.install(release['path'],release['sha256'])
             self._step(point,'Checking the installed app','installed')
             current=self._installed(d,release)
             if not current or current['sha256']!=release['sha256']:raise SetupError('The installed APK did not match the verified release. Use the recovery point; default Home was not changed.')
+            d.preserve_home(point['originalHome'])
             d.launch();native=self._native(d)
             if point['backup'] is None:point['backup']=native['backup'];point['beforeProfile']=native['profile'];point['beforeRevision']=native['revision'];self._save(point)
             if self._check_cancel(point):return
@@ -174,7 +177,7 @@ class Installer:
         point=self._load(value['id'])
         def operation(p):
             d=self._open()
-            try:self._bound(d,p);self._preview(d,p,self._native(d))
+            try:self._bound(d,p);d.preserve_home(p['originalHome']);self._preview(d,p,self._native(d))
             finally:d.close()
         return self._job(point,operation)
     def action(self,kind,value):

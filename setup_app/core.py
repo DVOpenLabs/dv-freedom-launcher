@@ -126,6 +126,8 @@ class Session:
         self.native=NativeInstaller(self.root)
         from .companion import CompanionSetup
         self.companion=CompanionSetup(self.root)
+        from .phone import PhoneSetup
+        self.phone=PhoneSetup(self)
     def public(self):
         info=copy.deepcopy(self.inventory)
         if info:info.pop('raw',None)

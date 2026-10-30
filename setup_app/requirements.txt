@@ -2,3 +2,4 @@ adb-shell==0.4.4
 rsa==4.9.1
 cryptography>=46.0.7
 paho-mqtt==2.1.0
+qrcode==8.2

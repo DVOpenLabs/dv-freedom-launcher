@@ -3,12 +3,57 @@ import hashlib
 import json
 import re
 import shlex
+import time
 from .core import Device,SetupError
 from .release import MAX_APK
 
 PACKAGE='com.dvopenlabs.freedomlauncher'
 METHODS={'status','backup','preview','revert','restore','home','accessibility'}
 class InstallerDevice(Device):
+    def preserve_home(self,component):
+        """Restore only a cleared chooser to the exact recorded Home, never override a new choice."""
+        if not isinstance(component,str) or not re.fullmatch(r'[A-Za-z][\w.]*/[A-Za-z.][\w.$]*',component) or any(x in component.lower() for x in ('factory','hkcfac','resolveractivity','chooseractivity')):
+            raise SetupError('The recorded Home cannot be safely restored.')
+        current=self.read('home').strip().splitlines()
+        if current and current[-1]==component:return
+        if not current or current[-1]!='android/com.android.internal.app.ResolverActivity':
+            raise SetupError('The default Home changed during installation. Check your TV Home settings before continuing; the new choice was not overwritten.')
+        candidates=self._shell('cmd package query-activities --brief -a android.intent.action.MAIN -c android.intent.category.HOME').splitlines()
+        if component not in [line.strip() for line in candidates]:raise SetupError('The recorded Home is no longer available. Select an available Home in TV settings before continuing.')
+        self._shell('cmd package set-home-activity --user 0 '+shlex.quote(component))
+        selected=self.read('home').strip().splitlines()
+        if not selected or selected[-1]!=component:raise SetupError('Android cleared its previous Home selection. Restore that choice in TV Home settings, then check this recovery point again.')
+    def media_call(self,method,value):
+        if method not in {'prepare','status','review'}:raise SetupError('Unsupported media action.')
+        raw=json.dumps(value,ensure_ascii=True,separators=(',',':')) if isinstance(value,dict) else value
+        if not isinstance(raw,str) or len(raw)>8192:raise SetupError('Invalid media request.')
+        command='content call --uri content://'+PACKAGE+'.inbox --method '+method+' --arg '+shlex.quote(raw)
+        output=self._shell(command);marker=output.find('json=')
+        if marker<0:raise SetupError('The TV could not prepare media review. Update the compatible DV Freedom build, keep the current profile unchanged, and finish or discard any file already waiting on the TV.')
+        try:reply=json.JSONDecoder().raw_decode(output[marker+5:])[0]
+        except (ValueError,TypeError):raise SetupError('The TV returned an invalid media response.')
+        if reply.get('schema')!=1:raise SetupError('Unsupported media interface.')
+        return reply
+    def send_media(self,file,item,native):
+        prepared=self.media_call('prepare',dict(schema=1,profile=native['profile'],revision=native['revision'],kind=item['kind'],bytes=item['bytes'],sha256=item['sha256'],name=item['name']))
+        id=prepared.get('id')
+        if not isinstance(id,str) or not re.fullmatch('[0-9a-f]{32}',id):raise SetupError('The TV did not prepare a safe upload slot.')
+        remote='/data/local/tmp/dv-freedom-media-'+id+'.bin'
+        try:
+            if self.paired:self._adb(['-s',f'{self.host}:{self.port}','push',str(file),remote])
+            else:self.device.push(str(file),remote,transport_timeout_s=10,read_timeout_s=90)
+            if self._shell('sha256sum '+remote).split()[0]!=item['sha256']:raise SetupError('Media transfer checksum failed. Nothing was imported.')
+            self._shell('cat '+remote+' | content write --uri content://'+PACKAGE+'.inbox/upload/'+id,90)
+            for _ in range(30):
+                status=self.media_call('status',id)
+                if status.get('state')=='ready':
+                    self.media_call('review',id);return id
+                if status.get('state')=='error':break
+                time.sleep(.1)
+            raise SetupError('The TV could not verify the received media. Nothing was imported or selected.')
+        finally:
+            try:self._shell('rm -f '+remote)
+            except Exception:pass
     def _shell(self,command,timeout=25):
         if self.paired:return self._adb(['-s',f'{self.host}:{self.port}','shell',command])
         return self.device.shell(command,transport_timeout_s=10,read_timeout_s=timeout)

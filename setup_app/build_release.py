@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives import hashes,serialization
 from cryptography.hazmat.primitives.asymmetric import rsa,ed25519
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.x509.oid import NameOID
-from setup_app.release import canonical,digest,apk_certificate
+from setup_app.release import canonical,digest,apk_certificate,verify_resource_paths
 
 ROOT=Path(__file__).resolve().parents[1]
 def write_private(path,value):
@@ -39,7 +39,7 @@ def main():
     if not trust.exists():trust.write_text(json.dumps({'schema':1,'algorithm':'Ed25519','publicKey':public},indent=2)+'\n',encoding='utf-8')
     env=os.environ.copy();env['DVFREEDOM_KEYSTORE']=str(folder/'release.p12');env['DVFREEDOM_KEY_PASSWORD']=(folder/'password.txt').read_text(encoding='utf-8')
     gradle=ROOT/'launcher'/('gradlew.bat' if os.name=='nt' else 'gradlew');subprocess.run([str(gradle),'--no-daemon','-PcommunityFeatures=true','-PfreedomRelease=true','testReleaseUnitTest','lintRelease','assembleRelease'],cwd=ROOT/'launcher',env=env,check=True)
-    apk=ROOT/'launcher/app/build/outputs/apk/release/app-release.apk';sdk=Path(env['ANDROID_HOME']);java=Path(env['JAVA_HOME'])/'bin'/('java.exe' if os.name=='nt' else 'java')
+    apk=ROOT/'launcher/app/build/outputs/apk/release/app-release.apk';verify_resource_paths(apk);sdk=Path(env['ANDROID_HOME']);java=Path(env['JAVA_HOME'])/'bin'/('java.exe' if os.name=='nt' else 'java')
     checked=subprocess.check_output([str(java),'-jar',str(sdk/'build-tools/34.0.0/lib/apksigner.jar'),'verify','--print-certs',str(apk)],text=True)
     certificate=re.search(r'Signer #1 certificate SHA-256 digest: ([0-9a-f]+)',checked)[1]
     if certificate!=apk_certificate(apk):raise SystemExit('Signer extraction did not match Android SDK verification.')

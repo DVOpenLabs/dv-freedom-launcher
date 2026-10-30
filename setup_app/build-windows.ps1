@@ -9,10 +9,10 @@ try {
     if (-not (Test-Path -LiteralPath $pythonLicense)) { throw 'Python licence file is missing.' }
     python -m PyInstaller --noconfirm --clean --onefile --windowed --name DV-Freedom-Setup `
       --distpath setup_app/dist --workpath setup_app/build --specpath setup_app/build `
-      --paths . --hidden-import platforms.webos.prepare_launcher --hidden-import platforms.tizen.prepare_launcher --hidden-import platforms.hosted.prepare_launcher --hidden-import platforms.roku.prepare_channel --collect-all adb_shell --collect-all rsa --collect-all cryptography --collect-all paho `
+      --paths . --hidden-import platforms.webos.prepare_launcher --hidden-import platforms.tizen.prepare_launcher --hidden-import platforms.hosted.prepare_launcher --hidden-import platforms.roku.prepare_channel --collect-all adb_shell --collect-all rsa --collect-all cryptography --collect-all paho --collect-all qrcode --collect-all colorama `
       --copy-metadata adb-shell --copy-metadata rsa --copy-metadata cryptography `
       --copy-metadata pyasn1 --copy-metadata cffi --copy-metadata pycparser --copy-metadata pyinstaller --copy-metadata altgraph `
-      --copy-metadata paho-mqtt `
+      --copy-metadata paho-mqtt --copy-metadata qrcode --copy-metadata colorama `
       --add-data "${projectRoot}/platforms/webos/launcher:platforms/webos/launcher" `
       --add-data "${projectRoot}/platforms/tizen/launcher:platforms/tizen/launcher" `
       --add-data "${projectRoot}/platforms/shared-web:platforms/shared-web" `
@@ -30,6 +30,8 @@ try {
       --add-data "${pythonLicense}:licenses/python" `
       --add-data "${projectRoot}/product/licenses/Paho-EDL-1.0.txt:licenses" `
       --add-data "${projectRoot}/product/licenses/Paho-NOTICE.txt:licenses" `
+      --add-data "${projectRoot}/product/licenses/python-qrcode-LICENSE.txt:licenses" `
+      --add-data "${projectRoot}/product/licenses/colorama-LICENSE.txt:licenses" `
       --add-data "${projectRoot}/LICENSE:licenses" setup_app/main.py
     if ($LASTEXITCODE -ne 0) { throw 'The setup build failed.' }
 } finally { Pop-Location }

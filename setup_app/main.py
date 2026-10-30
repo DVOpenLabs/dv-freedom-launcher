@@ -12,7 +12,7 @@ def self_check():
     from adb_shell.auth.keygen import keygen
     from adb_shell.auth.sign_pythonrsa import PythonRSASigner
     assert FONT.is_file()
-    assert all((WEB/name).is_file() for name in ['index.html','app.css','app.js','install.js','native.js','companion.js','essentials.js','scene.svg'])
+    assert all((WEB/name).is_file() for name in ['index.html','app.css','app.js','install.js','native.js','companion.js','essentials.js','scene.svg','phone-desktop.js','phone.html','phone.css','phone.js'])
     from platforms.webos.prepare_launcher import SOURCE as lg_source
     from platforms.tizen.prepare_launcher import SOURCE as samsung_source
     assert (lg_source/'appinfo.json').is_file() and (samsung_source/'config.xml').is_file()
@@ -27,6 +27,9 @@ def self_check():
         stage_hosted(Path(folder)/'vidaa','vidaa');stage_hosted(Path(folder)/'vizio','vizio')
         assert stage_roku(Path(folder)/'roku.zip')['installed'] is False
         import paho.mqtt.client
+    import qrcode
+    from qrcode.image.svg import SvgPathImage
+    assert b'<svg' in qrcode.make('http://127.0.0.1:1234',image_factory=SvgPathImage).to_string()
     from setup_app.release import Catalog
     Catalog().verify()
     with TemporaryDirectory() as folder:
@@ -48,5 +51,6 @@ def main():
     finally:
         http.server_close()
         session.companion.disconnect()
+        session.phone.stop()
 
 if __name__=='__main__':main()

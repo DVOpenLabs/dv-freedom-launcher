@@ -31,6 +31,8 @@ class FakeInstallerDevice:
     def metadata(self):return None if self.s['apk'] is None else {'path':'/data/app/example/base.apk','versionCode':self.s['version']}
     def pull(self,remote,path):Path(path).write_bytes(self.s['apk'])
     def read(self,key):return 'example.stock/.Home'
+    def preserve_home(self,component):
+        if component!='example.stock/.Home':raise SetupError('Unexpected Home')
     def launch(self):self.s['log'].append('launch')
     def install(self,apk,sha):
         self.s['log'].append('install');self.s['apk']=Path(apk).read_bytes();self.s['version']=14

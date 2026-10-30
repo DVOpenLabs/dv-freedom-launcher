@@ -5,11 +5,21 @@ import json
 from pathlib import Path
 import re
 import struct
+import zipfile
 from .core import SetupError
 
 MAX_APK=40*1024*1024
 def canonical(value):return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=True).encode()
 def digest(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def verify_resource_paths(path):
+    """Build gate: complex colors fail on Android when binary XML loses its suffix."""
+    with zipfile.ZipFile(path) as archive:
+        for item in archive.infolist():
+            if not item.filename.startswith('res/') or item.is_dir():continue
+            with archive.open(item) as resource:header=resource.read(4)
+            if header==b'\x03\x00\x08\x00' and not item.filename.endswith('.xml'):
+                raise SetupError('Compiled XML resource lost its .xml suffix. Disable product resource-path shortening before distribution.')
 def lp(data,offset=0):
     if offset+4>len(data):raise SetupError('Invalid APK signing data.')
     n=struct.unpack_from('<I',data,offset)[0];end=offset+4+n
