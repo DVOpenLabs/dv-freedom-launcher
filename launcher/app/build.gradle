@@ -26,8 +26,8 @@ android {
         applicationId selectedId
         minSdk 26
         targetSdk 34
-        versionCode communityFeatures ? 16 : 13
-        versionName communityFeatures ? '3.1-freedom-alpha15' : '3.0-community-alpha5'
+        versionCode communityFeatures ? 17 : 13
+        versionName communityFeatures ? '3.1-freedom-alpha16' : '3.0-community-alpha5'
     }
 
     signingConfigs {
@@ -92,8 +92,13 @@ tasks.configureEach { task ->
             keep.text = names.join('\n') + '\n'
             def suffix = System.getProperty('os.name').toLowerCase().contains('windows') ? '.exe' : ''
             def aapt = new File(android.sdkDirectory, 'build-tools/' + android.buildToolsVersion + '/aapt2' + suffix)
-            exec { commandLine aapt, 'optimize', '--collapse-resource-names', '--shorten-resource-paths', '--deduplicate-entry-values', '--resources-config-path', keep,
-                    '-o', temporary, archive }
+            // Android's complex-color loader requires a .xml suffix. AAPT path shortening can
+            // remove it from the product's state-list colors, causing Home inflation to fail.
+            // Keep the inherited reference artifact stable; product builds retain resource paths.
+            def options = [aapt, 'optimize', '--collapse-resource-names', '--deduplicate-entry-values']
+            if (!communityFeatures) options += '--shorten-resource-paths'
+            options += ['--resources-config-path', keep, '-o', temporary, archive]
+            exec { commandLine options }
             java.nio.file.Files.move(temporary.toPath(), archive.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
         }
     }

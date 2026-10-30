@@ -13,22 +13,110 @@ import java.util.concurrent.*;
 /** Opt-in searchable Watch Next metadata. At most 96 rows read once per foreground session. */
 final class ContentShelves {
     static final String KEY="private_content_shelf_enabled",PERMISSION="android.permission.READ_TV_LISTINGS";
-    static final class Card {final String pkg,title,kind;final Intent intent;final HomeCategories.App app;final int progress;Card(String p,String t,String k,Intent i,HomeCategories.App a,int progress){pkg=p;title=t;kind=k;intent=i;app=a;this.progress=progress;}}
+    static final class Card {final String pkg,title,kind,poster;final Intent intent;final HomeCategories.App app;final int progress;Card(String p,String t,String k,Intent i,HomeCategories.App a,int progress,String poster){this.poster=poster;pkg=p;title=t;kind=k;intent=i;app=a;this.progress=progress;}}
     static boolean granted(Context c){return c.checkSelfPermission(PERMISSION)==PackageManager.PERMISSION_GRANTED;}
     static boolean enabled(Context c){return granted(c)&&ProfileStore.preferences(c).getBoolean(KEY,false);}
-    static String status(Context c){return ProfileStore.preferences(c).getBoolean(KEY,false)?granted(c)?"On · app support varies":"Permission unavailable":"Off";}
-    static void settings(Activity a){String message="Read only the Watch Next items that your apps choose to share with TV launchers. This can include titles and viewing progress. No account access, usage-access permission, cloud upload or background polling.\n\nSome streaming apps share nothing. Empty shelves are hidden. Glass, Clean and Cinema show an inline row; the current layout uses this optional browser.\n\nAndroid permission and each profile’s shelf choice are separate. Disabling clears the on-screen shelf; revoke system access in Android App permissions if you want to remove the permission too.";AlertDialog.Builder b=new AlertDialog.Builder(a).setTitle("Content shelves").setMessage(message).setNegativeButton("Close",null);if(!granted(a))b.setPositiveButton("Allow TV listings",(d,w)->{try{a.requestPermissions(new String[]{PERMISSION},4901);}catch(Exception unavailable){Toast.makeText(a,"This device does not offer TV listings access",Toast.LENGTH_LONG).show();}});else b.setPositiveButton(enabled(a)?"Turn shelf off":"Show shelf in this profile",(d,w)->{if(!LauncherLock.require(a,()->settings(a)))return;boolean next=!enabled(a);Map<String,Object> v=new HashMap<>();v.put(KEY,next);v.put(Config.SETTINGS_REVISION_KEY,ProfileStore.preferences(a).getLong(Config.SETTINGS_REVISION_KEY,0)+1);if(SetupValues.commit(ProfileStore.preferences(a),v))a.finish();else Toast.makeText(a,"Could not save shelf choice",Toast.LENGTH_LONG).show();});if(enabled(a))b.setNeutralButton("Browse shared items",(d,w)->a.startActivity(new Intent(a,ContentShelfActivity.class)));b.show();}
+    static String status(Context c){return ProfileStore.preferences(c).getBoolean(KEY,false)?granted(c)?"On":"Permission unavailable":"Off";}
+    static void settings(Activity a){String message="Read only the Watch Next and Preview Programs items that your apps choose to share with TV launchers. This can include titles and viewing progress. No account access, usage-access permission, cloud upload or background polling.\n\nOnly artwork already shared through a local app provider is read. No poster downloads. Some streaming apps share nothing. Empty shelves are hidden. Glass, Clean and Cinema show an inline row; the current layout uses this optional browser.\n\nAndroid permission and each profile’s shelf choice are separate. Disabling clears the on-screen shelf; revoke system access in Android App permissions if you want to remove the permission too.";AlertDialog.Builder b=new AlertDialog.Builder(a).setTitle("Content shelves").setMessage(message).setNegativeButton("Close",null);if(!granted(a))b.setPositiveButton("Allow TV listings",(d,w)->{try{a.requestPermissions(new String[]{PERMISSION},4901);}catch(Exception unavailable){Toast.makeText(a,"This device does not offer TV listings access",Toast.LENGTH_LONG).show();}});else b.setPositiveButton(enabled(a)?"Turn shelf off":"Show shelf in this profile",(d,w)->{if(!LauncherLock.require(a,()->settings(a)))return;boolean next=!enabled(a);Map<String,Object> v=new HashMap<>();v.put(KEY,next);v.put(Config.SETTINGS_REVISION_KEY,ProfileStore.preferences(a).getLong(Config.SETTINGS_REVISION_KEY,0)+1);if(SetupValues.commit(ProfileStore.preferences(a),v))a.finish();else Toast.makeText(a,"Could not save shelf choice",Toast.LENGTH_LONG).show();});if(enabled(a))b.setNeutralButton("Browse shared items",(d,w)->a.startActivity(new Intent(a,ContentShelfActivity.class)));b.show();}
     static Intent safeIntent(Context c,String raw,String pkg){try{if(raw==null||raw.length()>8192)return null;Intent parsed=Intent.parseUri(raw,Intent.URI_INTENT_SCHEME|Intent.URI_ANDROID_APP_SCHEME);if(parsed.getPackage()!=null&&!pkg.equals(parsed.getPackage())||parsed.getComponent()!=null&&!pkg.equals(parsed.getComponent().getPackageName()))return null;Uri data=parsed.getData();if(data==null||!ContentShelfPolicy.scheme(data.getScheme()))return null;Intent safe=new Intent(Intent.ACTION_VIEW,data).setPackage(pkg).addCategory(Intent.CATEGORY_BROWSABLE);ResolveInfo target=c.getPackageManager().resolveActivity(safe,0);if(target==null||target.activityInfo==null||!pkg.equals(target.activityInfo.packageName)||!target.activityInfo.exported||!target.activityInfo.enabled)return null;safe.setComponent(new ComponentName(pkg,target.activityInfo.name));return safe;}catch(Exception bad){return null;}}
-    static List<Card> read(Context c,CancellationSignal cancel,Map<String,HomeCategories.App> visible){List<Card> result=new ArrayList<>();String[] columns={"package_name","title","watch_next_type","last_engagement_time_utc_millis","last_playback_position_millis","duration_millis","intent_uri","searchable"};long now=System.currentTimeMillis();Set<String> seen=new HashSet<>();
-        try(Cursor rows=c.getContentResolver().query(TvContract.WatchNextPrograms.CONTENT_URI,columns,null,null,"last_engagement_time_utc_millis DESC",cancel)){if(rows==null)return result;int read=0;while(read++<96&&rows.moveToNext()&&!cancel.isCanceled()&&result.size()<12){String pkg=rows.getString(0),title=rows.getString(1);int type=rows.getInt(2);if(rows.isNull(2)||rows.isNull(3)||rows.getInt(7)!=1||!ContentShelfPolicy.accepted(pkg,title,type,rows.getLong(3),rows.isNull(4)?-1:rows.getLong(4),rows.isNull(5)?-1:rows.getLong(5),now,visible.keySet()))continue;Intent intent=safeIntent(c,rows.getString(6),pkg);if(intent==null||!seen.add(pkg+"\n"+intent.getDataString()))continue;HomeCategories.App app=visible.get(pkg);result.add(new Card(pkg,title,ContentShelfPolicy.kind(type)+" · "+app.label,intent,app,ContentShelfPolicy.progress(type,rows.isNull(4)?-1:rows.getLong(4),rows.isNull(5)?-1:rows.getLong(5))));}}
-        catch(SecurityException|IllegalArgumentException|android.os.OperationCanceledException unavailable){result.clear();}catch(RuntimeException unavailable){result.clear();}return result;
+    static List<Card> read(Context c,CancellationSignal cancel,Map<String,HomeCategories.App> visible){List<Card> result=new ArrayList<>();String[] columns={"package_name","title","watch_next_type","last_engagement_time_utc_millis","last_playback_position_millis","duration_millis","intent_uri","searchable","poster_art_uri"};long now=System.currentTimeMillis();Set<String> seen=new HashSet<>();
+        try(Cursor rows=c.getContentResolver().query(TvContract.WatchNextPrograms.CONTENT_URI,columns,null,null,"last_engagement_time_utc_millis DESC",cancel)){if(rows==null)return readPreviews(c,cancel,visible,result,seen);int read=0;while(read++<96&&rows.moveToNext()&&!cancel.isCanceled()&&result.size()<12){String pkg=rows.getString(0),title=rows.getString(1);int type=rows.getInt(2);if(rows.isNull(2)||rows.isNull(3)||rows.getInt(7)!=1||!ContentShelfPolicy.accepted(pkg,title,type,rows.getLong(3),rows.isNull(4)?-1:rows.getLong(4),rows.isNull(5)?-1:rows.getLong(5),now,visible.keySet()))continue;Intent intent=safeIntent(c,rows.getString(6),pkg);if(intent==null||!seen.add(pkg+"\n"+intent.getDataString()))continue;HomeCategories.App app=visible.get(pkg);result.add(new Card(pkg,title,ContentShelfPolicy.kind(type)+" · "+app.label,intent,app,ContentShelfPolicy.progress(type,rows.isNull(4)?-1:rows.getLong(4),rows.isNull(5)?-1:rows.getLong(5)),rows.getString(8)));}}
+        catch(SecurityException|IllegalArgumentException|android.os.OperationCanceledException unavailable){result.clear();}catch(RuntimeException unavailable){result.clear();}return readPreviews(c,cancel,visible,result,seen);
+    }
+    static List<Card> readPreviews(Context c,CancellationSignal cancel,Map<String,HomeCategories.App> visible,List<Card> result,Set<String> seen){
+        if(cancel.isCanceled()||result.size()>=12)return result;
+        Map<String,Integer> counts=new HashMap<>();
+        String[] columns={"package_name","title","intent_uri","poster_art_uri","browsable"};
+        try(Cursor rows=c.getContentResolver().query(TvContract.PreviewPrograms.CONTENT_URI,columns,null,null,"_id DESC",cancel)){
+            if(rows==null)return result;int scanned=0;
+            while(scanned++<96&&rows.moveToNext()&&!cancel.isCanceled()&&result.size()<12){
+                String pkg=rows.getString(0),title=rows.getString(1);
+                if(!ContentShelfPolicy.preview(pkg,title,rows.getInt(4)==1,visible.keySet())||counts.getOrDefault(pkg,0)>=2)continue;
+                Intent intent=safeIntent(c,rows.getString(2),pkg);
+                if(intent==null||!seen.add(pkg+"\n"+intent.getDataString()))continue;
+                HomeCategories.App app=visible.get(pkg);counts.put(pkg,counts.getOrDefault(pkg,0)+1);
+                result.add(new Card(pkg,title,"From "+app.label,intent,app,-1,rows.getString(3)));
+            }
+        }catch(RuntimeException unavailable){/* One unsupported source must not remove the other source. */}
+        return result;
     }
     static final class Row {
-        final Activity a;final LinearLayout host;final View returnFocus;final String profile;final ExecutorService worker=Executors.newSingleThreadExecutor();final CancellationSignal cancel=new CancellationSignal();boolean closed;View lastFocused;final Application.ActivityLifecycleCallbacks lifecycle=new Application.ActivityLifecycleCallbacks(){public void onActivityCreated(Activity x,Bundle b){}public void onActivityStarted(Activity x){}public void onActivityStopped(Activity x){}public void onActivitySaveInstanceState(Activity x,Bundle b){}public void onActivityResumed(Activity x){}public void onActivityPaused(Activity x){if(x==a)close();}public void onActivityDestroyed(Activity x){if(x==a)close();}};
-        Row(Activity a,LinearLayout host,View returnFocus,boolean emptyMessage){this.a=a;this.host=host;this.returnFocus=returnFocus;host.setVisibility(View.GONE);profile=ProfileStore.id();Config config=Config.load(a);Map<String,HomeCategories.App> visible=new HashMap<>();for(HomeCategories.App app:HomeCategories.catalog(a,config))visible.put(app.pkg,app);a.getApplication().registerActivityLifecycleCallbacks(lifecycle);worker.execute(()->{List<Card> cards=enabled(a)?read(a,cancel,visible):Collections.emptyList();a.runOnUiThread(()->{if(closed||!profile.equals(ProfileStore.id())||!enabled(a))return;host.removeAllViews();if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).shelfReady(!cards.isEmpty());if(cards.isEmpty()){if(emptyMessage){host.setVisibility(View.VISIBLE);TextView empty=label("No shared items available. Open a supported app and watch something, then return here. Some apps do not share Watch Next items.",17);empty.setSingleLine(false);host.addView(empty);}return;}host.setVisibility(View.VISIBLE);host.addView(label("From your apps",17));HorizontalScrollView scroll=new HorizontalScrollView(a);scroll.setHorizontalScrollBarEnabled(false);LinearLayout line=new LinearLayout(a);scroll.addView(line);host.addView(scroll);for(Card card:cards){LinearLayout tile=new LinearLayout(a);tile.setOrientation(LinearLayout.VERTICAL);tile.setFocusable(true);tile.setClickable(true);tile.setPadding(dp(10),dp(8),dp(10),dp(8));tile.setBackgroundResource(R.drawable.settings_choice_bg);ImageView art=new ImageView(a);art.setImageDrawable(card.app.artwork(a,config));art.setScaleType(ImageView.ScaleType.CENTER_INSIDE);tile.addView(art,new LinearLayout.LayoutParams(dp(150),dp(45)));TextView title=label(card.title,15);title.setMaxLines(2);title.setEllipsize(android.text.TextUtils.TruncateAt.END);tile.addView(title,new LinearLayout.LayoutParams(dp(150),dp(42)));TextView kind=label(card.kind,11);kind.setSingleLine(true);kind.setEllipsize(android.text.TextUtils.TruncateAt.END);tile.addView(kind,new LinearLayout.LayoutParams(dp(150),dp(18)));if(card.progress>=0){ProgressBar progress=new ProgressBar(a,null,android.R.attr.progressBarStyleHorizontal);progress.setMax(100);progress.setProgress(card.progress);progress.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);tile.addView(progress,new LinearLayout.LayoutParams(dp(150),dp(4)));}tile.setContentDescription(card.title+", "+card.kind+(card.progress>=0?", "+card.progress+" percent watched":""));tile.setOnClickListener(v->{try{a.startActivity(card.intent);}catch(Exception missing){Toast.makeText(a,"This item is no longer available in its app",Toast.LENGTH_LONG).show();}});tile.setOnFocusChangeListener((v,on)->{if(on)lastFocused=v;});tile.setOnKeyListener((v,k,e)->{if(e.getAction()!=KeyEvent.ACTION_DOWN)return false;if(k==KeyEvent.KEYCODE_DPAD_LEFT||k==KeyEvent.KEYCODE_DPAD_RIGHT){int at=line.indexOfChild(tile);return ExperiencePolicy.next(at,k==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1,line.getChildCount(),line.getLayoutDirection()==View.LAYOUT_DIRECTION_RTL)==at;}if(returnFocus==null||k!=KeyEvent.KEYCODE_DPAD_UP&&k!=KeyEvent.KEYCODE_DPAD_DOWN)return false;int[] here=new int[2],back=new int[2];host.getLocationOnScreen(here);returnFocus.getLocationOnScreen(back);boolean below=here[1]>back[1];if(k==(below?KeyEvent.KEYCODE_DPAD_UP:KeyEvent.KEYCODE_DPAD_DOWN)){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).shelfReturn();else returnFocus.requestFocus();return true;}if(k==KeyEvent.KEYCODE_DPAD_UP){View settings=a.findViewById(R.id.btnSettings);if(settings!=null)settings.requestFocus();}return true;});LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(170),dp(127));lp.setMargins(0,dp(5),dp(8),0);line.addView(tile,lp);}});});}
+        final Activity a;
+        final LinearLayout host;
+        final View returnFocus;
+        final String profile;
+        final Config config;
+        final boolean panel;
+        final ExecutorService worker=Executors.newSingleThreadExecutor();
+        final CancellationSignal cancel=new CancellationSignal();
+        final Handler main=new Handler(Looper.getMainLooper());
+        final Application.ActivityLifecycleCallbacks lifecycle=new Application.ActivityLifecycleCallbacks(){
+            public void onActivityCreated(Activity x,Bundle b){} public void onActivityStarted(Activity x){}
+            public void onActivityStopped(Activity x){} public void onActivitySaveInstanceState(Activity x,Bundle b){}
+            public void onActivityResumed(Activity x){} public void onActivityPaused(Activity x){if(x==a)close();}
+            public void onActivityDestroyed(Activity x){if(x==a)close();}
+        };
+        boolean closed;
+        View lastFocused;
+        Row(Activity a,LinearLayout host,View returnFocus,boolean emptyMessage){
+            this.a=a;this.host=host;this.returnFocus=returnFocus;panel=emptyMessage;
+            profile=ProfileStore.id();config=Config.load(a);host.setVisibility(View.GONE);
+            Map<String,HomeCategories.App> visible=new HashMap<>();
+            for(HomeCategories.App app:HomeCategories.catalog(a,config))visible.put(app.pkg,app);
+            a.getApplication().registerActivityLifecycleCallbacks(lifecycle);
+            worker.execute(()->{List<Card> cards=enabled(a)?read(a,cancel,visible):Collections.emptyList();
+                main.post(()->render(cards));});
+        }
+        boolean current(){return !closed&&profile.equals(ProfileStore.id())&&enabled(a);}
+        void render(List<Card> cards){
+            if(!current())return;host.removeAllViews();
+            if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).shelfReady(!cards.isEmpty());
+            if(cards.isEmpty()){
+                if(panel){host.setVisibility(View.VISIBLE);TextView empty=label("No shared items yet. Open a supported app and watch something, then return here. Some apps do not share TV listings.",18);empty.setSingleLine(false);host.addView(empty);}
+                return;
+            }
+            host.setVisibility(View.VISIBLE);
+            if(!panel&&a.getResources().getConfiguration().fontScale>1.2f){
+                TextView browse=label("Browse shared titles from your apps",20);browse.setPadding(dp(20),dp(18),dp(20),dp(18));browse.setFocusable(true);browse.setClickable(true);browse.setBackgroundResource(R.drawable.settings_choice_bg);browse.setOnClickListener(v->a.startActivity(new Intent(a,ContentShelfActivity.class)));host.addView(browse);return;
+            }
+            host.addView(label("From your apps",17));
+            HorizontalScrollView scroll=new HorizontalScrollView(a);scroll.setHorizontalScrollBarEnabled(false);scroll.setClipToPadding(false);
+            LinearLayout line=new LinearLayout(a);line.setPadding(dp(5),dp(4),dp(5),dp(4));scroll.addView(line);host.addView(scroll);
+            for(Card card:cards)addCard(line,card);
+        }
+        void addCard(LinearLayout line,Card card){
+            LinearLayout tile=new LinearLayout(a);tile.setOrientation(LinearLayout.VERTICAL);tile.setFocusable(true);tile.setClickable(true);
+            tile.setPadding(dp(10),dp(8),dp(10),dp(8));tile.setBackgroundResource(R.drawable.settings_choice_bg);
+            ImageView art=new ImageView(a);art.setImageDrawable(card.app.artwork(a,config));art.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            tile.addView(art,new LinearLayout.LayoutParams(dp(150),dp(panel?84:42)));
+            TextView title=label(card.title,15);title.setMaxLines(2);title.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            tile.addView(title,new LinearLayout.LayoutParams(dp(150),panel?-2:dp(36)));
+            TextView kind=label(card.kind,11);kind.setTextColor(0xffc5d4e4);kind.setSingleLine(true);kind.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            tile.addView(kind,new LinearLayout.LayoutParams(dp(150),panel?-2:dp(16)));
+            if(card.progress>=0){ProgressBar progress=new ProgressBar(a,null,android.R.attr.progressBarStyleHorizontal);progress.setMax(100);progress.setProgress(card.progress);progress.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);tile.addView(progress,new LinearLayout.LayoutParams(dp(150),dp(4)));}
+            tile.setContentDescription(card.title+", "+card.kind+(card.progress>=0?", "+card.progress+" percent watched":""));
+            tile.setOnClickListener(v->{try{a.startActivity(card.intent);}catch(Exception missing){Toast.makeText(a,"This item is no longer available in its app",Toast.LENGTH_LONG).show();}});
+            tile.setOnFocusChangeListener((v,on)->{if(on)lastFocused=v;});
+            tile.setOnKeyListener((v,k,e)->navigate(line,tile,k,e));
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(170),panel?-2:dp(118));lp.setMargins(0,dp(3),dp(8),0);line.addView(tile,lp);
+            if(card.poster!=null)worker.execute(()->{
+                android.graphics.Bitmap bitmap=ShelfArtwork.read(a,card.poster,card.pkg,cancel);
+                if(bitmap!=null)main.post(()->{if(!current()){bitmap.recycle();return;}art.setScaleType(ImageView.ScaleType.CENTER_CROP);art.setImageBitmap(bitmap);});
+            });
+        }
+        boolean navigate(LinearLayout line,View tile,int key,KeyEvent event){
+            if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;
+            if(key==KeyEvent.KEYCODE_DPAD_LEFT||key==KeyEvent.KEYCODE_DPAD_RIGHT){int at=line.indexOfChild(tile);return ExperiencePolicy.next(at,key==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1,line.getChildCount(),line.getLayoutDirection()==View.LAYOUT_DIRECTION_RTL)==at;}
+            if(returnFocus==null||key!=KeyEvent.KEYCODE_DPAD_UP&&key!=KeyEvent.KEYCODE_DPAD_DOWN)return false;
+            if(panel&&key==KeyEvent.KEYCODE_DPAD_UP){returnFocus.requestFocus();return true;}
+            int[] here=new int[2],back=new int[2];host.getLocationOnScreen(here);returnFocus.getLocationOnScreen(back);boolean below=here[1]>back[1];
+            if(key==(below?KeyEvent.KEYCODE_DPAD_UP:KeyEvent.KEYCODE_DPAD_DOWN)){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).shelfReturn();else returnFocus.requestFocus();return true;}
+            if(key==KeyEvent.KEYCODE_DPAD_UP){View settings=a.findViewById(R.id.btnSettings);if(settings!=null)settings.requestFocus();}return true;
+        }
         boolean focus(){if(closed||!host.isShown())return false;if(lastFocused!=null&&lastFocused.isShown())return lastFocused.requestFocus();return first(host);}
-        boolean first(View v){if(v.isFocusable()&&v.isClickable())return v.requestFocus();if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++)if(first(((ViewGroup)v).getChildAt(i)))return true;return false;}
-        int dp(int v){return Math.round(v*a.getResources().getDisplayMetrics().density);}TextView label(String s,int size){TextView t=new TextView(a);t.setTypeface(SettingsTypography.regular(a));t.setText(s);t.setTextColor(-1);t.setTextSize(size);return t;}
-        void close(){if(closed)return;closed=true;cancel.cancel();worker.shutdownNow();host.removeAllViews();host.setVisibility(View.GONE);a.getApplication().unregisterActivityLifecycleCallbacks(lifecycle);}
+        boolean first(View view){if(view.isFocusable()&&view.isClickable())return view.requestFocus();if(view instanceof ViewGroup)for(int i=0;i<((ViewGroup)view).getChildCount();i++)if(first(((ViewGroup)view).getChildAt(i)))return true;return false;}
+        int dp(int value){return Math.round(value*(panel?a.getResources().getDisplayMetrics().density:a.getResources().getDisplayMetrics().widthPixels/960f));}
+        TextView label(String value,int size){TextView text=new TextView(a);text.setTypeface(SettingsTypography.regular(a));text.setText(value);text.setTextColor(-1);if(panel)text.setTextSize(size);else text.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,dp(size)*a.getResources().getConfiguration().fontScale);return text;}
+        void close(){if(closed)return;closed=true;cancel.cancel();worker.shutdownNow();main.removeCallbacksAndMessages(null);host.removeAllViews();host.setVisibility(View.GONE);a.getApplication().unregisterActivityLifecycleCallbacks(lifecycle);}
     }
 }

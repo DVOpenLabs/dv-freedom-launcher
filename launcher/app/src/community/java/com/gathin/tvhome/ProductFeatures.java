@@ -36,6 +36,7 @@ final class ProductFeatures {
     static void wallpaperSample(Activity a,android.graphics.Bitmap bitmap){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).sample(bitmap);}
     static void resumed(Activity a){
         WeatherClient.attach(a);
+        NowPlaying.attach(a);
         if(a instanceof ExperienceHomeActivity||(a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&(HomeCategories.enabled(a)||ExperienceChoice.enabled(a))))WallpaperPlaylist.attach(a);
         a.getWindow().getDecorView().postDelayed(()->{
             if(a.isDestroyed()||a.isFinishing()||!a.hasWindowFocus())return;
@@ -45,7 +46,7 @@ final class ProductFeatures {
         },240);
     }
     static boolean playlistEnabled(Context c){return WallpaperPlaylistChoice.enabled(c);}
-    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);}
+    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
     static AutoCloseable dreamWeather(Context c,View root){View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return null;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return weather;}
     static void setupKeys(Set<String> keys){keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){

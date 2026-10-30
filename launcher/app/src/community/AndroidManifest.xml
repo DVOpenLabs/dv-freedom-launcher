@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
-    <queries><package android:name="io.github.sumyabazar1.weather" /></queries>
+    <!-- Preserve the existing same-signer pilots' previously granted local weather bridge. -->
+    <uses-permission android:name="com.dvopenlabs.cytv.weatherpreview.READ_WEATHER" />
+    <queries><package android:name="io.github.sumyabazar1.weather" /><package android:name="com.dvopenlabs.cytv.weatherpreview" /></queries>
     <application android:label="@string/freedom_app_name" android:theme="@style/Theme.Freedom" tools:replace="android:label,android:theme">
         <meta-data android:name="com.dvopenlabs.weather.CLIENT" android:value="true" />
+        <provider android:name="com.gathin.tvhome.MediaInboxProvider" android:authorities="${applicationId}.inbox" android:exported="true" android:permission="android.permission.WRITE_SECURE_SETTINGS" android:grantUriPermissions="false" />
+        <activity android:name="com.gathin.tvhome.MediaReviewActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name="com.gathin.tvhome.NowPlayingActivity" android:exported="false" android:screenOrientation="landscape" />
+        <service android:name="com.gathin.tvhome.MediaAccessService" android:label="DV Freedom media access" android:exported="true" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter><action android:name="android.service.notification.NotificationListenerService" /></intent-filter>
+            <meta-data android:name="android.service.notification.default_filter_types" android:value="" />
+        </service>
         <activity android:name="com.gathin.tvhome.CategoryHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
         <activity android:name="com.gathin.tvhome.ExperienceHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
         <activity android:name="com.gathin.tvhome.ContentShelfActivity" android:exported="false" android:screenOrientation="landscape" />

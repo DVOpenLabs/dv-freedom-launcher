@@ -51,6 +51,8 @@ final class SettingsNavigation {
     private void add(LinearLayout parent,View view,int top){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.topMargin=dp(top);parent.addView(view,p);}
     private int icon(String label){
         String name=label.toLowerCase(Locale.ROOT);
+        if(name.contains("playing")||name.contains("player")||name.contains("shelves"))return R.drawable.freedom_media;
+        if(name.contains("weather"))return R.drawable.freedom_weather;
         if(name.contains("search")||name.contains("find"))return R.drawable.freedom_search;
         if(name.contains("text")||name.contains("clock")||name.contains("names"))return R.drawable.freedom_text;
         if(name.contains("setup")||name.contains("help"))return R.drawable.freedom_help;
@@ -106,12 +108,15 @@ final class SettingsNavigation {
                 layout,text,motion,
                 item("Setup help","Walk through Home style, apps and readability, or review an AI setup draft before applying it.",()->"Guided setup and AI drafts",()->a.startActivity(new android.content.Intent(a,GuidedSetupActivity.class)))),
             page("Apps & rows","Organize apps without changing their accounts or installed data.","Customize apps and create categories",
+                item("Now Playing","Optional media title and player controls. Requires a separate manual Android Notification access choice; no notification text or history is collected.",()->NowPlaying.status(a),()->NowPlaying.settings(a)),
+                item("Open player panel","Control actions shared by an active media app. No playback starts automatically.",()->"Open",()->a.startActivity(new android.content.Intent(a,NowPlayingActivity.class))),
                 item("Weather display","Optional local Weather companion. Choose Home and screensaver units separately; sharing starts only after approval in Weather settings.",()->WeatherClient.status(a),()->WeatherClient.settings(a)),
-                item("Content shelves","Optional Watch Next items shared by installed apps. Enable TV listings access only if you want this. Empty shelves collapse.",()->ContentShelves.status(a),()->ContentShelves.settings(a)),
+                item("Content shelves","Optional Watch Next and Preview Programs shared by installed apps. Enable TV listings access only if you want this. Empty shelves collapse.",()->ContentShelves.status(a),()->ContentShelves.settings(a)),
                 item("Customize apps","Rename an app or change its artwork. Your app layout stays saved.",()->"Name, icon and banner",()->NativeTileEditor.show(a)),
                 experienceContext()?null:item("Categories","Create named app rows. Preview first; the existing Home stays saved until you explicitly enable category layout.",()->HomeCategories.enabled(a)?"Category layout on":"Existing layout",()->HomeCategories.show(a)),
                 source(R.id.reorderChoice,"Arrange apps",a.getString(R.string.reorder_hint)),source(R.id.findAppsChoice,"Find apps","Search installed app names and packages locally."),source(R.id.recentAppsChoice,"Recently opened apps",a.getString(R.string.recent_apps_help)),source(R.id.clearRecentChoice,"Clear recent apps",a.getString(R.string.recent_clear_help))),
             page("Wallpaper","Browse before selecting. Home video remains silent.","Visual browser, themes and dimming",
+                item("Received from phone","Review an uploaded picture or short video. Import adds to the library; choosing it as wallpaper is separate.",()->MediaInbox.label(a),()->MediaInbox.show(a)),
                 item("Wallpaper playlist","Rotate local background pictures and silent videos without rotating app layout or theme settings. The timer pauses outside Home.",()->{PlaylistPolicy.Spec p=WallpaperPlaylistChoice.read(a);return p.enabled?p.tokens.size()+" wallpapers · "+p.seconds/60+" minutes":"Off";},()->WallpaperPlaylistChoice.show(a)),
                 item("Scene schedules","Choose local-time windows for playlist backgrounds. Profiles, app order and TV settings stay unchanged.",()->SceneSchedules.read(a).enabled?SceneSchedules.read(a).rules.size()+" scene windows":"Off",()->SceneSchedules.show(a)),
                 item("Browse wallpapers","Preview a local picture before choosing Apply. Back leaves the current wallpaper unchanged.",()->"Pictures in the current theme",()->WallpaperBrowser.show(a,false)),
@@ -180,7 +185,7 @@ final class SettingsNavigation {
         if(!toggle(e)&&!segmented(e)||searching){ImageView arrow=new ImageView(a);arrow.setImageResource(R.drawable.ic_chevron);arrow.setColorFilter(0xffa6bbd3);arrow.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(dp(10),dp(16));cp.setMarginStart(dp(14));line.addView(arrow,cp);}row.addView(line);
         if(segmented(e)&&!searching){LinearLayout chips=new LinearLayout(a);chips.setGravity(Gravity.CENTER_VERTICAL);chips.setPadding(dp(38),dp(10),0,0);String[] options=options(e);for(int i=0;i<options.length;i++){final int choice=i;TextView chip=text(options[i]+(selected(e)==i?" ✓":""),16,0xfff5f7fa);chip.setGravity(Gravity.CENTER);chip.setPadding(dp(6),dp(6),dp(6),dp(6));chip.setBackgroundResource(R.drawable.freedom_settings_chip);chip.setSelected(draft(e)==i);chip.setClickable(true);chip.setFocusable(false);chip.setOnClickListener(v->{draftRevisions.putIfAbsent(e,ProfileStore.preferences(a).getLong(Config.SETTINGS_REVISION_KEY,0));drafts.put(e,choice);activate(e,at);});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-2,1);p.setMarginEnd(dp(6));chips.addView(chip,p);}row.addView(chips);}
         if(trail!=null){TextView location=text(trail,15,0xffbecbd9);location.setPadding(dp(38),dp(6),0,0);row.addView(location);}
-        row.setOnLongClickListener(v->{showHelp(e);return true;});row.setContentDescription(e.title+(value==null?"":", "+value)+(segmented(e)?", Left or Right to preview, OK to confirm":""));row.setOnFocusChangeListener((v,has)->{if(has){railFocus=false;focused=at;if(!searching)memory.put(key(),at);describe(e);}});row.setOnClickListener(v->activate(e,at));return row;
+        row.setOnLongClickListener(v->{showHelp(e);return true;});row.setContentDescription(e.title+(value==null?"":", "+value)+(segmented(e)?", Left or Right to preview, OK to confirm":""));row.setOnFocusChangeListener((v,has)->{if(has&&!rendering&&rows.contains(v)){railFocus=false;focused=at;if(!searching)memory.put(key(),at);describe(e);}});row.setOnClickListener(v->activate(e,at));return row;
     }
     private void render(){
         if(a.isFinishing()||a.isDestroyed()||rendering)return;rendering=true;

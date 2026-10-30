@@ -57,7 +57,7 @@ final class ThemeLibrary {
         rows.sort(Comparator.comparing(e->e.pack.name));return rows;
     }
     static boolean validToken(String token){return token!=null&&token.matches("p-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");}
-    static Entry importPack(Context ctx,InputStream stream)throws IOException{
+    static synchronized Entry importPack(Context ctx,InputStream stream)throws IOException{
         return importPack(root(ctx),stream,ThemeLibrary::validateImages);
     }
     static Entry importPack(File root,InputStream stream,Validator validator)throws IOException{

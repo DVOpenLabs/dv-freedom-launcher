@@ -25,13 +25,22 @@ import java.util.concurrent.Executors;
 final class WeatherClient {
     static final String HOME = "private_weather_home", DREAM = "private_weather_dream";
     private static final String PACKAGE = "io.github.sumyabazar1.weather";
+    private static final String LEGACY_PACKAGE = "com.dvopenlabs.cytv.weatherpreview";
+    private static final Uri LEGACY = Uri.parse("content://"+LEGACY_PACKAGE+".current/current");
     private static final Uri CURRENT = Uri.parse("content://io.github.sumyabazar1.weather.snapshot/current");
     private static final Map<Activity, Attachment> ACTIVE = new WeakHashMap<>();
+    static boolean legacy(Context c) {
+        android.content.pm.ProviderInfo provider=c.getPackageManager().resolveContentProvider(LEGACY.getAuthority(),0);
+        if(provider==null||!LEGACY_PACKAGE.equals(provider.packageName)||provider.readPermission==null||c.getPackageManager().checkSignatures(c.getPackageName(),LEGACY_PACKAGE)!=android.content.pm.PackageManager.SIGNATURE_MATCH)return false;
+        try{return (c.getPackageManager().getPermissionInfo(provider.readPermission,0).protectionLevel&android.content.pm.PermissionInfo.PROTECTION_MASK_BASE)==android.content.pm.PermissionInfo.PROTECTION_SIGNATURE;}
+        catch(Exception unavailable){return false;}
+    }
+    static String units(Context c,String key){return ProfileStore.preferences(c).contains(key)?ProfileStore.preferences(c).getString(key,"off"):legacy(c)?"both":"off";}
     static void attach(Activity a) {
         if (!(a instanceof MainActivity || a instanceof ExperienceHomeActivity || a instanceof CategoryHomeActivity)) return;
         Attachment previous = ACTIVE.remove(a);
         if (previous != null) previous.close(); // a profile/style can rebuild Home without pausing the Activity
-        if ("off".equals(ProfileStore.preferences(a).getString(HOME, "off"))) return;
+        if ("off".equals(units(a,HOME))) return;
         View header = a.findViewById(R.id.leftBlock);
         if (!(header instanceof LinearLayout)) return;
         Attachment attachment = new Attachment(a, (LinearLayout) header, HOME, false);
@@ -49,11 +58,11 @@ final class WeatherClient {
         attachment.start();
     }
     static String status(Context c) {
-        String units = ProfileStore.preferences(c).getString(HOME, "off");
-        return "off".equals(units) ? "Off · optional Weather companion" : "On · requires companion sharing";
+        String units = units(c,HOME);
+        return "off".equals(units) ? "Off" : "both".equals(units) ? "°F + °C" : "f".equals(units) ? "°F" : "°C";
     }
     static void open(Context c) {
-        try { c.startActivity(new Intent().setClassName(PACKAGE, PACKAGE + ".WeatherActivity").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
+        try { c.startActivity(new Intent().setClassName(legacy(c)?LEGACY_PACKAGE:PACKAGE, PACKAGE + ".WeatherActivity").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); }
         catch (Exception missing) { Toast.makeText(c, "Install the optional Weather companion, then choose a city and approve launcher sharing in its settings.", Toast.LENGTH_LONG).show(); }
     }
     static void settings(Activity a) {
@@ -62,7 +71,7 @@ final class WeatherClient {
                     if (which == 2) { open(a); return; }
                     String key = which == 0 ? HOME : DREAM;
                     String[] values = {"off", "both", "c", "f"};
-                    String saved = ProfileStore.preferences(a).getString(key, "off");
+                    String saved = units(a,key);
                     final int[] draft = {java.util.Arrays.asList(values).indexOf(saved)};
                     new AlertDialog.Builder(a).setTitle(which == 0 ? "Home weather" : "Screensaver weather")
                             .setSingleChoiceItems(new String[]{"Off", "Fahrenheit and Celsius", "Celsius", "Fahrenheit"}, draft[0], (dialog, item) -> draft[0] = item)
@@ -85,7 +94,7 @@ final class WeatherClient {
         final Runnable tick = this::load;
         Attachment(Context c, LinearLayout host, String key, boolean dream) { context = c; this.host = host; this.key = key; this.dream = dream; }
         void start() {
-            if ("off".equals(ProfileStore.preferences(context).getString(key, "off"))) { close(); return; }
+            if ("off".equals(units(context,key))) { close(); return; }
             label = new TextView(context); label.setTextSize(dream ? 20 : 14); label.setTypeface(SettingsTypography.regular(context));
             label.setTextColor(0xfff4f7fb); label.setSingleLine(true); label.setEllipsize(android.text.TextUtils.TruncateAt.END);
             label.setShadowLayer(3, 0, 1, 0xff081020); label.setVisibility(View.GONE);
@@ -101,10 +110,13 @@ final class WeatherClient {
                     if (row != null && row.moveToFirst() && row.getInt(0) == 1)
                         snapshot = new WeatherSnapshot(row.getDouble(1), row.getString(2), row.getString(3), row.getLong(4));
                 } catch (RuntimeException unavailable) { /* Missing, unapproved or expired: do not invent a reading. */ }
+                if(snapshot==null&&legacy(context))try(Cursor row=context.getContentResolver().query(LEGACY,null,null,null,null,cancel)){
+                    if(row!=null&&row.moveToFirst()&&!row.isNull(1))snapshot=new WeatherSnapshot(row.getDouble(1),row.getString(0),row.getString(2),row.getLong(4));
+                }catch(RuntimeException unavailable){/* Existing same-signer pilots can retain their already authorized local cache. */}
                 WeatherSnapshot result = snapshot;
                 main.post(() -> {
                     if (closed) return;
-                    String text = result == null ? "" : result.label(ProfileStore.preferences(context).getString(key, "off"), System.currentTimeMillis());
+                    String text = result == null ? "" : result.label(units(context,key), System.currentTimeMillis());
                     label.setText(text); label.setContentDescription(result == null ? "" : result.city + ", " + text);
                     label.setVisibility(text.isEmpty() ? View.GONE : View.VISIBLE);
                     main.postDelayed(tick, 60_000);

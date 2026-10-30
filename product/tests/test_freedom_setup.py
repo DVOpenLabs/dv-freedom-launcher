@@ -20,3 +20,10 @@ class SetupTest(unittest.TestCase):
 
  def test_bridge_has_no_apply_or_arbitrary_shell_operation(self):
   with self.assertRaisesRegex(ValueError,'Unsupported setup operation'):setup.call('192.168.1.50','org.example.launcher','apply')
+
+ def test_icon_size_and_spacing_match_native_draft_schema(self):
+  for size in ('small','medium','large'):
+   value={'schema':1,'settings':{'iconSize':size,'spacing':32}}
+   self.assertEqual(setup.validate(value),value)
+  for settings in ({'spacing':True},{'spacing':33},{'spacing':-1},{'iconSize':'huge'}):
+   with self.assertRaises(ValueError):setup.validate({'schema':1,'settings':settings})

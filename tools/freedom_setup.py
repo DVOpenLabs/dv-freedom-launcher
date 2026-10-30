@@ -4,18 +4,19 @@ import argparse,json,os,shlex,subprocess,sys
 from pathlib import Path
 import layout_editor as editor
 
-SETTINGS={'experience','position','columns','text','textSize','names','strongFocus','idleSeconds'}
-PROMPT='Ask how I want DV Freedom Launcher to look and which installed apps I use. Return only schema-1 setup JSON: name, settings, optional favorites. Settings allow experience (legacy/glass/clean/cinema), position (top/middle/bottom), columns (2–8), text (auto/light/dark), textSize (85/100/110/120), names (theme/all/selected/hidden), strongFocus (boolean), idleSeconds (0/30/60/120). Use exact app package IDs from an inventory I explicitly share; omit favorites otherwise. No commands, permissions, network settings, credentials, URLs or paid calls. The draft will be reviewed on the TV before applying.'
+SETTINGS={'experience','position','columns','text','textSize','names','strongFocus','idleSeconds','iconSize','spacing'}
+PROMPT='Ask how I want DV Freedom Launcher to look and which installed apps I use. Return only schema-1 setup JSON: name, settings, optional favorites. Settings allow iconSize (small/medium/large), spacing (integer 0–32 dp), experience (legacy/glass/clean/cinema), position (top/middle/bottom), columns (2–8), text (auto/light/dark), textSize (85/100/110/120), names (theme/all/selected/hidden), strongFocus (boolean), idleSeconds (0/30/60/120). Use exact app package IDs from an inventory I explicitly share; omit favorites otherwise. No commands, permissions, network settings, credentials, URLs or paid calls. The draft will be reviewed on the TV before applying.'
 def validate(draft,inventory=None):
  if not isinstance(draft,dict) or set(draft)-{'schema','name','settings','favorites'} or type(draft.get('schema')) is not int or draft['schema']!=1:raise ValueError('Unsupported setup draft')
  name=draft.get('name','My Home')
  if not isinstance(name,str) or not name.strip() or len(name.encode('utf-16-le'))//2>40 or any(ord(c)<32 or 127<=ord(c)<160 for c in name):raise ValueError('Invalid profile name')
  values=draft.get('settings')
  if not isinstance(values,dict) or set(values)-SETTINGS:raise ValueError('Unsupported setup setting')
- enums={'experience':{'legacy','glass','clean','cinema'},'position':{'top','middle','bottom'},'text':{'auto','light','dark'},'textSize':{85,100,110,120},'names':{'theme','all','selected','hidden'},'idleSeconds':{0,30,60,120}}
+ enums={'experience':{'legacy','glass','clean','cinema'},'position':{'top','middle','bottom'},'text':{'auto','light','dark'},'textSize':{85,100,110,120},'names':{'theme','all','selected','hidden'},'idleSeconds':{0,30,60,120},'iconSize':{'small','medium','large'}}
  for key,value in values.items():
   if key in enums and (type(value) is not (int if key in {'textSize','idleSeconds'} else str) or value not in enums[key]):raise ValueError('Invalid '+key)
   if key=='columns' and (type(value) is not int or not 2<=value<=8):raise ValueError('Invalid columns')
+  if key=='spacing' and (type(value) is not int or not 0<=value<=32):raise ValueError('Invalid spacing')
   if key=='strongFocus' and type(value) is not bool:raise ValueError('Invalid focus option')
  if 'favorites' in draft:
   apps=draft['favorites']
