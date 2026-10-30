@@ -66,7 +66,7 @@ public final class CategoryHomeActivity extends Activity {
         date=text("",15);date.setId(R.id.date);clockBox.addView(date);
         if(config.showInputsPill)button(getString(R.string.inputs),this::inputs).setId(R.id.btnInputs);
         button("Apps",this::allApps);settings=button("Settings",()->startActivity(new Intent(this,LauncherSettingsActivity.class).putExtra("category_context",true)));settings.setId(R.id.btnSettings);
-        ProductFeatures.categoryHeader(this,clockBox,config);
+        button(getString(R.string.freedom_controls),()->FreedomControls.show(this));ProductFeatures.categoryHeader(this,clockBox,config);
         if(preview){LinearLayout notice=new LinearLayout(this);notice.setGravity(Gravity.CENTER_VERTICAL);TextView label=text("Category preview · Your saved Home is unchanged",14);notice.addView(label,new LinearLayout.LayoutParams(0,-2,1));TextView exit=text("Back to saved Home",14);exit.setPadding(dp(16),dp(8),dp(16),dp(8));exit.setBackgroundResource(R.drawable.settings_choice_bg);exit.setFocusable(true);exit.setClickable(true);exit.setOnClickListener(v->finish());notice.addView(exit);content.addView(notice,new LinearLayout.LayoutParams(-1,-2));quietChrome.add(notice);}
         scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setClipToPadding(false);scroll.setFocusable(false);content.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));quietChrome.add(scroll);
         body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setClipChildren(false);body.setClipToPadding(false);body.setPadding(0,dp(18),0,dp(18));scroll.addView(body,new ScrollView.LayoutParams(-1,-2));
@@ -80,7 +80,7 @@ public final class CategoryHomeActivity extends Activity {
         body.post(()->{RowView desired=null;for(RowView row:rows)if(row.id.equals(lastRow))desired=row;if(desired==null&&!rows.isEmpty())desired=rows.get(0);if(desired!=null)desired.focus(selections.get(desired.id),0);armIdle();if(getIntent().getBooleanExtra(IDLE_PREVIEW,false)){getIntent().removeExtra(IDLE_PREVIEW);timer.removeCallbacks(idleTimeout);idle.quiet=true;fadeChrome();}});
     }
     private void addRow(String id,String label,List<String> packages,Map<String,HomeCategories.App> catalog){
-        List<HomeCategories.App> apps=new ArrayList<>();for(String pkg:packages){HomeCategories.App app=catalog.get(pkg);if(app!=null)apps.add(app);}if(apps.isEmpty())return;
+        List<HomeCategories.App> apps=new ArrayList<>();for(String pkg:packages){HomeCategories.App app=catalog.get(pkg);if(app!=null)apps.add(app);}if(id.equals("favorites"))apps=Folders.decorate(this,apps,this.catalog);if(apps.isEmpty())return;
         TextView title=text(label,19);LinearLayout.LayoutParams titleLayout=new LinearLayout.LayoutParams(-1,-2);titleLayout.topMargin=dp(12);titleLayout.bottomMargin=dp(4);body.addView(title,titleLayout);
         RowView row=new RowView(id,apps);rows.add(row);body.addView(row.list,new LinearLayout.LayoutParams(-1,row.height));
     }
@@ -103,7 +103,7 @@ public final class CategoryHomeActivity extends Activity {
     private final class Tiles extends RecyclerView.Adapter<Tile> {
         final RowView row;Tiles(RowView row){this.row=row;setHasStableIds(true);}
         @Override public int getItemCount(){return row.apps.size();}
-        @Override public long getItemId(int at){long hash=0xcbf29ce484222325L;String key=row.id+"\n"+row.apps.get(at).component.flattenToString();for(int i=0;i<key.length();i++){hash^=key.charAt(i);hash*=0x100000001b3L;}return hash;}
+        @Override public long getItemId(int at){long hash=0xcbf29ce484222325L;String key=row.id+"\n"+row.apps.get(at).pkg;for(int i=0;i<key.length();i++){hash^=key.charAt(i);hash*=0x100000001b3L;}return hash;}
         @Override public Tile onCreateViewHolder(ViewGroup parent,int type){
             View view=getLayoutInflater().inflate(R.layout.item_app,parent,false);view.setLayoutParams(new RecyclerView.LayoutParams(row.cell,row.height));
             View card=view.findViewById(R.id.card);ViewGroup.LayoutParams p=card.getLayoutParams();p.width=row.width;p.height=AppAdapter.tileHeightPx(row.width);card.setLayoutParams(p);card.setClipToOutline(true);
@@ -112,7 +112,7 @@ public final class CategoryHomeActivity extends Activity {
             return new Tile(view,row);
         }
         @Override public void onBindViewHolder(Tile holder,int at){
-            HomeCategories.App app=row.apps.get(at);holder.app=app;holder.name.setText(app.label);holder.card.setContentDescription(app.label);holder.card.setOnClickListener(v->{lastRow=row.id;selections.put(row.id,app.pkg);app.launch(CategoryHomeActivity.this,config);});
+            HomeCategories.App app=row.apps.get(at);holder.app=app;holder.name.setText(app.label);holder.card.setContentDescription(app.label);holder.card.setOnLongClickListener(v->{if(app instanceof Folders.FolderApp)Folders.options(CategoryHomeActivity.this,((Folders.FolderApp)app).folder);else Folders.show(CategoryHomeActivity.this);return true;});holder.card.setOnClickListener(v->{lastRow=row.id;selections.put(row.id,app.pkg);app.launch(CategoryHomeActivity.this,config);});
             Drawable art=app.artwork(CategoryHomeActivity.this,config);holder.banner.setImageDrawable(art);boolean wide=art!=null&&art.getIntrinsicWidth()>art.getIntrinsicHeight()*1.3f;holder.banner.setScaleType(wide?ImageView.ScaleType.CENTER_CROP:ImageView.ScaleType.CENTER_INSIDE);holder.banner.setPadding(wide?0:dp(14),wide?0:dp(10),wide?0:dp(14),wide?0:dp(10));holder.paint(holder.card.isFocused());
         }
         @Override public void onViewRecycled(Tile holder){holder.banner.setImageDrawable(null);holder.app=null;}
@@ -137,22 +137,8 @@ public final class CategoryHomeActivity extends Activity {
         }
     }
     private void allApps(){AllAppsSurface.show(this,config,catalog);}
-    private void inputs(){inputs(false);}
-    private void inputs(boolean showAll){
-        List<TvInputInfo> available=new ArrayList<>();List<String> labels=new ArrayList<>();TvInputManager manager=getSystemService(TvInputManager.class);int hidden=0;
-        if(manager!=null)try{
-            List<TvInputInfo> inputs=new ArrayList<>(manager.getTvInputList());Set<String> parents=new HashSet<>();for(TvInputInfo info:inputs)if(info.getParentId()!=null)parents.add(info.getParentId());
-            inputs.sort((a,b)->String.valueOf(a.loadLabel(this)).compareToIgnoreCase(String.valueOf(b.loadLabel(this))));
-            for(TvInputInfo info:inputs)if(info.isPassthroughInput()&&!parents.contains(info.getId())&&available.size()<32){
-                boolean hdmi=info.getType()==TvInputInfo.TYPE_HDMI,bare=hdmi&&info.getParentId()==null;int inputState=-1;try{inputState=manager.getInputState(info.getId());}catch(IllegalArgumentException ignored){}if(!showAll&&((config.inputsConnectedOnly&&InputFold.folds(hdmi,inputState))||(bare&&!HdmiVisibility.visible(config.hideInactiveHdmi,inputState)))){hidden++;continue;}
-                Intent intent=new Intent(Intent.ACTION_VIEW,TvContract.buildChannelUriForPassthroughInput(info.getId()));if(getPackageManager().resolveActivity(intent,0)==null)continue;
-                available.add(info);CharSequence custom=info.loadCustomLabel(this);labels.add(String.valueOf(custom==null?info.loadLabel(this):custom));
-            }
-        }catch(RuntimeException ignored){}
-        if(available.isEmpty()&&hidden==0){InputShortcut.help(this);return;}
-        if(hidden>0)labels.add("Show all inputs");
-        new AlertDialog.Builder(this).setTitle(R.string.inputs).setItems(labels.toArray(new String[0]),(d,which)->{if(which==available.size()){inputs(true);return;}try{startActivity(new Intent(Intent.ACTION_VIEW,TvContract.buildChannelUriForPassthroughInput(available.get(which).getId())));}catch(Exception e){Toast.makeText(this,R.string.not_available,Toast.LENGTH_LONG).show();}}).setNegativeButton(android.R.string.cancel,null).show();
-    }
+    private void inputs(){InputPicker.show(this,false);}
+
     private void armIdle(){timer.removeCallbacks(idleTimeout);if(!resumed||idle.quiet)return;idle.arm(SystemClock.elapsedRealtime(),idleSeconds);if(idleSeconds>0)timer.postDelayed(idleTimeout,idleSeconds*1000L);}
     private void fadeChrome(){faded.clear();for(View view:quietChrome){faded.put(view,view.getAlpha());view.animate().cancel();view.animate().alpha(0).setDuration(config.animations&&!config.reducedMotion?180:0).start();}}
     private void restoreChrome(boolean animate){for(Map.Entry<View,Float> item:faded.entrySet()){View view=item.getKey();view.animate().cancel();if(animate)view.animate().alpha(item.getValue()).setDuration(config!=null&&config.animations&&!config.reducedMotion?180:0).start();else view.setAlpha(item.getValue());}faded.clear();}

@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Mappen</string>
+    <string name="freedom_controls">Bedieningscentrum</string>
+    <string name="freedom_inputs_all">Alle ingangen tonen</string>
+    <string name="freedom_wallpaper_studio">Achtergrondstudio</string>
+    <string name="freedom_discover">Ontdekken</string>
+    <string name="freedom_setup_copilot">Installatiehulp</string>
+    <string name="freedom_simple_mode">Eenvoudige instellingen</string>
+    <string name="freedom_advanced_mode">Alle instellingen</string>
+    <string name="freedom_settings_mode">Instellingenweergave</string>
+    <string name="freedom_nav_appearance">Uiterlijk</string>
+    <string name="freedom_nav_apps">Apps en rijen</string>
+    <string name="freedom_nav_wallpaper">Achtergrond</string>
+    <string name="freedom_nav_profiles">Profielen</string>
+    <string name="freedom_nav_remotes">Afstandsbedieningen en ingangen</string>
+    <string name="freedom_nav_backup">Back-up en herstel</string>
+    <string name="freedom_nav_system">Systeem</string>
+</resources>

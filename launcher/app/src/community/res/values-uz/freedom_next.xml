@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Jildlar</string>
+    <string name="freedom_controls">Boshqaruv markazi</string>
+    <string name="freedom_inputs_all">Barcha kirishlar</string>
+    <string name="freedom_wallpaper_studio">Fon rasmlari studiyasi</string>
+    <string name="freedom_discover">Kashf etish</string>
+    <string name="freedom_setup_copilot">Sozlash yordamchisi</string>
+    <string name="freedom_simple_mode">Oddiy sozlamalar</string>
+    <string name="freedom_advanced_mode">Barcha sozlamalar</string>
+    <string name="freedom_settings_mode">Sozlamalar ko‘rinishi</string>
+    <string name="freedom_nav_appearance">Ko‘rinish</string>
+    <string name="freedom_nav_apps">Ilovalar va qatorlar</string>
+    <string name="freedom_nav_wallpaper">Fon rasmi</string>
+    <string name="freedom_nav_profiles">Profillar</string>
+    <string name="freedom_nav_remotes">Pultlar va kirishlar</string>
+    <string name="freedom_nav_backup">Nusxa va tiklash</string>
+    <string name="freedom_nav_system">Tizim</string>
+</resources>

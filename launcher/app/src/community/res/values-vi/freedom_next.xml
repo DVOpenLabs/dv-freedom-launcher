@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Thư mục</string>
+    <string name="freedom_controls">Trung tâm điều khiển</string>
+    <string name="freedom_inputs_all">Hiện mọi đầu vào</string>
+    <string name="freedom_wallpaper_studio">Phòng nền</string>
+    <string name="freedom_discover">Khám phá</string>
+    <string name="freedom_setup_copilot">Trợ lý thiết lập</string>
+    <string name="freedom_simple_mode">Cài đặt đơn giản</string>
+    <string name="freedom_advanced_mode">Tất cả cài đặt</string>
+    <string name="freedom_settings_mode">Chế độ cài đặt</string>
+    <string name="freedom_nav_appearance">Giao diện</string>
+    <string name="freedom_nav_apps">Ứng dụng và hàng</string>
+    <string name="freedom_nav_wallpaper">Hình nền</string>
+    <string name="freedom_nav_profiles">Hồ sơ</string>
+    <string name="freedom_nav_remotes">Điều khiển và đầu vào</string>
+    <string name="freedom_nav_backup">Sao lưu và khôi phục</string>
+    <string name="freedom_nav_system">Hệ thống</string>
+</resources>

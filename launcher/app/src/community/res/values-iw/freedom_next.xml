@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">תיקיות</string>
+    <string name="freedom_controls">מרכז בקרה</string>
+    <string name="freedom_inputs_all">הצגת כל הכניסות</string>
+    <string name="freedom_wallpaper_studio">סטודיו רקעים</string>
+    <string name="freedom_discover">גילוי</string>
+    <string name="freedom_setup_copilot">עוזר הגדרה</string>
+    <string name="freedom_simple_mode">הגדרות פשוטות</string>
+    <string name="freedom_advanced_mode">כל ההגדרות</string>
+    <string name="freedom_settings_mode">תצוגת הגדרות</string>
+    <string name="freedom_nav_appearance">מראה</string>
+    <string name="freedom_nav_apps">יישומים ושורות</string>
+    <string name="freedom_nav_wallpaper">רקע</string>
+    <string name="freedom_nav_profiles">פרופילים</string>
+    <string name="freedom_nav_remotes">שלטים וכניסות</string>
+    <string name="freedom_nav_backup">גיבוי ושחזור</string>
+    <string name="freedom_nav_system">מערכת</string>
+</resources>

@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">ফোল্ডার</string>
+    <string name="freedom_controls">নিয়ন্ত্রণ কেন্দ্র</string>
+    <string name="freedom_inputs_all">সব ইনপুট দেখান</string>
+    <string name="freedom_wallpaper_studio">ওয়ালপেপার স্টুডিও</string>
+    <string name="freedom_discover">আবিষ্কার</string>
+    <string name="freedom_setup_copilot">সেটআপ সহায়ক</string>
+    <string name="freedom_simple_mode">সহজ সেটিংস</string>
+    <string name="freedom_advanced_mode">সব সেটিংস</string>
+    <string name="freedom_settings_mode">সেটিংস দৃশ্য</string>
+    <string name="freedom_nav_appearance">চেহারা</string>
+    <string name="freedom_nav_apps">অ্যাপ ও সারি</string>
+    <string name="freedom_nav_wallpaper">ওয়ালপেপার</string>
+    <string name="freedom_nav_profiles">প্রোফাইল</string>
+    <string name="freedom_nav_remotes">রিমোট ও ইনপুট</string>
+    <string name="freedom_nav_backup">ব্যাকআপ ও পুনরুদ্ধার</string>
+    <string name="freedom_nav_system">সিস্টেম</string>
+</resources>

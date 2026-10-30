@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Kansiot</string>
+    <string name="freedom_controls">Ohjauskeskus</string>
+    <string name="freedom_inputs_all">Näytä kaikki tulot</string>
+    <string name="freedom_wallpaper_studio">Taustakuvastudio</string>
+    <string name="freedom_discover">Löydä</string>
+    <string name="freedom_setup_copilot">Asetusavustaja</string>
+    <string name="freedom_simple_mode">Helpot asetukset</string>
+    <string name="freedom_advanced_mode">Kaikki asetukset</string>
+    <string name="freedom_settings_mode">Asetusnäkymä</string>
+    <string name="freedom_nav_appearance">Ulkoasu</string>
+    <string name="freedom_nav_apps">Sovellukset ja rivit</string>
+    <string name="freedom_nav_wallpaper">Taustakuva</string>
+    <string name="freedom_nav_profiles">Profiilit</string>
+    <string name="freedom_nav_remotes">Kaukosäätimet ja tulot</string>
+    <string name="freedom_nav_backup">Varmuuskopiointi ja palautus</string>
+    <string name="freedom_nav_system">Järjestelmä</string>
+</resources>

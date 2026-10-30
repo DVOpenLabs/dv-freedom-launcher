@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Cartelle</string>
+    <string name="freedom_controls">Centro di controllo</string>
+    <string name="freedom_inputs_all">Mostra tutti gli ingressi</string>
+    <string name="freedom_wallpaper_studio">Studio sfondi</string>
+    <string name="freedom_discover">Scopri</string>
+    <string name="freedom_setup_copilot">Assistente configurazione</string>
+    <string name="freedom_simple_mode">Impostazioni semplici</string>
+    <string name="freedom_advanced_mode">Tutte le impostazioni</string>
+    <string name="freedom_settings_mode">Vista impostazioni</string>
+    <string name="freedom_nav_appearance">Aspetto</string>
+    <string name="freedom_nav_apps">App e righe</string>
+    <string name="freedom_nav_wallpaper">Sfondo</string>
+    <string name="freedom_nav_profiles">Profili</string>
+    <string name="freedom_nav_remotes">Telecomandi e ingressi</string>
+    <string name="freedom_nav_backup">Backup e ripristino</string>
+    <string name="freedom_nav_system">Sistema</string>
+</resources>

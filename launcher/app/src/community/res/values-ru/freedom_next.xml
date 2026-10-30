@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Папки</string>
+    <string name="freedom_controls">Центр управления</string>
+    <string name="freedom_inputs_all">Все входы</string>
+    <string name="freedom_wallpaper_studio">Студия обоев</string>
+    <string name="freedom_discover">Каталог</string>
+    <string name="freedom_setup_copilot">Помощник настройки</string>
+    <string name="freedom_simple_mode">Простые настройки</string>
+    <string name="freedom_advanced_mode">Все настройки</string>
+    <string name="freedom_settings_mode">Вид настроек</string>
+    <string name="freedom_nav_appearance">Оформление</string>
+    <string name="freedom_nav_apps">Приложения и ряды</string>
+    <string name="freedom_nav_wallpaper">Обои</string>
+    <string name="freedom_nav_profiles">Профили</string>
+    <string name="freedom_nav_remotes">Пульты и входы</string>
+    <string name="freedom_nav_backup">Резервные копии</string>
+    <string name="freedom_nav_system">Система</string>
+</resources>

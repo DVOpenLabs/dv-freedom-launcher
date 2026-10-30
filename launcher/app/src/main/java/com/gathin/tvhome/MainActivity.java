@@ -3135,6 +3135,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void showInputs(boolean showAll) {
+        if(ProductFeatures.inputs(this,showAll))return;
         // A configured source panel and no Live TV row to offer next to it: the panel is the whole menu.
         // The BYINTEK U4 needs this, as its TvInputManager lists three HDMI ports and an AV input it doesn't have.
         List<CoocaaSources.Source> coocaa = coocaaSources ? CoocaaSources.list(this) : Collections.emptyList();
@@ -3455,6 +3456,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (reordering) return;
         String key = adapter.keyAt(position);
         String pkg = adapter.packageAt(position);
+        if(ProductFeatures.folderAction(this,pkg,true))return;
         // Empty dock slots and the Default-home tile carry the launcher's own package: no menu for them.
         if (key == null || pkg == null || pkg.equals(getPackageName())) return;
         View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);

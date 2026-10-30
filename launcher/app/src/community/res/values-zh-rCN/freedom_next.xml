@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">文件夹</string>
+    <string name="freedom_controls">控制中心</string>
+    <string name="freedom_inputs_all">显示所有输入源</string>
+    <string name="freedom_wallpaper_studio">壁纸工作室</string>
+    <string name="freedom_discover">发现</string>
+    <string name="freedom_setup_copilot">设置助手</string>
+    <string name="freedom_simple_mode">简易设置</string>
+    <string name="freedom_advanced_mode">全部设置</string>
+    <string name="freedom_settings_mode">设置视图</string>
+    <string name="freedom_nav_appearance">外观</string>
+    <string name="freedom_nav_apps">应用与行</string>
+    <string name="freedom_nav_wallpaper">壁纸</string>
+    <string name="freedom_nav_profiles">个人配置</string>
+    <string name="freedom_nav_remotes">遥控器与输入源</string>
+    <string name="freedom_nav_backup">备份与恢复</string>
+    <string name="freedom_nav_system">系统</string>
+</resources>

@@ -78,7 +78,7 @@ final class HomeCategories {
             check(expected.profile.equals(ProfileStore.id()),"The profile changed. Open categories again.");
             SharedPreferences prefs=ProfileStore.preferences(activity);check(expected.raw.equals(prefs.getString(KEY,"")),"Categories changed. Open them again.");
             String text=encode(next);if(text.equals(expected.raw))return true;
-            ProductFeatures.beforeChange(activity,"Categories");Map<String,Object> changes=new HashMap<>();changes.put(KEY,text);changes.put(Config.SETTINGS_REVISION_KEY,prefs.getLong(Config.SETTINGS_REVISION_KEY,0)+1);
+            ProductFeatures.beforeChange(activity,"Categories");Map<String,Object> changes=new HashMap<>();changes.put(KEY,text);if(next.enabled&&!expected.state.enabled)changes.put(ExperiencePolicy.KEY,"legacy");changes.put(Config.SETTINGS_REVISION_KEY,prefs.getLong(Config.SETTINGS_REVISION_KEY,0)+1);
             check(SetupValues.commit(prefs,changes),"Could not save categories");return true;
         }catch(Exception e){error(activity,e);return false;}
     }
@@ -91,7 +91,7 @@ final class HomeCategories {
             new AlertDialog.Builder(activity).setTitle("Categories").setItems(labels,(d,which)->{
                 if(which==0){
                     AlertDialog confirm=new AlertDialog.Builder(activity).setTitle(edit.state.enabled?"Return to your existing layout?":"Use category rows on Home?")
-                        .setMessage("Your current favorites, wallpaper and original app layout stay saved. You can preview first and switch back here.")
+                        .setMessage("Using categories selects Classic Home. Your favorites, wallpaper and other experiences stay saved. Preview first, or change Home experience later in Appearance.")
                         .setNegativeButton(android.R.string.cancel,null).setPositiveButton(edit.state.enabled?"Use existing layout":"Use categories",(x,w)->{if(save(activity,edit,new State(!edit.state.enabled,edit.state.rows)))activity.finish();}).create();
                     confirm.show();confirm.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus();
                 }else if(which==1)activity.startActivity(new Intent(activity,CategoryHomeActivity.class).putExtra(CategoryHomeActivity.PREVIEW,true));
@@ -149,7 +149,7 @@ final class HomeCategories {
         AlertDialog dialog=new AlertDialog.Builder(activity).setTitle(title).setView(field).setNegativeButton(android.R.string.cancel,null).setPositiveButton("Save",null).create();
         dialog.setOnShowListener(d->{dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{try{action.accept(SetupValues.name(field.getText().toString()));dialog.dismiss();}catch(Exception e){field.setError(e.getMessage());}});field.requestFocus();});dialog.show();
     }
-    static final class App {
+    static class App {
         final String pkg,label;final ComponentName component;final ResolveInfo info;final boolean leanback;
         private java.lang.ref.WeakReference<Drawable.ConstantState> art=new java.lang.ref.WeakReference<>(null);
         App(String pkg,String label,ComponentName component,ResolveInfo info,boolean leanback){this.pkg=pkg;this.label=label;this.component=component;this.info=info;this.leanback=leanback;}

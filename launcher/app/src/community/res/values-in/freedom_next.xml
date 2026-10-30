@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Folder</string>
+    <string name="freedom_controls">Pusat kontrol</string>
+    <string name="freedom_inputs_all">Tampilkan semua input</string>
+    <string name="freedom_wallpaper_studio">Studio wallpaper</string>
+    <string name="freedom_discover">Jelajahi</string>
+    <string name="freedom_setup_copilot">Asisten pengaturan</string>
+    <string name="freedom_simple_mode">Pengaturan sederhana</string>
+    <string name="freedom_advanced_mode">Semua pengaturan</string>
+    <string name="freedom_settings_mode">Tampilan pengaturan</string>
+    <string name="freedom_nav_appearance">Tampilan</string>
+    <string name="freedom_nav_apps">Aplikasi dan baris</string>
+    <string name="freedom_nav_wallpaper">Wallpaper</string>
+    <string name="freedom_nav_profiles">Profil</string>
+    <string name="freedom_nav_remotes">Remote dan input</string>
+    <string name="freedom_nav_backup">Cadangan dan pemulihan</string>
+    <string name="freedom_nav_system">Sistem</string>
+</resources>

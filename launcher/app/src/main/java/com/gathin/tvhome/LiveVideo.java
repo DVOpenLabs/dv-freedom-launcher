@@ -68,6 +68,7 @@ final class LiveVideo implements TextureView.SurfaceTextureListener {
     }
     private void transform(){
         int width=view.getWidth(),height=view.getHeight();if(width<=0||height<=0||videoWidth<=0||videoHeight<=0)return;
+        if(ProductFeatures.videoFraming(context,file,view,videoWidth,videoHeight)){box.setBackgroundColor(0xff101923);return;}
         float aspect=(float)videoWidth/videoHeight,target=(float)width/height;
         Matrix matrix=new Matrix();matrix.setScale(aspect>target?aspect/target:1,aspect<target?target/aspect:1,width/2f,height/2f);view.setTransform(matrix);
     }

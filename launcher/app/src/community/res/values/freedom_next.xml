@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Folders</string>
+    <string name="freedom_controls">Control Center</string>
+    <string name="freedom_inputs_all">Show all inputs</string>
+    <string name="freedom_wallpaper_studio">Wallpaper Studio</string>
+    <string name="freedom_discover">Discover</string>
+    <string name="freedom_setup_copilot">Setup copilot</string>
+    <string name="freedom_simple_mode">Simple settings</string>
+    <string name="freedom_advanced_mode">All settings</string>
+    <string name="freedom_settings_mode">Settings view</string>
+    <string name="freedom_nav_appearance">Appearance</string>
+    <string name="freedom_nav_apps">Apps &amp; rows</string>
+    <string name="freedom_nav_wallpaper">Wallpaper</string>
+    <string name="freedom_nav_profiles">Profiles</string>
+    <string name="freedom_nav_remotes">Remotes &amp; inputs</string>
+    <string name="freedom_nav_backup">Backup &amp; restore</string>
+    <string name="freedom_nav_system">System</string>
+</resources>

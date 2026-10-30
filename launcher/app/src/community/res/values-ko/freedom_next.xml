@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">폴더</string>
+    <string name="freedom_controls">제어 센터</string>
+    <string name="freedom_inputs_all">모든 입력 표시</string>
+    <string name="freedom_wallpaper_studio">배경화면 스튜디오</string>
+    <string name="freedom_discover">둘러보기</string>
+    <string name="freedom_setup_copilot">설정 도우미</string>
+    <string name="freedom_simple_mode">간단한 설정</string>
+    <string name="freedom_advanced_mode">모든 설정</string>
+    <string name="freedom_settings_mode">설정 보기</string>
+    <string name="freedom_nav_appearance">모양</string>
+    <string name="freedom_nav_apps">앱 및 행</string>
+    <string name="freedom_nav_wallpaper">배경화면</string>
+    <string name="freedom_nav_profiles">프로필</string>
+    <string name="freedom_nav_remotes">리모컨 및 입력</string>
+    <string name="freedom_nav_backup">백업 및 복원</string>
+    <string name="freedom_nav_system">시스템</string>
+</resources>

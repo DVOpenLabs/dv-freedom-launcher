@@ -40,7 +40,8 @@ public final class ExperienceHomeActivity extends Activity {
     private GradientDrawable round(int color,float radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(px(radius));return d;}
     private void focus(View v,boolean on){v.animate().cancel();v.setBackground(round(on?0xffe5f3ff:0xb31b2a3c,19));if(v instanceof TextView)((TextView)v).setTextColor(on?0xff182334:0xfff5f7fa);}
     private TextView button(String label,int id,Runnable action){TextView v=text(label,14);if(id!=0)v.setId(id);v.setGravity(Gravity.CENTER);v.setPadding(px(13),0,px(13),0);v.setFocusable(true);v.setClickable(true);focus(v,false);v.setOnFocusChangeListener((x,on)->focus(x,on));v.setOnClickListener(x->action.run());v.setOnKeyListener((x,key,event)->{if(event.getAction()==KeyEvent.ACTION_DOWN&&key==KeyEvent.KEYCODE_DPAD_DOWN){focusApp(selected);return true;}return false;});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,px(38));p.setMarginStart(px(8));controls.addView(v,p);return v;}
-    private String currentSignature(){return ProfileStore.id()+"|"+ProfileStore.preferences(this).getAll().hashCode()+"|"+getResources().getDisplayMetrics().widthPixels;}
+    private int catalogSignature(){int result=1;for(HomeCategories.App app:HomeCategories.catalog(this,Config.load(this)))result=31*result+Objects.hash(app.pkg,app.label);return result;}
+    private String currentSignature(){return ProfileStore.id()+"|"+ProfileStore.preferences(this).getAll().hashCode()+"|"+getResources().getDisplayMetrics().widthPixels+"|"+catalogSignature();}
     private void release(){if(wallpaper!=null){wallpaper.close();wallpaper=null;}if(video!=null){video.close();video=null;}}
     private void render(){
         config=Config.load(this);look=preview==null?ExperienceChoice.saved(this):preview;
@@ -56,11 +57,11 @@ public final class ExperienceHomeActivity extends Activity {
         bottomShade=new View(this);bottomShade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);bottomShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00081020,0xb3081020}));put(bottomShade,0,350,960,190);
         info=new LinearLayout(this);info.setId(R.id.leftBlock);info.setOrientation(LinearLayout.VERTICAL);clock=text("",ExperiencePolicy.CLEAN.equals(look)?44:34);clock.setId(R.id.clock);date=text("",13);info.addView(clock);info.addView(date);put(info,40,27,390,123);
         controls=new LinearLayout(this);controls.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);put(controls,450,30,470,42);
-        button("Inputs",R.id.btnInputs,this::inputs);button("Apps",0,this::allApps);settings=button("Launcher settings",R.id.btnSettings,()->{if(canEdit())startActivity(new Intent(this,LauncherSettingsActivity.class).putExtra("experience_context",true));});button("Profiles",0,()->{if(canEdit())ProfilePicker.show(this,false);});
+        button("Inputs",R.id.btnInputs,this::inputs);button("Apps",0,this::allApps);settings=button("Launcher settings",R.id.btnSettings,()->{if(canEdit())startActivity(new Intent(this,LauncherSettingsActivity.class).putExtra("experience_context",true));});button("Controls",0,()->FreedomControls.show(this));
         ProductFeatures.categoryHeader(this,info,config);
         catalog=HomeCategories.catalog(this,config);Map<String,HomeCategories.App> by=new LinkedHashMap<>();for(HomeCategories.App app:catalog)by.put(app.pkg,app);List<HomeCategories.App> apps=new ArrayList<>();
         for(String pkg:DesktopLayout.favorites(config,Order.load(Order.file(this)))){HomeCategories.App app=by.get(pkg);if(app!=null)apps.add(app);}
-        if(apps.isEmpty())apps.addAll(catalog.subList(0,Math.min(8,catalog.size())));favorites=apps;
+        if(apps.isEmpty())apps.addAll(catalog.subList(0,Math.min(8,catalog.size())));favorites=Folders.decorate(this,apps,catalog);
         String position=PlacementSession.selected(this);if(!AppPlacement.valid(position))position=ExperiencePolicy.defaultPosition(look);
         geometry=new ExperiencePolicy.Geometry(look,position,Math.max(1,Math.min(Math.min(8,config.columns),favorites.size())),config.tileGap,IconSizes.current(this));
         labelShade=new View(this);labelShade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);put(labelShade,0,geometry.labelTop-28,960,80);quietViews.add(labelShade);
@@ -96,7 +97,7 @@ public final class ExperienceHomeActivity extends Activity {
         Tile(FrameLayout cell,ImageView art,TextView name,View ring){super(cell);this.art=art;this.name=name;this.ring=ring;
             cell.setOnFocusChangeListener((v,on)->{paint(on);int at=getBindingAdapterPosition();if(on&&at>=0){selected=at;updateSelection();}});
             cell.setOnClickListener(v->{if(app!=null){if(preview!=null){ExperienceChoice.cancel();finish();}app.launch(ExperienceHomeActivity.this,config);}});
-            cell.setOnLongClickListener(v->{if(app!=null&&canEdit())NativeTileEditor.show(ExperienceHomeActivity.this,app.pkg);return true;});
+            cell.setOnLongClickListener(v->{if(app!=null&&canEdit()){if(app instanceof Folders.FolderApp)Folders.options(ExperienceHomeActivity.this,((Folders.FolderApp)app).folder);else new AlertDialog.Builder(ExperienceHomeActivity.this).setTitle(app.label).setItems(new String[]{"Edit app","Create folder"},(d,n)->{if(n==0)NativeTileEditor.show(ExperienceHomeActivity.this,app.pkg);else Folders.edit(ExperienceHomeActivity.this,null);}).show();}return true;});
             cell.setOnKeyListener((v,key,event)->{if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;int at=getBindingAdapterPosition();if(at<0)return false;
                 if(key==KeyEvent.KEYCODE_DPAD_LEFT||key==KeyEvent.KEYCODE_DPAD_RIGHT){focusApp(ExperiencePolicy.next(at,key==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1,favorites.size(),list.getLayoutDirection()==View.LAYOUT_DIRECTION_RTL));return true;}
                 if(key==KeyEvent.KEYCODE_DPAD_DOWN&&shelf!=null&&geometry.top<260&&shelf.focus())return true;
@@ -135,22 +136,8 @@ public final class ExperienceHomeActivity extends Activity {
     }
     private boolean canEdit(){if(preview==null)return true;Toast.makeText(this,"Keep or revert this preview before editing Home",Toast.LENGTH_SHORT).show();return false;}
     private void allApps(){AllAppsSurface.show(this,config,catalog,preview==null);}
-    private void inputs(){inputs(false);}
-    private void inputs(boolean showAll){
-        List<TvInputInfo> available=new ArrayList<>();List<String> labels=new ArrayList<>();TvInputManager manager=getSystemService(TvInputManager.class);int hidden=0;
-        if(manager!=null)try{
-            List<TvInputInfo> inputs=new ArrayList<>(manager.getTvInputList());Set<String> parents=new HashSet<>();for(TvInputInfo info:inputs)if(info.getParentId()!=null)parents.add(info.getParentId());
-            inputs.sort((a,b)->String.valueOf(a.loadLabel(this)).compareToIgnoreCase(String.valueOf(b.loadLabel(this))));
-            for(TvInputInfo info:inputs)if(info.isPassthroughInput()&&!parents.contains(info.getId())&&available.size()<32){
-                boolean hdmi=info.getType()==TvInputInfo.TYPE_HDMI,bare=hdmi&&info.getParentId()==null;int inputState=-1;try{inputState=manager.getInputState(info.getId());}catch(IllegalArgumentException ignored){}if(!showAll&&((config.inputsConnectedOnly&&InputFold.folds(hdmi,inputState))||(bare&&!HdmiVisibility.visible(config.hideInactiveHdmi,inputState)))){hidden++;continue;}
-                Intent intent=new Intent(Intent.ACTION_VIEW,TvContract.buildChannelUriForPassthroughInput(info.getId()));if(getPackageManager().resolveActivity(intent,0)==null)continue;
-                available.add(info);CharSequence custom=info.loadCustomLabel(this);labels.add(String.valueOf(custom==null?info.loadLabel(this):custom));
-            }
-        }catch(RuntimeException ignored){}
-        if(available.isEmpty()&&hidden==0){InputShortcut.help(this);return;}
-        if(hidden>0)labels.add("Show all inputs");
-        new AlertDialog.Builder(this).setTitle(R.string.inputs).setItems(labels.toArray(new String[0]),(d,which)->{if(which==available.size()){inputs(true);return;}try{startActivity(new Intent(Intent.ACTION_VIEW,TvContract.buildChannelUriForPassthroughInput(available.get(which).getId())));}catch(Exception e){Toast.makeText(this,R.string.not_available,Toast.LENGTH_LONG).show();}}).setNegativeButton(android.R.string.cancel,null).show();
-    }
+    private void inputs(){InputPicker.show(this,false);}
+
     private void armIdle(){handler.removeCallbacks(idleTimeout);if(resumed&&!quiet&&idleSeconds>0){idle.arm(SystemClock.elapsedRealtime(),idleSeconds);handler.postDelayed(idleTimeout,idleSeconds*1000L);}}
     private void setQuiet(boolean value){quiet=value;for(View view:quietViews){view.animate().cancel();view.animate().alpha(value?0:1).setDuration(config.animations&&!config.reducedMotion?180:0).start();}}
     @Override public boolean dispatchKeyEvent(KeyEvent event){
@@ -163,10 +150,10 @@ public final class ExperienceHomeActivity extends Activity {
     }
     @Override public boolean dispatchTouchEvent(android.view.MotionEvent event){if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN&&quiet){touchWake=true;idle.quiet=false;setQuiet(false);armIdle();}if(touchWake){if(event.getActionMasked()==android.view.MotionEvent.ACTION_UP||event.getActionMasked()==android.view.MotionEvent.ACTION_CANCEL)touchWake=false;return true;}if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN)armIdle();return super.dispatchTouchEvent(event);}
     private void action(){String action=getIntent().getStringExtra("home_action");getIntent().removeExtra("home_action");if(MainActivity.ACTION_VIEW_INPUTS.equals(action))handler.post(this::inputs);else if(MainActivity.ACTION_LIBRARY.equals(action))handler.post(this::allApps);else if(MainActivity.ACTION_IDLE_PREVIEW.equals(action)){idle.quiet=true;setQuiet(true);}}
-    @Override protected void onResume(){super.onResume();resumed=true;render();action();if(preview!=null&&!isFinishing())handler.postDelayed(()->ExperienceChoice.prompt(this,preview),180);else if(PlacementSession.preview()!=null)handler.postDelayed(()->PlacementSession.prompt(this),180);}
+    @Override protected void onResume(){super.onResume();resumed=true;Config.load(this);if(signature==null||!signature.equals(currentSignature())||preview!=null)render();else{if(wallpaper!=null)wallpaper.start();if(video!=null)video.start();ProductFeatures.resumed(this);handler.removeCallbacks(tick);handler.post(tick);armIdle();}action();if(preview!=null&&!isFinishing())handler.postDelayed(()->ExperienceChoice.prompt(this,preview),180);else if(PlacementSession.preview()!=null)handler.postDelayed(()->PlacementSession.prompt(this),180);}
     @Override protected void onPause(){resumed=false;handler.removeCallbacks(tick);handler.removeCallbacks(idleTimeout);idle.stop();if(wallpaper!=null)wallpaper.stop();if(video!=null)video.stop();if(preview!=null){ExperienceChoice.cancel();finish();}super.onPause();}
     @Override protected void onDestroy(){handler.removeCallbacksAndMessages(null);release();if(current.get()==this)current=EMPTY;super.onDestroy();}
-    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);preview=intent.getStringExtra(ExperienceChoice.EXTRA);if(resumed){render();action();}}
+    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);preview=intent.getStringExtra(ExperienceChoice.EXTRA);if(resumed){Config.load(this);if(signature==null||!signature.equals(currentSignature()))render();action();}}
     @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(!focused)handler.removeCallbacks(idleTimeout);else if(resumed){Config.load(this);if(signature!=null&&!signature.equals(currentSignature()))render();armIdle();}}
     @Override public void onBackPressed(){if(preview!=null){ExperienceChoice.cancel();finish();}else focusApp(0);}
     @Override protected void onSaveInstanceState(Bundle saved){saved.putString("selected",selectedPackage);super.onSaveInstanceState(saved);}

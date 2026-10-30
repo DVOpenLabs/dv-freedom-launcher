@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">المجلدات</string>
+    <string name="freedom_controls">مركز التحكم</string>
+    <string name="freedom_inputs_all">عرض كل المدخلات</string>
+    <string name="freedom_wallpaper_studio">استوديو الخلفيات</string>
+    <string name="freedom_discover">استكشاف</string>
+    <string name="freedom_setup_copilot">مساعد الإعداد</string>
+    <string name="freedom_simple_mode">إعدادات بسيطة</string>
+    <string name="freedom_advanced_mode">كل الإعدادات</string>
+    <string name="freedom_settings_mode">عرض الإعدادات</string>
+    <string name="freedom_nav_appearance">المظهر</string>
+    <string name="freedom_nav_apps">التطبيقات والصفوف</string>
+    <string name="freedom_nav_wallpaper">الخلفية</string>
+    <string name="freedom_nav_profiles">الملفات الشخصية</string>
+    <string name="freedom_nav_remotes">أجهزة التحكم والمدخلات</string>
+    <string name="freedom_nav_backup">النسخ والاستعادة</string>
+    <string name="freedom_nav_system">النظام</string>
+</resources>

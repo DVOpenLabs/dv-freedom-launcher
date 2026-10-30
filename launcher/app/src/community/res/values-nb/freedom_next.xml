@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Mapper</string>
+    <string name="freedom_controls">Kontrollsenter</string>
+    <string name="freedom_inputs_all">Vis alle innganger</string>
+    <string name="freedom_wallpaper_studio">Bakgrunnsstudio</string>
+    <string name="freedom_discover">Utforsk</string>
+    <string name="freedom_setup_copilot">Oppsetthjelp</string>
+    <string name="freedom_simple_mode">Enkle innstillinger</string>
+    <string name="freedom_advanced_mode">Alle innstillinger</string>
+    <string name="freedom_settings_mode">Innstillingsvisning</string>
+    <string name="freedom_nav_appearance">Utseende</string>
+    <string name="freedom_nav_apps">Apper og rader</string>
+    <string name="freedom_nav_wallpaper">Bakgrunn</string>
+    <string name="freedom_nav_profiles">Profiler</string>
+    <string name="freedom_nav_remotes">Fjernkontroller og innganger</string>
+    <string name="freedom_nav_backup">Sikkerhetskopi og gjenoppretting</string>
+    <string name="freedom_nav_system">System</string>
+</resources>

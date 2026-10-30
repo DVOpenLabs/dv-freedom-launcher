@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Složky</string>
+    <string name="freedom_controls">Ovládací centrum</string>
+    <string name="freedom_inputs_all">Zobrazit všechny vstupy</string>
+    <string name="freedom_wallpaper_studio">Studio pozadí</string>
+    <string name="freedom_discover">Objevovat</string>
+    <string name="freedom_setup_copilot">Průvodce nastavením</string>
+    <string name="freedom_simple_mode">Jednoduché nastavení</string>
+    <string name="freedom_advanced_mode">Všechna nastavení</string>
+    <string name="freedom_settings_mode">Zobrazení nastavení</string>
+    <string name="freedom_nav_appearance">Vzhled</string>
+    <string name="freedom_nav_apps">Aplikace a řádky</string>
+    <string name="freedom_nav_wallpaper">Pozadí</string>
+    <string name="freedom_nav_profiles">Profily</string>
+    <string name="freedom_nav_remotes">Ovladače a vstupy</string>
+    <string name="freedom_nav_backup">Zálohování a obnova</string>
+    <string name="freedom_nav_system">Systém</string>
+</resources>

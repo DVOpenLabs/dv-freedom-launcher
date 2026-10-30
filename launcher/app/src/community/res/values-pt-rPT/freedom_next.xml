@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Pastas</string>
+    <string name="freedom_controls">Centro de controlo</string>
+    <string name="freedom_inputs_all">Mostrar todas as entradas</string>
+    <string name="freedom_wallpaper_studio">Estúdio de fundos</string>
+    <string name="freedom_discover">Descobrir</string>
+    <string name="freedom_setup_copilot">Assistente de configuração</string>
+    <string name="freedom_simple_mode">Definições simples</string>
+    <string name="freedom_advanced_mode">Todas as definições</string>
+    <string name="freedom_settings_mode">Vista das definições</string>
+    <string name="freedom_nav_appearance">Aspeto</string>
+    <string name="freedom_nav_apps">Apps e linhas</string>
+    <string name="freedom_nav_wallpaper">Fundo</string>
+    <string name="freedom_nav_profiles">Perfis</string>
+    <string name="freedom_nav_remotes">Comandos e entradas</string>
+    <string name="freedom_nav_backup">Cópia e restauro</string>
+    <string name="freedom_nav_system">Sistema</string>
+</resources>

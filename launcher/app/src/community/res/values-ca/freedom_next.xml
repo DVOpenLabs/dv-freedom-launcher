@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Carpetes</string>
+    <string name="freedom_controls">Centre de control</string>
+    <string name="freedom_inputs_all">Mostra totes les entrades</string>
+    <string name="freedom_wallpaper_studio">Estudi de fons</string>
+    <string name="freedom_discover">Descobreix</string>
+    <string name="freedom_setup_copilot">Assistent de configuració</string>
+    <string name="freedom_simple_mode">Ajustos senzills</string>
+    <string name="freedom_advanced_mode">Tots els ajustos</string>
+    <string name="freedom_settings_mode">Vista dels ajustos</string>
+    <string name="freedom_nav_appearance">Aparença</string>
+    <string name="freedom_nav_apps">Apps i files</string>
+    <string name="freedom_nav_wallpaper">Fons</string>
+    <string name="freedom_nav_profiles">Perfils</string>
+    <string name="freedom_nav_remotes">Comandaments i entrades</string>
+    <string name="freedom_nav_backup">Còpia i restauració</string>
+    <string name="freedom_nav_system">Sistema</string>
+</resources>

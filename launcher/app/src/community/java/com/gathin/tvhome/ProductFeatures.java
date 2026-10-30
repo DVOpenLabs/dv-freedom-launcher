@@ -12,6 +12,7 @@ import org.json.*;
 
 /** Optional full-product features, compiled into the existing APK and data identity. */
 final class ProductFeatures {
+    static boolean videoFraming(Context c,java.io.File file,android.view.TextureView view,int w,int h){return StudioFraming.video(c,file,view,w,h);}
     static boolean upstreamExtras(){return true;}
     private static Context app;
     private static boolean initialized;
@@ -47,10 +48,13 @@ final class ProductFeatures {
         },240);
     }
     static boolean playlistEnabled(Context c){return WallpaperPlaylistChoice.enabled(c);}
-    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
+    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(PhoneSetupProvider.ENABLED);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
     static AutoCloseable dreamWeather(Context c,View root){View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return null;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return weather;}
-    static void setupKeys(Set<String> keys){keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
+    static boolean inputs(MainActivity a,boolean all){Config cfg=Config.load(a);if(cfg.coocaaSources||!cfg.sourcePanelService.isEmpty()||!cfg.inputSources.isEmpty()||!cfg.inputAction.isEmpty()||!cfg.inputUriScheme.isEmpty())return false;InputPicker.show(a,all);return true;}
+    static void setupKeys(Set<String> keys){keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals(FolderPolicy.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid folders");FolderPolicy.parse((String)value);return true;}
+        if(key.equals(FreedomControls.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid controls");FreedomControls.validate((String)value);return true;}
         if(key.equals(ShelfOptions.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid shelf sources");new ShelfOptions.Spec((String)value);return true;}
         if(key.equals(WeatherClient.HOME)||key.equals(WeatherClient.DREAM)){if(!(value instanceof String)||!WeatherSnapshot.unit((String)value))throw new IllegalArgumentException("Invalid weather units");return true;}
         if(key.equals(IconSizePolicy.KEY)){if(!(value instanceof String)||!IconSizePolicy.valid((String)value))throw new IllegalArgumentException("Invalid icon size");return true;}
@@ -83,7 +87,17 @@ final class ProductFeatures {
     static Drawable banner(Context c,String pkg){return NativeTileEditor.banner(c,pkg);}
     static Drawable banner(Context c,String pkg,Drawable fallback){Drawable custom=banner(c,pkg);return custom==null?fallback:custom;}
     static void styleName(TextView name){HomeAppearance.name(name);}
+    static void folderEntries(Context c,List<AppAdapter.Entry> entries,boolean reorder){
+        if(reorder||Folders.read(c).isEmpty())return;
+        Map<String,AppAdapter.Entry> by=new HashMap<>();for(AppAdapter.Entry e:entries)if(e.kind==AppAdapter.Entry.APP)by.put(e.pkg,e);
+        Map<String,AppAdapter.Entry> grouped=new HashMap<>();List<AppAdapter.Entry> folders=new ArrayList<>();
+        for(FolderPolicy.Folder folder:Folders.read(c)){List<Drawable> art=new ArrayList<>();for(String pkg:folder.apps){AppAdapter.Entry e=by.get(pkg);if(e!=null&&art.size()<4)art.add(e.banner!=null?e.banner:e.icon);}Drawable mosaic=new Folders.Mosaic(art);AppAdapter.Entry entry=new AppAdapter.Entry(folder.name,new ComponentName("folder."+folder.id,"Folder"),mosaic,null);folders.add(entry);for(String pkg:folder.apps)grouped.put(pkg,entry);}
+        List<AppAdapter.Entry> out=new ArrayList<>();Set<String> used=new HashSet<>();for(AppAdapter.Entry e:entries){AppAdapter.Entry shown=e.kind==AppAdapter.Entry.APP?grouped.getOrDefault(e.pkg,e):e;if(used.add(shown.pkg))out.add(shown);}for(AppAdapter.Entry e:folders)if(used.add(e.pkg))out.add(e);entries.clear();entries.addAll(out);
+    }
+    static boolean folderAction(Context c,String pkg,boolean edit){if(pkg==null||!pkg.startsWith("folder.")||!(c instanceof Activity))return false;for(FolderPolicy.Folder f:Folders.read(c))if(pkg.equals("folder."+f.id)){if(edit)Folders.options((Activity)c,f);else Folders.open((Activity)c,f);return true;}return false;}
+    static boolean folderDocked(Context c,String pkg,List<String> favorites){if(pkg==null||!pkg.startsWith("folder."))return false;for(FolderPolicy.Folder f:Folders.read(c))if(pkg.equals("folder."+f.id))for(String member:f.apps)if(favorites.contains(member))return true;return false;}
     static void tileActions(Activity a,LinearLayout rows,PopupWindow popup,String pkg){
+        TextView folders=FreedomUi.action(a,rows,a.getString(R.string.freedom_folders),()->{popup.dismiss();Folders.show(a);});
         View row=a.getLayoutInflater().inflate(R.layout.item_input,rows,false);row.findViewById(R.id.icon).setVisibility(View.GONE);row.findViewById(R.id.dot).setVisibility(View.GONE);row.findViewById(R.id.status).setVisibility(View.GONE);((TextView)row.findViewById(R.id.title)).setText("Customize app");
         row.setOnClickListener(v->{popup.dismiss();NativeTileEditor.show(a,pkg);});final boolean[] down={false};row.setOnKeyListener((v,key,event)->{if(key!=KeyEvent.KEYCODE_DPAD_CENTER&&key!=KeyEvent.KEYCODE_ENTER)return false;if(event.getAction()==KeyEvent.ACTION_DOWN){down[0]=true;return true;}if(down[0]){down[0]=false;v.performClick();}return true;});rows.addView(row);
     }

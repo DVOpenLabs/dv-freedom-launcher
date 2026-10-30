@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Klasörler</string>
+    <string name="freedom_controls">Denetim merkezi</string>
+    <string name="freedom_inputs_all">Tüm girişleri göster</string>
+    <string name="freedom_wallpaper_studio">Duvar kağıdı stüdyosu</string>
+    <string name="freedom_discover">Keşfet</string>
+    <string name="freedom_setup_copilot">Kurulum yardımcısı</string>
+    <string name="freedom_simple_mode">Basit ayarlar</string>
+    <string name="freedom_advanced_mode">Tüm ayarlar</string>
+    <string name="freedom_settings_mode">Ayar görünümü</string>
+    <string name="freedom_nav_appearance">Görünüm</string>
+    <string name="freedom_nav_apps">Uygulamalar ve satırlar</string>
+    <string name="freedom_nav_wallpaper">Duvar kağıdı</string>
+    <string name="freedom_nav_profiles">Profiller</string>
+    <string name="freedom_nav_remotes">Kumandalar ve girişler</string>
+    <string name="freedom_nav_backup">Yedekleme ve geri yükleme</string>
+    <string name="freedom_nav_system">Sistem</string>
+</resources>

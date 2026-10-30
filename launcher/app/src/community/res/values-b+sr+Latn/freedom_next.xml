@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Fascikle</string>
+    <string name="freedom_controls">Kontrolni centar</string>
+    <string name="freedom_inputs_all">Prikaži sve ulaze</string>
+    <string name="freedom_wallpaper_studio">Studio pozadina</string>
+    <string name="freedom_discover">Istraži</string>
+    <string name="freedom_setup_copilot">Pomoćnik za podešavanje</string>
+    <string name="freedom_simple_mode">Jednostavna podešavanja</string>
+    <string name="freedom_advanced_mode">Sva podešavanja</string>
+    <string name="freedom_settings_mode">Prikaz podešavanja</string>
+    <string name="freedom_nav_appearance">Izgled</string>
+    <string name="freedom_nav_apps">Aplikacije i redovi</string>
+    <string name="freedom_nav_wallpaper">Pozadina</string>
+    <string name="freedom_nav_profiles">Profili</string>
+    <string name="freedom_nav_remotes">Daljinski i ulazi</string>
+    <string name="freedom_nav_backup">Rezervna kopija i vraćanje</string>
+    <string name="freedom_nav_system">Sistem</string>
+</resources>

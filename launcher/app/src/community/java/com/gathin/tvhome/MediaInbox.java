@@ -72,7 +72,7 @@ final class MediaInbox {
                     for(int count;(count=in.read(buffer))!=-1;){bytes+=count;if(bytes>receipt.getLong("bytes"))throw new IOException("Media too large");hash.update(buffer,0,count);out.write(buffer,0,count);}
                     out.flush();StringBuilder hex=new StringBuilder();for(byte b:hash.digest())hex.append(String.format(java.util.Locale.ROOT,"%02x",b&255));
                     if(bytes!=receipt.getLong("bytes")||!hex.toString().equals(receipt.getString("sha256")))throw new IOException("Media checksum mismatch");
-                    synchronized(LOCK){if(!id.equals(load(c).getString("id"))||!part.renameTo(file(c,receipt)))throw new IOException("Transfer expired");receipt.put("state","ready");write(c,receipt);}
+                    synchronized(LOCK){if(!id.equals(load(c).getString("id"))||!"receiving".equals(load(c).optString("state"))||!part.renameTo(file(c,receipt)))throw new IOException("Transfer expired");receipt.put("state","ready");write(c,receipt);}
                 }catch(Exception failure){synchronized(LOCK){try{if(id.equals(load(c).getString("id"))){receipt.put("state","error");write(c,receipt);}}catch(Exception ignored){}}}
                 finally{deadline.cancel(false);if(part.exists())part.delete();}
             });

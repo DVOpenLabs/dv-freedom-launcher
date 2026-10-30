@@ -17,6 +17,8 @@
         <activity android:name="com.gathin.tvhome.CategoryHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
         <activity android:name="com.gathin.tvhome.ExperienceHomeActivity" android:exported="false" android:screenOrientation="landscape" android:configChanges="orientation|screenSize|keyboard|keyboardHidden|uiMode" />
         <activity android:name="com.gathin.tvhome.ContentShelfActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name="com.gathin.tvhome.WallpaperStudioActivity" android:exported="false" android:screenOrientation="landscape" />
+        <provider android:name="com.gathin.tvhome.PhoneSetupProvider" android:authorities="${applicationId}.phone-setup" android:exported="true" />
         <activity android:name="com.gathin.tvhome.GuidedSetupActivity" android:exported="false" android:screenOrientation="landscape" />
         <activity android:name="com.gathin.tvhome.InstallerPreviewActivity" android:exported="false" android:screenOrientation="landscape" android:theme="@style/Freedom.InstallerPreview" />
     </application>

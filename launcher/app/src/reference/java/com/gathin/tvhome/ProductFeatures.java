@@ -3,6 +3,11 @@ package com.gathin.tvhome;
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
     static AutoCloseable dreamWeather(android.content.Context c,android.view.View root){return null;}
+    static boolean inputs(MainActivity a,boolean all){return false;}
+    static void folderEntries(android.content.Context c,java.util.List<AppAdapter.Entry> e,boolean reorder){}
+    static boolean folderAction(android.content.Context c,String pkg,boolean edit){return false;}
+    static boolean folderDocked(android.content.Context c,String pkg,java.util.List<String> favorites){return false;}
+    static boolean videoFraming(android.content.Context c,java.io.File file,android.view.TextureView view,int w,int h){return false;}
     static boolean upstreamExtras(){return false;}
     static void init(android.content.Context c){}
     static int tileWidth(android.content.Context c,int width){return width;}

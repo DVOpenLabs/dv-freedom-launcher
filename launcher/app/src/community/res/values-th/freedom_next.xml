@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">โฟลเดอร์</string>
+    <string name="freedom_controls">ศูนย์ควบคุม</string>
+    <string name="freedom_inputs_all">แสดงอินพุตทั้งหมด</string>
+    <string name="freedom_wallpaper_studio">สตูดิโอภาพพื้นหลัง</string>
+    <string name="freedom_discover">ค้นพบ</string>
+    <string name="freedom_setup_copilot">ผู้ช่วยตั้งค่า</string>
+    <string name="freedom_simple_mode">การตั้งค่าแบบง่าย</string>
+    <string name="freedom_advanced_mode">การตั้งค่าทั้งหมด</string>
+    <string name="freedom_settings_mode">มุมมองการตั้งค่า</string>
+    <string name="freedom_nav_appearance">รูปลักษณ์</string>
+    <string name="freedom_nav_apps">แอปและแถว</string>
+    <string name="freedom_nav_wallpaper">ภาพพื้นหลัง</string>
+    <string name="freedom_nav_profiles">โปรไฟล์</string>
+    <string name="freedom_nav_remotes">รีโมตและอินพุต</string>
+    <string name="freedom_nav_backup">สำรองและกู้คืน</string>
+    <string name="freedom_nav_system">ระบบ</string>
+</resources>

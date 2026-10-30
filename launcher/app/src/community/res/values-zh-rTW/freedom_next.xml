@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">資料夾</string>
+    <string name="freedom_controls">控制中心</string>
+    <string name="freedom_inputs_all">顯示所有輸入來源</string>
+    <string name="freedom_wallpaper_studio">桌布工作室</string>
+    <string name="freedom_discover">探索</string>
+    <string name="freedom_setup_copilot">設定助手</string>
+    <string name="freedom_simple_mode">簡易設定</string>
+    <string name="freedom_advanced_mode">全部設定</string>
+    <string name="freedom_settings_mode">設定檢視</string>
+    <string name="freedom_nav_appearance">外觀</string>
+    <string name="freedom_nav_apps">應用程式與列</string>
+    <string name="freedom_nav_wallpaper">桌布</string>
+    <string name="freedom_nav_profiles">個人設定</string>
+    <string name="freedom_nav_remotes">遙控器與輸入來源</string>
+    <string name="freedom_nav_backup">備份與還原</string>
+    <string name="freedom_nav_system">系統</string>
+</resources>

@@ -1,0 +1,18 @@
+<resources>
+    <string name="freedom_folders">Dossiers</string>
+    <string name="freedom_controls">Centre de contrôle</string>
+    <string name="freedom_inputs_all">Afficher toutes les entrées</string>
+    <string name="freedom_wallpaper_studio">Atelier des fonds</string>
+    <string name="freedom_discover">Découvrir</string>
+    <string name="freedom_setup_copilot">Assistant de configuration</string>
+    <string name="freedom_simple_mode">Réglages simples</string>
+    <string name="freedom_advanced_mode">Tous les réglages</string>
+    <string name="freedom_settings_mode">Vue des réglages</string>
+    <string name="freedom_nav_appearance">Apparence</string>
+    <string name="freedom_nav_apps">Apps et rangées</string>
+    <string name="freedom_nav_wallpaper">Fond d’écran</string>
+    <string name="freedom_nav_profiles">Profils</string>
+    <string name="freedom_nav_remotes">Télécommandes et entrées</string>
+    <string name="freedom_nav_backup">Sauvegarde et restauration</string>
+    <string name="freedom_nav_system">Système</string>
+</resources>
