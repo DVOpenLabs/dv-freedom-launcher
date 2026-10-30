@@ -112,5 +112,5 @@ one decoder, memory/CPU, standby and an owner-approved restart. Test Apply/Cance
 isolated test profiles; retain original TV/Home settings. Do not infer Samsung behavior from LG/Android.
 
 Report non-sensitive results using the [TV compatibility form](https://github.com/DVOpenLabs/dv-freedom-launcher/issues/new?template=compatibility.yml).
-Read the [source review](../../product/SAMSUNG-REVIEW.md) before considering any later return helper or
-cloud startup. No Garage Home, Vetro or Skylight code, service, media or font is bundled in this pilot.
+Automatic Home return and cloud startup are not supported. No Garage Home, Vetro or Skylight code,
+service, media or font is bundled in this pilot.

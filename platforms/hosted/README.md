@@ -80,6 +80,5 @@ node platforms/tizen/test-launcher.cjs
 node platforms/webos/test-launcher.cjs
 ```
 
-No hardware is contacted by these tests. For mock/browser results and missing acceptance, see
-[setup validation](../../setup_app/VALIDATION.md). Protocol references and source pins are in
+No hardware is contacted by these tests. Hardware acceptance remains separate. Protocol references and source pins are in
 [the source register](../../product/sources.json); these projects are references, not bundled dependencies.

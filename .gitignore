@@ -47,3 +47,20 @@ platforms/roku/*.zip
 *.pem
 *.p12
 *.pfx
+
+# Private working notes and agent instructions are local, never publication inputs.
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/product/ROADMAP.md
+/product/VALIDATION.md
+/product/LG-HELPER-REVIEW.md
+/product/SAMSUNG-REVIEW.md
+/product/UPSTREAM-3.1.0-REVIEW.md
+/setup_app/VALIDATION.md
+/setup_app/DESIGN.md
+/product/ANDROID-APPEARANCE.md
+/product/ANDROID-USABILITY.md
+/product/ANDROID-POLISH.md
+/.agents/
+/.codex/
