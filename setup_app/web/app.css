@@ -32,3 +32,13 @@ html{scroll-padding-block:20px 130px}.footer{position:sticky;bottom:0;z-index:5;
 
 @media(min-width:601px){.sidebar{position:sticky;top:0;height:100dvh;align-self:start;overflow-y:auto;overscroll-behavior:contain}}
 @media(min-width:601px) and (max-height:820px){.sidebar{padding:24px 20px;gap:20px}.sidebar nav button{min-height:62px}.sidebar-bottom{padding-top:16px}.sidebar-bottom .privacy-icon,.sidebar-bottom small{display:none}.sidebar-bottom p{font-size:14px}.sidebar-bottom .help-link{margin-top:8px}}
+/* Support and Extras use the existing help surface and type scale. */
+.essential-row{position:relative;padding:18px 0;border-top:1px solid var(--line,#cbd5db)}
+.essential-row h3{margin:0 0 8px;font-size:1.15rem}.essential-row p{margin:8px 0;line-height:1.5}
+.essential-row small{display:block;line-height:1.5;color:var(--muted,#52616d)}
+.essential-status{display:inline-block;color:#315c4d;font-weight:600;text-transform:capitalize}
+#help-body select{margin:12px;padding:10px;font:inherit;max-width:100%}
+#help-dialog{max-height:88vh;overflow:auto}.sidebar-bottom .help-link{display:block;margin-top:10px}
+.essentials-mobile{display:none}@media(max-width:600px){.essentials-mobile{display:block;font:inherit;white-space:nowrap}#help-body>.help-link{display:block;margin:16px 0}}
+.topbar .essentials-mobile{margin:0;color:var(--ink,#172838)}#help-body>.help-link{color:var(--ink,#172838)}
+@media(max-width:600px){.topbar{flex-wrap:wrap}.topbar>span:first-child{max-width:100%;flex:1 1 100%}.topbar .mode{margin-right:auto}}

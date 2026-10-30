@@ -38,6 +38,12 @@ def serve(session=None,port=0):
         def do_GET(self):
             if not self.allowed(self.path.startswith('/api/')):return
             if self.path=='/api/state':self.send(session.public());return
+            if self.path=='/api/support':
+                from .support import report
+                self.send(report(session));return
+            if self.path=='/api/extras':
+                from .extras import catalogue
+                self.send(catalogue());return
             if self.path=='/platforms.js':
                 from .capabilities import catalogue
                 self.send(('window.DVPlatforms='+json.dumps(catalogue())+';').encode(),'text/javascript; charset=utf-8');return
@@ -48,7 +54,7 @@ def serve(session=None,port=0):
                 except (SetupError,OSError):self.send({'error':'Build a new package in this session.'},status=400)
                 return
             assets={'/':(WEB/'index.html','text/html; charset=utf-8'),'/app.css':(WEB/'app.css','text/css; charset=utf-8'),
-               '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/native.js':(WEB/'native.js','text/javascript; charset=utf-8'),'/companion.js':(WEB/'companion.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
+               '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/essentials.js':(WEB/'essentials.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/native.js':(WEB/'native.js','text/javascript; charset=utf-8'),'/companion.js':(WEB/'companion.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
             if self.path not in assets:self.send({'error':'Page not found.'},status=404);return
             file,mime=assets[self.path]
             try:

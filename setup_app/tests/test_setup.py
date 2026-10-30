@@ -88,6 +88,13 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(self.post('/api/install',{})[0],400)
         for path in ['/api/shell','/api/reboot','/api/home']:
             self.assertEqual(self.post(path,{})[0],404)
+    def test_support_and_extras_require_the_local_session_token(self):
+        for path in ['/api/support','/api/extras']:
+            self.assertEqual(self.request('GET',path)[0],403)
+            status,data,_=self.request('GET',path,headers={'X-Setup-Token':self.token})
+            self.assertEqual(status,200)
+            self.assertEqual(json.loads(data)['schema'],1)
+            self.assertEqual(self.request('GET',path,headers={'X-Setup-Token':self.token,'Origin':'https://external.invalid'})[0],403)
     def test_no_open_file_route_and_strict_assets(self):
         for path in ['/../LICENSE','/files?path=secret','/app.js?path=secret']:
             self.assertEqual(self.request('GET',path)[0],404)
