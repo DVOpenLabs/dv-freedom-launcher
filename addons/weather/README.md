@@ -68,3 +68,33 @@ The options: Xiaomi TV (MiTV-MOOR2), Google TV 11, with `forecast_days` 7, `show
 ## Maintainer
 
 [@Sumyabazar1](https://github.com/Sumyabazar1)
+
+## DV Freedom 1.1: runtime settings and local sharing
+
+**Weather settings** now offers Celsius, Fahrenheit or both units, three/seven forecast days,
+humidity and wind. These override the build defaults only after Apply; Cancel preserves them.
+Existing city and build defaults survive an update.
+
+For an optional Home/screensaver reading:
+
+1. Build/install the companion separately with a signer compatible with any existing installation.
+2. Choose a city in Weather. No Android location permission is needed for this city search.
+3. In Weather settings → Share with a launcher, select the compatible Home app you trust and review
+   its package and certificate before allowing it. Only one selected launcher is trusted at a time.
+4. In DV Freedom → Apps & rows → Weather display, choose the units for Home and the screensaver
+   separately. Both start Off; enabling them grants no Android system permission.
+
+The read-only `io.github.sumyabazar1.weather.snapshot/current` provider shares schema, Celsius
+reading, city name, translated conditions and update timestamp. The caller's installed package and
+current SHA-256 signing certificate must match the approval. Coordinates, calendar links and keys
+are never exported by this provider. Network requests to Open-Meteo stay inside Weather.
+
+Only an approved local query can trigger a background refresh: one worker, at most every 30 minutes,
+with a five-minute failure backoff. There is no periodic service or boot receiver. The launcher queries
+once a minute only while its Home/screensaver is active, cancels on exit and has no INTERNET permission.
+Cached readings older than an hour are labelled; over six hours old or implausibly future readings
+are hidden. Weather → Stop sharing revokes the package/certificate approval. Home and screensaver
+choices are profile-local; sharing authorization stays device-local and is not included in AI drafts.
+
+This bridge has source/unit/lint/build checks. The inherited device tests above do not establish
+acceptance of the new sharing protocol, physical remote focus or screenshots on every Home style.

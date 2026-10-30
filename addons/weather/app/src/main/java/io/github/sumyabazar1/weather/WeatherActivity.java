@@ -40,6 +40,7 @@ public final class WeatherActivity extends Activity {
     private View content;
     private TextView message;
     private boolean shown;
+    private boolean active;
     /** options.xml: days after today, and the extras on the "Feels like" line. */
     private int forecastDays;
     private boolean showHumidity;
@@ -53,16 +54,21 @@ public final class WeatherActivity extends Activity {
         super.onCreate(state);
         setContentView(R.layout.activity_weather);
         place = getSharedPreferences(PREFS, MODE_PRIVATE);
-        forecastDays = Forecast.forecastDays(getResources().getInteger(R.integer.forecast_days));
-        showHumidity = getResources().getBoolean(R.bool.show_humidity);
-        showWind = getResources().getBoolean(R.bool.show_wind);
-        fahrenheit = "f".equalsIgnoreCase(getString(R.string.temperature_unit).trim());
-        bothUnits = getResources().getBoolean(R.bool.show_both_units);
+        readOptions();
         root = findViewById(R.id.root);
         content = findViewById(R.id.content);
         message = findViewById(R.id.message);
         View changeCity = findViewById(R.id.changeCity);
         changeCity.setOnClickListener(v -> pickCity());
+        TextView settings = new TextView(this);
+        settings.setText("Weather settings");
+        settings.setTextColor(getColorStateList(R.color.pill_text));
+        settings.setTextSize(16);
+        settings.setPadding(24, 16, 24, 16);
+        settings.setFocusable(true);
+        settings.setBackgroundResource(R.drawable.pill);
+        settings.setOnClickListener(v -> WeatherOptions.show(this));
+        ((LinearLayout) changeCity.getParent()).addView(settings, 1);
         changeCity.requestFocus();
         if (!place.contains("name")) {
             message.setText(R.string.pick_first);
@@ -70,15 +76,27 @@ public final class WeatherActivity extends Activity {
         }
     }
 
+    private void readOptions() {
+        SharedPreferences options = getSharedPreferences("options", MODE_PRIVATE);
+        forecastDays = Forecast.forecastDays(options.getInt("days", getResources().getInteger(R.integer.forecast_days)));
+        showHumidity = options.getBoolean("humidity", getResources().getBoolean(R.bool.show_humidity));
+        showWind = options.getBoolean("wind", getResources().getBoolean(R.bool.show_wind));
+        fahrenheit = "f".equalsIgnoreCase(options.getString("unit", getString(R.string.temperature_unit)));
+        bothUnits = options.getBoolean("both", getResources().getBoolean(R.bool.show_both_units));
+    }
+    void reloadOptions() { readOptions(); if (place.contains("name")) refresh(); }
+
     @Override
     protected void onResume() {
         super.onResume();
+        active = true;
         if (place.contains("name")) refresh();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        active = false;
         main.removeCallbacks(tick);   // nothing runs while the page is not on screen
     }
 
@@ -92,17 +110,20 @@ public final class WeatherActivity extends Activity {
         main.removeCallbacks(tick);
         double lat = Double.longBitsToDouble(place.getLong("lat", 0));
         double lon = Double.longBitsToDouble(place.getLong("lon", 0));
+        String city = place.getString("name", "");
+        long latBits = place.getLong("lat", 0), lonBits = place.getLong("lon", 0);
+        int days = forecastDays;
         io.execute(() -> {
             Forecast.Report report;
             try {
-                report = Forecast.fetch(lat, lon, forecastDays);
+                report = Forecast.fetch(lat, lon, days);
             } catch (Exception e) {
                 report = null;
             }
             Forecast.Report result = report;
             main.post(() -> {
-                if (isDestroyed()) return;
-                if (result != null) show(result);
+                if (isDestroyed() || !active || !city.equals(place.getString("name", "")) || latBits != place.getLong("lat", 0) || lonBits != place.getLong("lon", 0)) return;
+                if (result != null) { WeatherSharing.save(this, result, city, latBits, lonBits); show(result); }
                 else if (!shown) message.setText(R.string.offline);
                 main.postDelayed(tick, result != null ? Forecast.REFRESH_MS : Forecast.RETRY_MS);
             });
@@ -241,6 +262,7 @@ public final class WeatherActivity extends Activity {
                 .setTitle(R.string.pick_title)
                 .setItems(rows, (d, which) -> {
                     Forecast.Place p = places.get(which);
+                    WeatherSharing.cache(this).edit().clear().apply();
                     place.edit()
                             .putString("name", p.name)
                             .putLong("lat", Double.doubleToRawLongBits(p.latitude))

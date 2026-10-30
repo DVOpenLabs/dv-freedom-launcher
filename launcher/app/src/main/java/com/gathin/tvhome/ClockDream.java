@@ -4,11 +4,12 @@ import android.service.dreams.DreamService;
 
 /**
  * Screensaver: the launcher's thin clock and date on black, over a slow ambient glow (ClockScene).
- * No network, no images: cheap enough for a 1 GB TV.
+ * Network-free; the full product can opt in to a separate companion's local weather cache.
  */
 public class ClockDream extends DreamService {
 
     private ClockScene scene;
+    private AutoCloseable weather;
 
     @Override
     public void onAttachedToWindow() {
@@ -25,17 +26,25 @@ public class ClockDream extends DreamService {
     public void onDreamingStarted() {
         super.onDreamingStarted();
         scene.start();
+        closeWeather();
+        weather = ProductFeatures.dreamWeather(this, getWindow().getDecorView());
     }
 
     @Override
     public void onDreamingStopped() {
         scene.stop();
+        closeWeather();
         super.onDreamingStopped();
     }
 
     @Override
     public void onDetachedFromWindow() {
         if (scene != null) scene.stop();
+        closeWeather();
         super.onDetachedFromWindow();
+    }
+    private void closeWeather() {
+        if (weather != null) try { weather.close(); } catch (Exception ignored) { }
+        weather = null;
     }
 }

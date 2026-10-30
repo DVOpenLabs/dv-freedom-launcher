@@ -2,6 +2,7 @@ package com.gathin.tvhome;
 
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
+    static AutoCloseable dreamWeather(android.content.Context c,android.view.View root){return null;}
     static boolean upstreamExtras(){return false;}
     static void init(android.content.Context c){}
     static int tileWidth(android.content.Context c,int width){return width;}

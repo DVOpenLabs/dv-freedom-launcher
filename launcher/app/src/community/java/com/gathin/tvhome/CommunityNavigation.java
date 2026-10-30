@@ -106,6 +106,7 @@ final class SettingsNavigation {
                 layout,text,motion,
                 item("Setup help","Walk through Home style, apps and readability, or review an AI setup draft before applying it.",()->"Guided setup and AI drafts",()->a.startActivity(new android.content.Intent(a,GuidedSetupActivity.class)))),
             page("Apps & rows","Organize apps without changing their accounts or installed data.","Customize apps and create categories",
+                item("Weather display","Optional local Weather companion. Choose Home and screensaver units separately; sharing starts only after approval in Weather settings.",()->WeatherClient.status(a),()->WeatherClient.settings(a)),
                 item("Content shelves","Optional Watch Next items shared by installed apps. Enable TV listings access only if you want this. Empty shelves collapse.",()->ContentShelves.status(a),()->ContentShelves.settings(a)),
                 item("Customize apps","Rename an app or change its artwork. Your app layout stays saved.",()->"Name, icon and banner",()->NativeTileEditor.show(a)),
                 experienceContext()?null:item("Categories","Create named app rows. Preview first; the existing Home stays saved until you explicitly enable category layout.",()->HomeCategories.enabled(a)?"Category layout on":"Existing layout",()->HomeCategories.show(a)),
