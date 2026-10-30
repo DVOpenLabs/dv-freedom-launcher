@@ -7,7 +7,7 @@ card and asks the owner once; if they answer Show, your app appears as a card fr
 label, an optional caption, and your colour in the ambient glow, placed ahead of the alphabetical
 grid.
 
-The contract is [`docs/specs/card.md`](https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/docs/specs/card.md). This page is the short version.
+The contract is [`docs/specs/card.md`](specs/card.md). This page is the short version.
 
 ## 1. Declare the card
 
