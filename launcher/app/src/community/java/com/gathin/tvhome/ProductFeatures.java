@@ -36,6 +36,7 @@ final class ProductFeatures {
     static void wallpaperSample(Activity a,android.graphics.Bitmap bitmap){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).sample(bitmap);}
     static void resumed(Activity a){
         WeatherClient.attach(a);
+        OptionalPanels.attach(a);
         NowPlaying.attach(a);
         if(a instanceof ExperienceHomeActivity||(a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&(HomeCategories.enabled(a)||ExperienceChoice.enabled(a))))WallpaperPlaylist.attach(a);
         a.getWindow().getDecorView().postDelayed(()->{
@@ -46,10 +47,11 @@ final class ProductFeatures {
         },240);
     }
     static boolean playlistEnabled(Context c){return WallpaperPlaylistChoice.enabled(c);}
-    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
+    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
     static AutoCloseable dreamWeather(Context c,View root){View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return null;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return weather;}
-    static void setupKeys(Set<String> keys){keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
+    static void setupKeys(Set<String> keys){keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals(ShelfOptions.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid shelf sources");new ShelfOptions.Spec((String)value);return true;}
         if(key.equals(WeatherClient.HOME)||key.equals(WeatherClient.DREAM)){if(!(value instanceof String)||!WeatherSnapshot.unit((String)value))throw new IllegalArgumentException("Invalid weather units");return true;}
         if(key.equals(IconSizePolicy.KEY)){if(!(value instanceof String)||!IconSizePolicy.valid((String)value))throw new IllegalArgumentException("Invalid icon size");return true;}
         if(key.equals(SceneSchedules.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid scene schedules");SceneSchedulePolicy.parse((String)value);return true;}

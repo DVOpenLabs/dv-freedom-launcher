@@ -13,4 +13,5 @@
     <string name="now">Spegni ora</string>
     <string name="service_label">Timer di spegnimento</string>
     <string name="service_description">Mette la TV in standby solo alla fine del timer di spegnimento. Non legge lo schermo.</string>
+    <string name="quick_hint">◀ ▶ scegli un orario · OK chiudi</string>
 </resources>

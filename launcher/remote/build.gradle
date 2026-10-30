@@ -1,0 +1,11 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.dvopenlabs.freedom.remote'; compileSdk 34
+    defaultConfig { applicationId 'com.dvopenlabs.freedom.remote'; minSdk 26; targetSdk 34; versionCode 3; versionName '0.1-alpha3' }
+    buildTypes { release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'); signingConfig signingConfigs.debug } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    testOptions { unitTests.returnDefaultValues = true }
+}
+dependencies { testImplementation 'junit:junit:4.13.2'; testImplementation 'org.json:json:20231013' }
+
+apply from: rootProject.file('optional-ui.gradle')

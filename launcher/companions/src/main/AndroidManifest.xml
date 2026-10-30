@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <permission android:name="com.dvopenlabs.freedom.companions.READ" android:protectionLevel="signature" />
+    <application android:label="DV Freedom Companions" android:theme="@style/AppTheme" android:allowBackup="false" android:fullBackupContent="false" android:dataExtractionRules="@xml/data_extraction" android:usesCleartextTraffic="true" android:icon="@android:drawable/ic_menu_my_calendar" android:banner="@drawable/banner">
+        <activity android:name=".HubActivity" android:exported="true" />
+        <provider android:name=".HubProvider" android:authorities="com.dvopenlabs.freedom.companions.snapshot" android:exported="true" android:permission="com.dvopenlabs.freedom.companions.READ" android:grantUriPermissions="false" />
+    </application>
+</manifest>

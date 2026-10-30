@@ -1,0 +1,15 @@
+// Shared optional-app typography and D-pad treatment, with one checked-in font source.
+def optionalRes = layout.buildDirectory.dir('generated/optional-ui/res')
+def optionalAssets = layout.buildDirectory.dir('generated/optional-ui/assets')
+android.sourceSets.main.res.srcDir rootProject.file('optional-ui/res')
+android.sourceSets.main.res.srcDir optionalRes
+android.sourceSets.main.assets.srcDir optionalAssets
+tasks.register('optionalUi') {
+    inputs.files(rootProject.file('app/src/main/res/font/outfit.ttf'),rootProject.file('FONT-LICENSE-OFL.txt'))
+    outputs.dirs(optionalRes,optionalAssets)
+    doLast {
+        copy { from rootProject.file('app/src/main/res/font/outfit.ttf'); into new File(optionalRes.get().asFile,'font') }
+        copy { from rootProject.file('FONT-LICENSE-OFL.txt'); into optionalAssets }
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'optionalUi' }

@@ -30,6 +30,8 @@ setup_app/*.spec
 *.exe
 
 setup_app/release_bundle/
+launcher/companions/build/
+launcher/remote/build/
 
 # Generated Samsung pilot archives and private staging.
 *.wgt

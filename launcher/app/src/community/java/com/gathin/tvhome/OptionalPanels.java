@@ -1,0 +1,32 @@
+package com.gathin.tvhome;
+import android.app.*;
+import android.content.*;
+import android.os.*;
+import android.net.Uri;
+import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.view.*;
+import android.widget.*;
+import java.util.concurrent.*;
+import org.json.*;
+
+/** Optional network capabilities belong to separate apps. Core keeps no network permission. */
+final class OptionalPanels {
+    static final String CALENDAR="private_calendar_card_enabled";
+    static final String HUB="com.dvopenlabs.freedom.companions",REMOTE="com.dvopenlabs.freedom.remote";
+    static final Uri URI=Uri.parse("content://"+HUB+".snapshot/current");
+    static void open(Activity a,String pkg){try{if((HUB.equals(pkg)||REMOTE.equals(pkg))&&a.getPackageManager().checkSignatures(a.getPackageName(),pkg)!=android.content.pm.PackageManager.SIGNATURE_MATCH)throw new SecurityException();Intent i=HUB.equals(pkg)||REMOTE.equals(pkg)?new Intent().setComponent(new ComponentName(pkg,pkg+(HUB.equals(pkg)?".HubActivity":".RemoteActivity"))):a.getPackageManager().getLeanbackLaunchIntentForPackage(pkg);if(i==null)i=a.getPackageManager().getLaunchIntentForPackage(pkg);if(i==null)throw new IllegalArgumentException();a.startActivity(i);}catch(Exception missing){new AlertDialog.Builder(a).setTitle("Optional companion not installed").setMessage("Open DV Freedom Setup on your computer → Add-on Center. Review its access before installing. Nothing is installed or enabled automatically.").setPositiveButton("OK",null).show();}}
+    static void calendarChoice(Activity a){boolean on=ProfileStore.preferences(a).getBoolean(CALENDAR,false);new AlertDialog.Builder(a).setTitle("Calendar on Home").setMessage("Show the next family event or Game Day countdown shared by the optional Companions app. This profile only. Private feed links stay in that app. Configure feeds and sharing there first.").setPositiveButton(on?"Hide calendar":"Show in this profile",(d,w)->{if(!LauncherLock.require(a,()->calendarChoice(a)))return;java.util.Map<String,Object> values=new java.util.HashMap<>();values.put(CALENDAR,!on);values.put(Config.SETTINGS_REVISION_KEY,ProfileStore.preferences(a).getLong(Config.SETTINGS_REVISION_KEY,0)+1);if(SetupValues.commit(ProfileStore.preferences(a),values))a.finish();}).setNegativeButton("Cancel",null).show();}
+    static void show(Activity a){new AlertDialog.Builder(a).setTitle("Add-on Center").setItems(new String[]{"Home Assistant · calendar · poster privacy","Phone remote & keyboard","Weather","Sleep timer","World clock","Quiet hours"},(d,w)->open(a,new String[]{HUB,REMOTE,"io.github.sumyabazar1.weather","io.github.luyzfernando08.sleeptimer","io.github.savioronezero.worldclock","io.github.maxhayim.quiethours"}[w])).setNegativeButton("Close",null).show();}
+    static Bitmap poster(Context c,String raw){try{if(!raw.startsWith("https://")||raw.length()>4096)return null;Bundle b=c.getContentResolver().call(URI,"poster",raw,null);String key=b==null?"":b.getString("key","");if(!key.matches("[0-9a-f]{64}"))return null;try(java.io.InputStream in=c.getContentResolver().openInputStream(Uri.parse("content://"+HUB+".snapshot/poster/"+key))){return BitmapFactory.decodeStream(in);}}catch(Exception absent){return null;}}
+    static void attach(Activity a){if(!ProfileStore.preferences(a).getBoolean(CALENDAR,false))return;View left=a.findViewById(R.id.leftBlock);if(left instanceof LinearLayout)new Events(a,(LinearLayout)left);}
+    static final class Events implements Application.ActivityLifecycleCallbacks {
+        final Activity a;final LinearLayout host;final Handler main=new Handler(Looper.getMainLooper());final ExecutorService work=Executors.newSingleThreadExecutor();boolean closed,busy;TextView card;
+        final ContentObserver observer=new ContentObserver(main){@Override public void onChange(boolean self){read();}};
+        Events(Activity a,LinearLayout host){this.a=a;this.host=host;a.getApplication().registerActivityLifecycleCallbacks(this);try{a.getContentResolver().registerContentObserver(URI,true,observer);}catch(Exception unavailable){}read();}
+        void read(){if(closed||busy)return;busy=true;work.execute(()->{String title="";try{Bundle b=a.getContentResolver().call(URI,"calendar",null,null);JSONArray events=new JSONArray(b==null?"[]":b.getString("events","[]"));JSONObject first=null;long now=System.currentTimeMillis();for(int i=0;i<events.length();i++){JSONObject e=events.optJSONObject(i);if(e!=null&&e.optLong("at")>=now-(e.optBoolean("allDay")?86400000:0)&&(first==null||e.optLong("at")<first.optLong("at")))first=e;}if(first!=null)title=(first.optString("source"))+" · "+first.optString("title")+" · "+java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT).format(new java.util.Date(first.optLong("at")))+(b.getBoolean("failed",false)?" · saved":"");}catch(Exception absent){}String text=title;main.post(()->{busy=false;if(closed)return;if(card!=null)host.removeView(card);card=null;if(text.isEmpty())return;card=new TextView(a);card.setText(text);card.setTextSize(14);card.setTextColor(-1);card.setTypeface(SettingsTypography.regular(a));card.setSingleLine(true);card.setEllipsize(android.text.TextUtils.TruncateAt.END);card.setPadding(12,6,12,6);card.setBackgroundResource(R.drawable.settings_choice_bg);card.setFocusable(true);card.setClickable(true);card.setOnClickListener(v->open(a,HUB));host.addView(card);});});}
+        void close(){if(closed)return;closed=true;work.shutdownNow();main.removeCallbacksAndMessages(null);try{a.getContentResolver().unregisterContentObserver(observer);}catch(Exception ignored){}if(card!=null)host.removeView(card);a.getApplication().unregisterActivityLifecycleCallbacks(this);}
+        public void onActivityPaused(Activity x){if(x==a)close();}public void onActivityDestroyed(Activity x){if(x==a)close();}public void onActivityCreated(Activity x,Bundle b){}public void onActivityStarted(Activity x){}public void onActivityResumed(Activity x){}public void onActivityStopped(Activity x){}public void onActivitySaveInstanceState(Activity x,Bundle b){}
+    }
+}

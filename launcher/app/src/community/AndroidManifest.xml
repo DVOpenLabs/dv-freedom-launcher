@@ -3,7 +3,8 @@
     <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
     <!-- Preserve the existing same-signer pilots' previously granted local weather bridge. -->
     <uses-permission android:name="com.dvopenlabs.cytv.weatherpreview.READ_WEATHER" />
-    <queries><package android:name="io.github.sumyabazar1.weather" /><package android:name="com.dvopenlabs.cytv.weatherpreview" /></queries>
+    <uses-permission android:name="com.dvopenlabs.freedom.companions.READ" />
+    <queries><package android:name="com.dvopenlabs.freedom.companions" /><package android:name="com.dvopenlabs.freedom.remote" /><package android:name="io.github.sumyabazar1.weather" /><package android:name="com.dvopenlabs.cytv.weatherpreview" /></queries>
     <application android:label="@string/freedom_app_name" android:theme="@style/Theme.Freedom" tools:replace="android:label,android:theme">
         <meta-data android:name="com.dvopenlabs.weather.CLIENT" android:value="true" />
         <provider android:name="com.gathin.tvhome.MediaInboxProvider" android:authorities="${applicationId}.inbox" android:exported="true" android:permission="android.permission.WRITE_SECURE_SETTINGS" android:grantUriPermissions="false" />

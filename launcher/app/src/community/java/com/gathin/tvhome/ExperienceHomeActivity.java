@@ -54,7 +54,7 @@ public final class ExperienceHomeActivity extends Activity {
         chrome=new FrameLayout(this);chrome.setClipChildren(false);root.addView(chrome,new FrameLayout.LayoutParams(-1,-1));
         topShade=new View(this);topShade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);topShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xb3081020,0x00081020}));put(topShade,0,0,960,175);
         bottomShade=new View(this);bottomShade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);bottomShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00081020,0xb3081020}));put(bottomShade,0,350,960,190);
-        info=new LinearLayout(this);info.setId(R.id.leftBlock);info.setOrientation(LinearLayout.VERTICAL);clock=text("",ExperiencePolicy.CLEAN.equals(look)?44:34);clock.setId(R.id.clock);date=text("",13);info.addView(clock);info.addView(date);put(info,40,27,390,98);
+        info=new LinearLayout(this);info.setId(R.id.leftBlock);info.setOrientation(LinearLayout.VERTICAL);clock=text("",ExperiencePolicy.CLEAN.equals(look)?44:34);clock.setId(R.id.clock);date=text("",13);info.addView(clock);info.addView(date);put(info,40,27,390,123);
         controls=new LinearLayout(this);controls.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);put(controls,450,30,470,42);
         button("Inputs",R.id.btnInputs,this::inputs);button("Apps",0,this::allApps);settings=button("Launcher settings",R.id.btnSettings,()->{if(canEdit())startActivity(new Intent(this,LauncherSettingsActivity.class).putExtra("experience_context",true));});button("Profiles",0,()->{if(canEdit())ProfilePicker.show(this,false);});
         ProductFeatures.categoryHeader(this,info,config);
@@ -112,14 +112,14 @@ public final class ExperienceHomeActivity extends Activity {
     void sample(Bitmap bitmap){
         if(bitmap==null||bitmap.isRecycled()||bitmap.getConfig()==Bitmap.Config.HARDWARE)return;
         int[] head=new int[32],labels=new int[32];float cropScale=Math.max(960f/bitmap.getWidth(),540f/bitmap.getHeight());float cropX=(bitmap.getWidth()-960/cropScale)/2,cropY=(bitmap.getHeight()-540/cropScale)/2;
-        for(int i=0;i<32;i++){int x=Math.max(0,Math.min(bitmap.getWidth()-1,(int)(cropX+(i+.5f)*960/32/cropScale)));head[i]=bitmap.getPixel(x,Math.min(bitmap.getHeight()-1,(int)(cropY+55/cropScale)));labels[i]=bitmap.getPixel(x,Math.min(bitmap.getHeight()-1,(int)(cropY+(geometry==null?480:geometry.labelTop)/cropScale)));}
+        for(int i=0;i<32;i++){int x=Math.max(0,Math.min(bitmap.getWidth()-1,(int)(cropX+(i%8+.5f)*960/8/cropScale)));head[i]=bitmap.getPixel(x,Math.min(bitmap.getHeight()-1,(int)(cropY+(30+i/8*23)/cropScale)));labels[i]=bitmap.getPixel(x,Math.min(bitmap.getHeight()-1,(int)(cropY+((geometry==null?480:geometry.labelTop)+i/8*4)/cropScale)));}
         applyInk(head,labels);
     }
     private void applyInk(int[] head,int[] labels){
         android.content.SharedPreferences p=ProfileStore.preferences(this);int choice=p.getBoolean(HomePolish.HEADER,false)?p.getInt(HomePolish.INK,0):0;
-        ink=ExperiencePolicy.ink(choice,head);labelInk=ExperiencePolicy.ink(choice,labels);if(!ExperiencePolicy.CLEAN.equals(look)){labelInk=choice==2?0xff182334:0xfff5f7fa;if(dock!=null)dock.setBackground(round(choice==2?0xe6eef3fa:0xe6192637,20));}headerInk(info,ink);hero.setTextColor(labelInk);
-        if(labelShade!=null)labelShade.setBackground(ExperiencePolicy.CLEAN.equals(look)?new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00000000,labelInk==0xfff5f7fa?0xb3081020:0xcceef3fa,0x00000000}):null);
-        boolean light=ink==0xfff5f7fa;topShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{light?0xa6081020:0x99f5f7fa,0x00000000}));
+        ink=ExperiencePolicy.ink(choice,head);labelInk=ExperiencePolicy.ink(choice,labels);if(!ExperiencePolicy.CLEAN.equals(look)){labelInk=choice==2?0xff182334:0xfff5f7fa;if(dock!=null){GradientDrawable material=round(choice==2?0xe6eef3fa:ExperiencePolicy.CINEMA.equals(look)?0xf0101822:0xde243b50,ExperiencePolicy.CINEMA.equals(look)?12:20);if(ExperiencePolicy.GLASS.equals(look))material.setStroke(px(1),choice==2?0x66708ba0:0x667aa6c2);dock.setBackground(material);}}headerInk(info,ink);hero.setTextColor(labelInk);
+        if(labelShade!=null)labelShade.setBackground(ExperiencePolicy.CLEAN.equals(look)?new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00000000,(labelInk==0xfff5f7fa?0x00081020:0x00eef3fa)|(SurfaceContrast.alpha(labelInk,labels)<<24),0x00000000}):null);
+        boolean light=ink==0xfff5f7fa;int surface=light?0x00081020:0x00eef3fa;int alpha=SurfaceContrast.alpha(ink,head);topShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{surface|(alpha<<24),surface|(alpha<<24),surface}));
         boolean lightLabels=labelInk==0xfff5f7fa;bottomShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00000000,lightLabels?0xb3081020:0x99f5f7fa}));
         for(int i=0;i<list.getChildCount();i++){RecyclerView.ViewHolder h=list.getChildViewHolder(list.getChildAt(i));if(h instanceof Tile){((Tile)h).name.setTextColor(labelInk);((Tile)h).name.setShadowLayer(labelInk==0xfff5f7fa?px(1):0,0,px(1),0xb3000000);}}
     }
