@@ -64,6 +64,8 @@ def serve(session=None,port=0):
             if self.path=='/api/extras':
                 from .extras import catalogue
                 self.send(catalogue());return
+            if self.path=='/api/addons':
+                self.send(session.addons.catalogue());return
             if self.path=='/platforms.js':
                 from .capabilities import catalogue
                 self.send(('window.DVPlatforms='+json.dumps(catalogue())+';').encode(),'text/javascript; charset=utf-8');return
@@ -118,6 +120,9 @@ def serve(session=None,port=0):
                         action=actions.get(self.path.removeprefix('/api/companion-'))
                         if not action:raise SetupError('This companion action is unavailable.')
                         reply=action(value)
+                    elif self.path=='/api/addon-review':reply=session.addons.review(value)
+                    elif self.path=='/api/addon-install':reply=session.addons.install(value)
+                    elif self.path=='/api/addon-open':reply=session.addons.launch(value)
                     elif self.path=='/api/native-info':
                         if value!={}:raise SetupError('Unexpected tool check options.')
                         reply=session.native.info()

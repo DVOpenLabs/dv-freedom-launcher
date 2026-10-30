@@ -32,6 +32,8 @@ def self_check():
     assert b'<svg' in qrcode.make('http://127.0.0.1:1234',image_factory=SvgPathImage).to_string()
     from setup_app.release import Catalog
     Catalog().verify()
+    from setup_app.addons import AddonCatalog,PACKAGES
+    for id in PACKAGES:AddonCatalog().verify(id)
     with TemporaryDirectory() as folder:
         key=Path(folder)/'test-key';keygen(str(key))
         signer=PythonRSASigner(key.with_suffix('.pub').read_text(),key.read_text())

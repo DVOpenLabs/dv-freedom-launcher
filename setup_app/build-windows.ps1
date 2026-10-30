@@ -23,6 +23,7 @@ try {
       --add-data "${projectRoot}/setup_app/trust.json:setup_app" `
       --add-data "${projectRoot}/setup_app/release_bundle/catalog.json:setup_app/release_bundle" `
       --add-data "${projectRoot}/setup_app/release_bundle/launcher.apk:setup_app/release_bundle" `
+      --add-data "${projectRoot}/setup_app/release_bundle/addons:setup_app/release_bundle/addons" `
       --add-data "${projectRoot}/launcher/app/src/main/res/font/outfit.ttf:launcher/app/src/main/res/font" `
       --add-data "${projectRoot}/launcher/FONT-LICENSE-OFL.txt:launcher" `
       --add-data "${projectRoot}/LICENSE:." `
@@ -32,6 +33,7 @@ try {
       --add-data "${projectRoot}/product/licenses/Paho-NOTICE.txt:licenses" `
       --add-data "${projectRoot}/product/licenses/python-qrcode-LICENSE.txt:licenses" `
       --add-data "${projectRoot}/product/licenses/colorama-LICENSE.txt:licenses" `
+      --add-data "${projectRoot}/product/licenses:licenses/addons" `
       --add-data "${projectRoot}/LICENSE:licenses" setup_app/main.py
     if ($LASTEXITCODE -ne 0) { throw 'The setup build failed.' }
 } finally { Pop-Location }

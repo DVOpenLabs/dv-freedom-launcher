@@ -10,11 +10,11 @@
   }
   async function show(kind) {
     const current = ++generation;
-    title.textContent = kind === 'support' ? 'Check your setup.' : 'A few useful extras.';
+    title.textContent = kind === 'support' ? 'Check your setup.' : 'Add-on Center.';
     body.replaceChildren(element('p', 'Loading…'));
     if (!dialog.open) dialog.showModal();
     try {
-      const response = await fetch('/api/' + kind, {headers: {'X-Setup-Token': document.querySelector('meta[name="setup-token"]').content}});
+      const response = await fetch('/api/' + (kind === 'extras' ? 'addons' : kind), {headers: {'X-Setup-Token': document.querySelector('meta[name="setup-token"]').content}});
       if (!response.ok) throw new Error('Could not load this view. Reopen Setup and try again.');
       const data = await response.json();
       if (generation !== current || !dialog.open) return;
@@ -36,39 +36,56 @@
         body.append(button);
       } else {
         body.append(element('p', data.note));
-        const filterLabel = element('label', 'Show extras for '), filter = document.createElement('select');
-        filter.setAttribute('aria-label', 'Filter extras by platform');
-        for (const [value, text] of [['android', 'Android TV / Google TV'], ['lg', 'Native LG'], ['tizen', 'Native Samsung']]) {
-          const option = element('option', text); option.value = value; filter.append(option);
+        const list = element('div', '', 'addon-list'); body.append(list);
+        const status = element('p', '', 'addon-status'); status.setAttribute('role', 'status'); body.append(status);
+        async function action(path, value) {
+          const r = await fetch('/api/addon-' + path, {method: 'POST', headers: {'Content-Type':'application/json', 'X-Setup-Token':document.querySelector('meta[name="setup-token"]').content}, body:JSON.stringify(value)});
+          const result = await r.json(); if (!r.ok) throw new Error(result.error || 'This action could not finish.'); return result;
         }
-        filterLabel.append(filter); body.append(filterLabel);
-        const list = element('div', '', 'extras-list'); body.append(list);
-        function render() {
-          list.replaceChildren();
-          const items = data.items.filter(item => item.platforms.includes(filter.value));
-          if (!items.length) list.append(element('p', 'Native platform companions are still under review. Android add-ons cannot be installed here.'));
-          for (const item of items) {
-            const row = element('section', '', 'essential-row');
-            const link = element('a', item.name + ' ↗'); link.href = item.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
-            const heading = document.createElement('h3'); heading.append(link);
-            row.append(heading, element('p', item.summary), element('small', item.access)); list.append(row);
-          }
+        for (const item of data.items) {
+          const row = element('section', '', 'essential-row addon-row'), info = element('div');
+          info.append(element('h3', item.name), element('p', item.summary));
+          const release = item.release;
+          info.append(element('small', release.available ? release.versionName + ' · ' + Math.ceil(release.bytes/1024) + ' KB · signed offline app' : release.message));
+          const review = element('button', 'Review installation', 'secondary'); review.disabled = !data.connected || !release.available;
+          review.onclick = async () => {
+            for (const button of list.querySelectorAll('button')) button.disabled = true;
+            status.textContent = 'Reading this TV and saving a recovery record. No installation yet…';
+            try {
+              const reviewed = await action('review', {id:item.id});
+              const detail = element('section', '', 'addon-review');
+              detail.append(element('h3', reviewed.operation + ' ' + item.name), element('p', 'Home and wallpaper stay saved. This does not enable optional access, services or connections.'), element('p', reviewed.note));
+              const access = element('ul'); for (const permission of reviewed.release.permissions) access.append(element('li', ({'android.permission.INTERNET':'Network access for optional connections', 'android.permission.FOREGROUND_SERVICE':'Keep an explicitly enabled feature running', 'android.permission.FOREGROUND_SERVICE_SPECIAL_USE':'Run the user-started remote or schedule service', 'android.permission.RECEIVE_BOOT_COMPLETED':'Resume a schedule you enabled after restart', 'android.permission.SCHEDULE_EXACT_ALARM':'Exact timers — separate Android approval', 'android.permission.SYSTEM_ALERT_WINDOW':'Warning overlays — separate Android approval'}[permission] || permission)));
+              detail.append(element('h4', 'Declared Android permissions'), access, element('small', 'Private recovery record: ' + reviewed.recoveryPath));
+              const install = element('button', reviewed.operation + ' reviewed app', 'primary'), cancel = element('button', 'Cancel', 'secondary');
+              cancel.onclick = () => show('extras');
+              install.onclick = async () => {
+                install.disabled = true; cancel.disabled = true; status.textContent = 'Installing and checking the signed APK. Keep Setup open…';
+                try { const result = await action('install', {id:reviewed.id, reviewToken:reviewed.reviewToken}); status.textContent = result.message; detail.replaceChildren(element('h3', item.name + ' is ready'), element('p', result.message));
+                  const open = element('button', 'Open on TV to configure', 'secondary'); open.onclick = async () => {try {const result = await action('open', {id:item.id});status.textContent=result.message;}catch(e){status.textContent=e.message;}};
+                  const back = element('button', 'Back to Add-on Center', 'secondary');back.onclick=()=>show('extras');detail.append(open,back);open.focus();
+                } catch(error) {status.textContent=error.message;cancel.disabled=false;}
+              };
+              detail.append(install, cancel); list.replaceChildren(detail); status.textContent='Review the access above. Install is a separate action.'; install.focus();
+            } catch(error) {status.textContent=error.message;for(const button of list.querySelectorAll('button'))button.disabled=false;}
+          };
+          row.append(info, review); list.append(row);
         }
-        filter.onchange = render; render();
+        if (!data.connected) status.textContent='Connect to an Android TV or Google TV Streamer to review an installation. No apps can be installed in preview mode.';
       }
     } catch (error) { if (generation === current) body.replaceChildren(element('p', error.message, 'error')); }
   }
   const mobile = element('button', 'Help & extras', 'help-link essentials-mobile');
   mobile.onclick = () => {
     title.textContent = 'What would help?'; body.replaceChildren();
-    for (const [kind, label] of [['support', 'Setup health & support'], ['extras', 'Explore optional extras']]) {
+    for (const [kind, label] of [['support', 'Setup health & support'], ['extras', 'Add-on Center']]) {
       const button = element('button', label, 'help-link'); button.onclick = () => show(kind); body.append(button);
     }
     if (!dialog.open) dialog.showModal();
   };
   document.querySelector('.topbar').append(mobile);
   const host = document.querySelector('.sidebar-bottom');
-  for (const [kind, label] of [['support', 'Setup health & support'], ['extras', 'Explore optional extras']]) {
+  for (const [kind, label] of [['support', 'Setup health & support'], ['extras', 'Add-on Center']]) {
     const button = element('button', label, 'help-link'); button.onclick = () => show(kind); host.append(button);
   }
 })();

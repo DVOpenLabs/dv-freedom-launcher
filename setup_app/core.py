@@ -120,6 +120,8 @@ class Session:
         self.dispatch_lock=threading.Lock()
         from .installer import Installer
         self.installer=Installer(self)
+        from .addons import AddonCenter
+        self.addons=AddonCenter(self)
         from .platform_tools import PairingTools
         self.tools=PairingTools(self.root)
         from .native import NativeInstaller
