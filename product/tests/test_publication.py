@@ -22,7 +22,7 @@ class PublicationTests(unittest.TestCase):
         import posixpath
         for name in self.tracked():
             if not name.endswith('.md'):continue
-            text=(ROOT/name).read_text(encoding='utf-8')
+            text=subprocess.check_output(['git','show',':'+name],cwd=ROOT).decode('utf-8')
             for link in re.findall(r'\]\(([^)]+)\)',text):
                 if '://' in link:
                     if 'github.com/DVOpenLabs/dv-freedom-launcher/blob/' in link:
@@ -30,6 +30,11 @@ class PublicationTests(unittest.TestCase):
                     continue
                 target=posixpath.normpath(posixpath.join(posixpath.dirname(name),link.split('#')[0]))
                 self.assertNotIn(target,INTERNAL,name+' -> '+link)
+    def test_product_docs_have_an_explicit_public_purpose(self):
+        guides={'AI-SETUP.md','ANDROID-COMMUNITY.md','ANDROID-COMPANION.md','ANDROID-PROFILES.md',
+                'README.md','RELEASE-IDENTITY.md','STREAMER-HOME.md','THIRD-PARTY.md'}
+        extras={p for p in self.tracked() if p.startswith('product/') and p.count('/')==1 and p.endswith('.md') and Path(p).name not in guides}
+        self.assertEqual(set(),extras,'New public product documents require an explicit publication review')
     def test_no_generated_or_key_artifacts_in_publication(self):
         forbidden=[]
         for name in self.tracked():

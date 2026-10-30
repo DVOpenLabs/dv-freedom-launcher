@@ -59,6 +59,9 @@ platforms/roku/*.zip
 /product/UPSTREAM-3.1.0-REVIEW.md
 /setup_app/VALIDATION.md
 /setup_app/DESIGN.md
+/product/*-REVIEW*.md
+/product/ROADMAP*.md
+/product/VALIDATION*.md
 /product/ANDROID-APPEARANCE.md
 /product/ANDROID-USABILITY.md
 /product/ANDROID-POLISH.md
