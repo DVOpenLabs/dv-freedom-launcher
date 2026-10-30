@@ -3,6 +3,7 @@ import org.junit.Test;
 import java.util.*;
 import static org.junit.Assert.*;
 public class ContentShelfPolicyTest {
+    @Test public void progressUsesOnlyValidContinueWatchingMetadata(){assertEquals(25,ContentShelfPolicy.progress(0,250,1000));assertEquals(-1,ContentShelfPolicy.progress(1,250,1000));assertEquals(-1,ContentShelfPolicy.progress(0,-1,1000));assertEquals(-1,ContentShelfPolicy.progress(0,1001,1000));assertEquals(-1,ContentShelfPolicy.progress(0,250,0));assertEquals(50,ContentShelfPolicy.progress(0,Long.MAX_VALUE/2,Long.MAX_VALUE));}
     final long now=2000000000000L;final Set<String> apps=Collections.singleton("com.example.player");
     boolean card(String p,String t,int type,long age,long pos,long duration){return ContentShelfPolicy.accepted(p,t,type,now-age,pos,duration,now,apps);}
     @Test public void visibleRecentMetadataOnly(){assertTrue(card("com.example.player","Episode",0,1000,100,1000));assertFalse(card("com.other.app","Episode",0,1000,100,1000));assertFalse(card("com.example.player"," ",0,1000,100,1000));assertFalse(card("com.example.player","Bad\nTitle",0,1000,100,1000));assertFalse(card("com.example.player","Old",0,ContentShelfPolicy.MAX_AGE+1,100,1000));assertFalse(card("com.example.player","Future",0,-300001,100,1000));}

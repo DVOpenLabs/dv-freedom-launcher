@@ -12,7 +12,9 @@ final class SetupProposal {
         if(!Integer.valueOf(1).equals(root.get("schema")))throw new IllegalArgumentException("Unsupported setup format");
         Object title=root.get("name");name=SetupValues.name(title==null?"My Home":string(title));
         if(!(root.get("settings") instanceof Map))throw new IllegalArgumentException("Setup settings required");
-        Map<?,?> s=(Map<?,?>)root.get("settings");fields(s,"experience","position","columns","text","textSize","names","strongFocus","idleSeconds");Map<String,Object> next=new LinkedHashMap<>();
+        Map<?,?> s=(Map<?,?>)root.get("settings");fields(s,"experience","position","columns","text","textSize","names","strongFocus","idleSeconds","iconSize","spacing");Map<String,Object> next=new LinkedHashMap<>();
+        if(s.containsKey("iconSize")){String size=string(s.get("iconSize"));if(!IconSizePolicy.valid(size))throw new IllegalArgumentException("Invalid icon size");next.put(IconSizePolicy.KEY,size);}
+        if(s.containsKey("spacing"))next.put(TileSpacing.CHOICE,number(s.get("spacing"),0,32));
         if(s.containsKey("experience")){String v=string(s.get("experience"));if(!ExperiencePolicy.valid(v))throw new IllegalArgumentException("Unknown Home experience");next.put(ExperiencePolicy.KEY,v);}
         if(s.containsKey("position")){String v=string(s.get("position"));if(!AppPlacement.valid(v))throw new IllegalArgumentException("Unknown app position");next.put(AppPlacement.KEY,v);}
         if(s.containsKey("columns"))next.put("columns",number(s.get("columns"),2,8));

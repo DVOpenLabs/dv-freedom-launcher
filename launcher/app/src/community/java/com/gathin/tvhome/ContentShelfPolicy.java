@@ -10,4 +10,8 @@ final class ContentShelfPolicy {
     }
     static boolean scheme(String scheme){return scheme!=null&&scheme.matches("[A-Za-z][A-Za-z0-9+.-]{0,39}")&&!Arrays.asList("file","content","data","javascript","market","tel","sms","mailto","geo","settings","intent","android-app").contains(scheme.toLowerCase(Locale.ROOT));}
     static String kind(int type){return new String[]{"Continue watching","Up next","New episode","Watchlist"}[type];}
+    static int progress(int type,long position,long duration){
+        if(type!=0||position<0||duration<=0||position>duration)return -1;
+        return (int)Math.round(100.0*position/duration);
+    }
 }
