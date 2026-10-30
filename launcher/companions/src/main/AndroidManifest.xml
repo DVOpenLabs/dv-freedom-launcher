@@ -2,7 +2,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <permission android:name="com.dvopenlabs.freedom.companions.READ" android:protectionLevel="signature" />
+    <queries><intent><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LEANBACK_LAUNCHER" /></intent></queries>
     <application android:label="DV Freedom Companions" android:theme="@style/AppTheme" android:allowBackup="false" android:fullBackupContent="false" android:dataExtractionRules="@xml/data_extraction" android:usesCleartextTraffic="true" android:icon="@android:drawable/ic_menu_my_calendar" android:banner="@drawable/banner">
+        <activity android:name=".SetupCopilotActivity" android:exported="true" />
+        <activity android:name=".DiscoverActivity" android:exported="true" />
+        <activity android:name=".PhotoSourcesActivity" android:exported="true" />
         <activity android:name=".HubActivity" android:exported="true" />
         <provider android:name=".HubProvider" android:authorities="com.dvopenlabs.freedom.companions.snapshot" android:exported="true" android:permission="com.dvopenlabs.freedom.companions.READ" android:grantUriPermissions="false" />
     </application>

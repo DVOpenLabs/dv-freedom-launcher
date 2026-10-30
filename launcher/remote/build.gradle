@@ -1,7 +1,7 @@
 plugins { id 'com.android.application' }
 android {
     namespace 'com.dvopenlabs.freedom.remote'; compileSdk 34
-    defaultConfig { applicationId 'com.dvopenlabs.freedom.remote'; minSdk 26; targetSdk 34; versionCode 3; versionName '0.1-alpha3' }
+    defaultConfig { applicationId 'com.dvopenlabs.freedom.remote'; minSdk 26; targetSdk 34; versionCode 4; versionName '0.1-alpha4' }
     buildTypes { release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'); signingConfig signingConfigs.debug } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     testOptions { unitTests.returnDefaultValues = true }

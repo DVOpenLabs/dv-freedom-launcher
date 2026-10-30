@@ -15,7 +15,7 @@ public final class HubProvider extends ContentProvider {
         }else if("poster".equals(method)&&arg!=null&&arg.length()<=4096)b.putString("key",HubStore.poster(getContext(),arg));else throw new IllegalArgumentException();return b;
     }
     @Override public ParcelFileDescriptor openFile(Uri uri,String mode)throws FileNotFoundException{
-        String key=uri.getLastPathSegment();if(!"r".equals(mode)||!HubStore.prefs(getContext()).getBoolean("posters",false)||key==null||!key.matches("[0-9a-f]{64}"))throw new FileNotFoundException();return ParcelFileDescriptor.open(new File(HubStore.folder(getContext()),key+".jpg"),ParcelFileDescriptor.MODE_READ_ONLY);
+        String key=uri.getLastPathSegment();if(uri.getPathSegments().size()==2&&"photo".equals(uri.getPathSegments().get(0))&&"r".equals(mode)&&key!=null&&key.matches("[a-f0-9]{64}"))return ParcelFileDescriptor.open(new File(getContext().getCacheDir(),"photo-sources/"+key+".jpg"),ParcelFileDescriptor.MODE_READ_ONLY);if(!"r".equals(mode)||!HubStore.prefs(getContext()).getBoolean("posters",false)||key==null||!key.matches("[0-9a-f]{64}"))throw new FileNotFoundException();return ParcelFileDescriptor.open(new File(HubStore.folder(getContext()),key+".jpg"),ParcelFileDescriptor.MODE_READ_ONLY);
     }
     public Cursor query(Uri u,String[] p,String s,String[] a,String o){return null;}public String getType(Uri u){return "image/jpeg";}public Uri insert(Uri u,ContentValues v){throw new UnsupportedOperationException();}public int delete(Uri u,String s,String[] a){throw new UnsupportedOperationException();}public int update(Uri u,ContentValues v,String s,String[] a){throw new UnsupportedOperationException();}
 }

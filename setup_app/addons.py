@@ -78,7 +78,7 @@ class AddonCenter:
           'sleep-timer':('Sleep timer','A remote-friendly timer. Exact alarms, overlay and standby accessibility are separate optional Android choices.'),
           'world-clock':('World clock','Local time zones and a clock screensaver. No network permission.'),
           'quiet-hours':('Quiet hours','An optional scheduled volume cap. Foreground service and boot receiver; starts only when configured.'),
-          'companions':('Home & calendar','Home Assistant favorites, family events, Game Day countdowns and optional network posters. Internet; all connections and sharing start off.'),
+          'companions':('DV Freedom Companions','Home/calendar, Discover/watchlist, personal photos and optional Gemini setup drafts. Internet; keys, connections, sharing and paid requests require separate choices.'),
           'phone-remote':('Phone remote & keyboard','TV-hosted local pairing server. Internet and foreground service; broad accessibility needs separate consent. Android 11/12 navigation is limited.')}
         return {'schema':1,'connected':self.session.mode=='device' and bool(self.session.connection),'note':'Optional apps, reviewed one at a time. Install keeps Home and launcher choices. Access and connections are configured separately on your TV. Native LG/Samsung cannot run Android companions.',
           'items':[{'id':id,'name':names[id][0],'summary':names[id][1],'release':self.catalog.summary(id)} for id in PACKAGES]}

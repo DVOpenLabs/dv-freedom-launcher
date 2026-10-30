@@ -3,6 +3,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <queries><provider android:authorities="com.dvopenlabs.freedomlauncher.phone-setup" /><provider android:authorities="com.dvopenlabs.cytv.usabilitytest.phone-setup" /><package android:name="com.dvopenlabs.freedomlauncher" /><package android:name="com.dvopenlabs.cytv.usabilitytest" /></queries>
     <application android:label="DV Freedom Phone Remote" android:theme="@android:style/Theme.Material.NoActionBar" android:allowBackup="false" android:fullBackupContent="false" android:dataExtractionRules="@xml/data_extraction" android:icon="@android:drawable/ic_media_play" android:banner="@drawable/banner">
         <activity android:name=".RemoteActivity" android:exported="true" />
         <service android:name=".RemoteService" android:exported="false" android:foregroundServiceType="specialUse"><property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User-started paired local TV remote while enabled" /></service>
