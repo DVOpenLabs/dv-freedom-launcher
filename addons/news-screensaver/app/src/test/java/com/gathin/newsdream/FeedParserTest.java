@@ -14,6 +14,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class FeedParserTest {
+    @Test(expected=IOException.class) public void rejectsInternalEntityExpansion()throws IOException{parse("<!DOCTYPE rss [<!ENTITY a 'hello'>]><rss><channel><item><title>&a;</title></item></channel></rss>");}
+    @Test(expected=IOException.class) public void rejectsExternalDocumentTypes()throws IOException{parse("<!DOCTYPE rss SYSTEM 'https://example.invalid/secret'><rss><channel/></rss>");}
+    @Test(expected=IOException.class) public void rejectsExcessiveNesting()throws IOException{parse("<rss>"+String.join("",Collections.nCopies(33,"<nested>")));}
 
     private static FeedParser.Feed parse(String xml) throws IOException {
         return FeedParser.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), "host.example");

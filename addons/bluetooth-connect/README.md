@@ -1,5 +1,11 @@
 # Bluetooth Connect
 
+DV Freedom Setup offers a reviewed optional package in Add-on Center. Nearby devices access is a
+separate choice. Nothing pairs, connects or disconnects automatically. Android 11 uses its older
+Bluetooth permission; Android 12+ requests Nearby devices. Audio-profile APIs are firmware-dependent:
+the app offers system Bluetooth settings when a request is unavailable. Local listeners/proxy access
+are released away from the panel without disconnecting a device.
+
 The TV's Bluetooth settings offer Connect and Unpair for a speaker, but no Disconnect. This add-on lists the paired
 speakers and headphones, each with its state, and OK on one connects it or, when it is connected, disconnects it.
 Nothing is unpaired. For the [Clean Your TV](../../README.md) launcher it declares a

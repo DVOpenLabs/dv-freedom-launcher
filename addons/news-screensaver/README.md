@@ -1,5 +1,10 @@
 # News screensaver
 
+**DV Freedom defaults:** available as an optional signed package in Setup → Add-on Center. No feed is
+selected initially; opening it shows feed settings until you add one. HTTPS redirects and embedded
+credentials are refused. Feeds are bounded and XML document types/external entities are rejected.
+Installing it never selects the Android screensaver or changes Home's wallpaper.
+
 A system screensaver (Android's "Daydream") for any Android TV or Google TV that shows the news from RSS and Atom
 feeds you choose: one headline at a time, large, with its source, how long ago it was published and a short
 summary, crossfading to the next after 15 seconds (or what you set). Beside it a QR code opens the article on your
@@ -22,7 +27,7 @@ them, and any other key goes back to Home, as in the screensaver.
 
 | Setting | Default | Where |
 |---|---|---|
-| Feeds: up to 10 RSS or Atom addresses, `https://` only | BBC News, World | `feeds.txt` and `setup.sh`, or the settings on the TV |
+| Feeds: up to 10 RSS or Atom addresses, `https://` only | None | `feeds.txt` and `setup.sh`, or the settings on the TV |
 | Seconds per headline: 5 to 600 | 15 | `SECONDS_PER_HEADLINE` / `-Seconds`, or the settings on the TV (8 to 120 in steps) |
 | When the screensaver starts: minutes without a key press | the TV's own | `IDLE_MINUTES` / `-IdleMinutes`, or the TV's own screensaver or energy settings |
 
@@ -52,7 +57,7 @@ instead of the feed's own title, which is sometimes just "Nyheder". The same for
 ```sh
 TV_HOST=192.168.1.50 addons/news-screensaver/setup.sh                              # feeds.txt, or pass another file
 TV_HOST=192.168.1.50 SECONDS_PER_HEADLINE=20 IDLE_MINUTES=10 START=1 addons/news-screensaver/setup.sh
-TV_HOST=192.168.1.50 addons/news-screensaver/setup.sh --default-feeds              # back to the built-in feed
+TV_HOST=192.168.1.50 addons/news-screensaver/setup.sh --default-feeds              # clears the feed selection in this build
 TV_HOST=192.168.1.50 addons/news-screensaver/setup.sh --off                        # previous screensaver back
 ```
 

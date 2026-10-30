@@ -29,8 +29,8 @@ final class Config {
     static final int MAX_NAME = 40;
     /** The choices SettingsActivity steps through. */
     static final int[] SECONDS_CHOICES = {8, 10, 15, 20, 30, 45, 60, 120};
-    static final List<String> DEFAULT_FEEDS =
-            Collections.singletonList("https://feeds.bbci.co.uk/news/world/rss.xml");
+    // DV Freedom never chooses a remote news provider for the user.
+    static final List<String> DEFAULT_FEEDS = Collections.emptyList();
 
     private Config() {}
 
@@ -49,7 +49,7 @@ final class Config {
         }
         try {
             URI uri = new URI(url);
-            return uri.getHost() != null && !uri.getHost().isEmpty();
+            return uri.getHost() != null && !uri.getHost().isEmpty() && uri.getRawUserInfo() == null;
         } catch (URISyntaxException e) {
             return false;
         }

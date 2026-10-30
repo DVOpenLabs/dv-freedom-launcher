@@ -19,6 +19,10 @@ PACKAGES={
  'quiet-hours':'io.github.maxhayim.quiethours',
  'companions':'com.dvopenlabs.freedom.companions',
  'phone-remote':'com.dvopenlabs.freedom.remote',
+ 'tv-inspector':'io.github.shaharukhs.tvinspector',
+ 'bluetooth-connect':'com.gathin.btconnect',
+ 'digital-rain':'io.github.dennisoleary.digitalrain',
+ 'news-screensaver':'com.gathin.newsdream',
 }
 
 class AddonCatalog:
@@ -79,7 +83,11 @@ class AddonCenter:
           'world-clock':('World clock','Local time zones and a clock screensaver. No network permission.'),
           'quiet-hours':('Quiet hours','An optional scheduled volume cap. Foreground service and boot receiver; starts only when configured.'),
           'companions':('DV Freedom Companions','Home/calendar, Discover/watchlist, personal photos and optional Gemini setup drafts. Internet; keys, connections, sharing and paid requests require separate choices.'),
-          'phone-remote':('Phone remote & keyboard','TV-hosted local pairing server. Internet and foreground service; broad accessibility needs separate consent. Android 11/12 navigation is limited.')}
+          'phone-remote':('Phone remote & keyboard','TV-hosted local pairing server. Internet and foreground service; broad accessibility needs separate consent. Android 11/12 navigation is limited.'),
+          'tv-inspector':('TV Inspector','Read remote keycodes, display modes and media capabilities. No permissions or network; diagnostic logs stay on the TV.'),
+          'bluetooth-connect':('Bluetooth Connect','List paired speakers/headphones. Nearby devices permission is separate. Connect/disconnect works only where the firmware allows it; nothing pairs or connects automatically.'),
+          'digital-rain':('Digital Rain','Optional local ambient scene and screensaver. No permissions or network. Installing never selects or changes the system screensaver.'),
+          'news-screensaver':('News & RSS ambient','Your own HTTPS RSS/Atom feeds and article QR codes. Internet; starts without feeds and fetches only while open. Installing never selects the system screensaver.')}
         return {'schema':1,'connected':self.session.mode=='device' and bool(self.session.connection),'note':'Optional apps, reviewed one at a time. Install keeps Home and launcher choices. Access and connections are configured separately on your TV. Native LG/Samsung cannot run Android companions.',
           'items':[{'id':id,'name':names[id][0],'summary':names[id][1],'release':self.catalog.summary(id)} for id in PACKAGES]}
     def _open(self):

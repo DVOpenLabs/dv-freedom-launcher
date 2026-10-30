@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class ConfigTest {
+    @Test public void noFeedIsChosenUntilUserConfiguresOne(){assertTrue(Config.feeds((String)null).isEmpty());assertTrue(!Config.validUrl("https://user:secret@example.com/rss"));}
 
     @Test public void providerWritesOnlyTheTwoFiles() {
         assertEquals("feeds.txt", Config.path(Collections.singletonList("feeds.txt")));

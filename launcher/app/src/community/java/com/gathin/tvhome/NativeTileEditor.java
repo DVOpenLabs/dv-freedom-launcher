@@ -114,8 +114,8 @@ final class NativeTileEditor {
             ImageView preview=new ImageView(a);preview.setScaleType(ImageView.ScaleType.FIT_CENTER);preview.setAdjustViewBounds(true);
             Drawable art=banner(a,pkg);if(art==null)art=info.activityInfo.loadBanner(a.getPackageManager());if(art==null)art=info.loadIcon(a.getPackageManager());preview.setImageDrawable(art);
             LinearLayout content=new LinearLayout(a);content.setPadding(24,12,24,12);content.addView(preview,new LinearLayout.LayoutParams(-1,Math.round(120*a.getResources().getDisplayMetrics().density)));
-            new AlertDialog.Builder(a).setTitle(title).setView(content).setItems(new String[]{"Rename","Use app’s original name","Artwork"},(d,which)->{
-                try{if(which==0)rename(a,pkg,title);else if(which==1)resetName(a,pkg,new Guard(a));else art(a,pkg);}
+            new AlertDialog.Builder(a).setTitle(title).setView(content).setItems(new String[]{"Rename","Use app’s original name","Artwork","App link"},(d,which)->{
+                try{if(which==0)rename(a,pkg,title);else if(which==1)resetName(a,pkg,new Guard(a));else if(which==2)art(a,pkg);else AppShortcuts.edit(a,pkg);}
                 catch(Exception failure){error(a,failure);}
             }).setNegativeButton(android.R.string.cancel,null).show();
         }catch(Exception failure){error(a,failure);}catch(OutOfMemoryError memory){message(a,"Not enough memory to preview this artwork");}

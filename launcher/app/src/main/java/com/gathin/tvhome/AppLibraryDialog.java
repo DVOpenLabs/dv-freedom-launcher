@@ -226,6 +226,7 @@ final class AppLibraryDialog {
         int load = loads.start(reveal);
         PackageManager pm = activity.getPackageManager();
         String self = activity.getPackageName();
+        Set<String> excluded = ProductFeatures.libraryExcluded(activity);
         LOADER.execute(() -> {
             Map<String, ResolveInfo> unique = new LinkedHashMap<>();
             Set<String> tv = new HashSet<>();
@@ -235,7 +236,7 @@ final class AppLibraryDialog {
                     if (info.activityInfo == null || !info.activityInfo.exported) continue;
                     String pkg = info.activityInfo.packageName;
                     if (Intent.CATEGORY_LEANBACK_LAUNCHER.equals(category)) tv.add(pkg);
-                    if (!pkg.equals(self) && !unique.containsKey(pkg)) unique.put(pkg, info);
+                    if (!pkg.equals(self) && (excluded==null || !excluded.contains(pkg)) && !unique.containsKey(pkg)) unique.put(pkg, info);
                 }
             }
             Map<String, String> names = new HashMap<>();
@@ -355,11 +356,12 @@ final class AppLibraryDialog {
         resize(catalogWidth, dp(280));
         panel.removeAllViews();
         LinearLayout header = new LinearLayout(activity);
+        header.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         header.setGravity(Gravity.CENTER_VERTICAL);
         header.setPadding(dp(12), dp(4), dp(8), dp(4));
         TextView title = text(activity.getString(R.string.app_library), 22, Color.WHITE);
         header.addView(title, new LinearLayout.LayoutParams(0, dp(36), 1));
-        title.setGravity(Gravity.CENTER_VERTICAL);
+        title.setGravity(Gravity.CENTER_VERTICAL | (rtl ? Gravity.RIGHT : Gravity.LEFT));
         title.setSingleLine(true);
         title.setEllipsize(TextUtils.TruncateAt.END);
         TextView count = text(activity.getResources().getQuantityString(
@@ -381,6 +383,13 @@ final class AppLibraryDialog {
         });
         LinearLayout.LayoutParams searchParams=new LinearLayout.LayoutParams(-2,dp(44));searchParams.setMarginStart(dp(16));
         header.addView(searchButton,searchParams);
+        if (rtl) {
+            header.removeView(searchButton);
+            header.addView(searchButton,0);
+            header.removeView(count);
+            header.addView(count,1);
+            count.setPadding(0,0,dp(12),0);
+        }
         panel.addView(header, new LinearLayout.LayoutParams(-1, dp(48)));
         instructions = text(query.isEmpty()?hint(false):activity.getString(R.string.app_search_results,query), 13, 0xBBFFFFFF);
         instructions.setSingleLine(true);
@@ -543,6 +552,7 @@ final class AppLibraryDialog {
         // TV apps keep the leanback launch intent, so an app already running resumes instead of restarting.
         if (tvPackages.contains(app.activityInfo.packageName)) intent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        intent=ProductFeatures.libraryIntent(activity,app.activityInfo.packageName,intent);
         try { activity.startActivity(intent); RecentApps.record(activity,app.activityInfo.packageName); }
         catch (ActivityNotFoundException | SecurityException e) {
             Toast.makeText(activity, activity.getString(R.string.cant_open, label(app)), Toast.LENGTH_SHORT).show();
@@ -626,6 +636,10 @@ final class AppLibraryDialog {
     private TextView text(String value, int size, int color) {
         TextView view = new TextView(activity);
         view.setText(value);
+        if (rtl) {
+            view.setTextDirection(View.TEXT_DIRECTION_RTL);
+            view.setGravity(Gravity.RIGHT);
+        }
         view.setTextSize(size);
         view.setTextColor(color);
         view.setTypeface(UiFont.get(activity, R.string.font_medium));

@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothDevice;
  */
 final class Link {
     private Link() { }
+    static boolean needsConnectPermission(int sdk){return sdk>=31;}
 
     /** A speaker or headphones: anything the TV can send sound to. */
     static boolean isAudio(BluetoothClass c) {

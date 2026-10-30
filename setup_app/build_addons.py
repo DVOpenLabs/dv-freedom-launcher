@@ -35,5 +35,5 @@ def main():
         items.append(dict(id=id,package=pkg,file=out.name,versionCode=element['versionCode'],versionName=element['versionName'],minSdk=int(minimum[1]),bytes=out.stat().st_size,sha256=digest(out),certificate=apk_certificate(out),permissions=sorted(set(permissions))))
     body={'schema':1,'items':items};(bundle/'catalog.json').write_text(json.dumps({'addons':body,'signature':base64.b64encode(key.sign(canonical(body))).decode()},indent=2)+'\n',encoding='utf-8')
     for id in PACKAGES:AddonCatalog().verify(id)
-    print('Six optional companions built, signed and verified. No device grants or network connections were enabled.')
+    print(f'{len(PACKAGES)} optional companions built, signed and verified. No device grants or network connections were enabled.')
 if __name__=='__main__':main()

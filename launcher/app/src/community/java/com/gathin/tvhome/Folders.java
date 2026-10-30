@@ -39,7 +39,7 @@ final class Folders {
         EditText name=new EditText(a);name.setSingleLine(true);name.setText(f==null?"":f.name);name.setHint("Folder name");name.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(40)});
         AlertDialog prompt=new AlertDialog.Builder(a).setTitle(f==null?"Create folder":"Rename folder").setView(name).setNegativeButton("Cancel",null).setPositiveButton("Choose apps",null).create();
         prompt.setOnShowListener(v->prompt.getButton(-1).setOnClickListener(x->{String label;try{label=SetupValues.name(name.getText().toString());}catch(RuntimeException bad){name.setError(bad.getMessage());return;}
-            List<HomeCategories.App> apps=HomeCategories.catalog(a,Config.load(a));Set<String> taken=new HashSet<>();for(FolderPolicy.Folder other:read(a))if(f==null||!other.id.equals(f.id))taken.addAll(other.apps);apps.removeIf(app->taken.contains(app.pkg));
+            List<HomeCategories.App> apps=HomeCategories.catalog(a,Config.load(a));Set<String> taken=new HashSet<>();for(FolderPolicy.Folder other:read(a))if(f==null||!other.id.equals(f.id))taken.addAll(other.apps);apps.removeIf(app->taken.contains(app.pkg)||!LibraryVisibility.allowed(a,app.pkg)&&(f==null||!f.apps.contains(app.pkg)));
             boolean[] selected=new boolean[apps.size()];String[] labels=new String[apps.size()];for(int i=0;i<apps.size();i++){labels[i]=apps.get(i).label;selected[i]=f!=null&&f.apps.contains(apps.get(i).pkg);}
             FreedomUi.checklist(a,label,labels,selected,picker->{try{
                 if(!profile.equals(ProfileStore.id())||revision!=ProfileStore.preferences(a).getLong(Config.SETTINGS_REVISION_KEY,0))throw new IllegalStateException("Home changed. Open this editor again.");

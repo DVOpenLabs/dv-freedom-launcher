@@ -1,5 +1,10 @@
 # Add-ons
 
+DV Freedom Setup's **Add-on Center** offers ten signed optional packages: Weather, Sleep Timer,
+World Clock, Quiet Hours, DV Freedom Companions, Phone Remote, TV Inspector, Bluetooth Connect,
+Digital Rain and News/RSS. They are reviewed and installed individually; permissions, connections and
+system screensaver selection are separate choices. Other entries below remain source-only options.
+
 Small, optional Android TV apps that plug into the launcher as a **module card**, kept in this repo
 so they are easy to find, build and review. The launcher in [`launcher/`](../launcher/) never
 depends on them: it is built, tested and size-checked without this folder, so an add-on can't make

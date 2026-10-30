@@ -160,7 +160,7 @@ final class HomeCategories {
         }
         void launch(Activity activity,Config config){
             Intent intent=new Intent(Intent.ACTION_MAIN).setComponent(component).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);if(leanback)intent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
-            String action=config.launchActions.get(pkg);if(action!=null){Intent candidate=new Intent(action).setPackage(pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);if(activity.getPackageManager().resolveActivity(candidate,0)!=null)intent=candidate;}
+            intent=AppShortcuts.intent(activity,pkg,config.launchActions.get(pkg),intent);
             try{activity.startActivity(intent);RecentApps.record(activity,pkg);if(config.cinematicHome)LastOpened.record(activity,pkg);}catch(Exception e){Toast.makeText(activity,"Cannot open "+label,Toast.LENGTH_LONG).show();}
         }
     }

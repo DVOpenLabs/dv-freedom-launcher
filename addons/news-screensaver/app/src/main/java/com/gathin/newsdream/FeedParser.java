@@ -65,7 +65,12 @@ final class FeedParser {
                 }
             }
             SAXParser parser = factory.newSAXParser();
-            parser.parse(new InputSource(in), handler);
+            org.xml.sax.XMLReader reader=parser.getXMLReader();
+            reader.setContentHandler(handler);
+            reader.setErrorHandler(handler);
+            reader.setEntityResolver((publicId,systemId)->{throw new SAXException("External entities are not supported");});
+            reader.setProperty("http://xml.org/sax/properties/lexical-handler",handler);
+            reader.parse(new InputSource(in));
         } catch (Enough enough) {
             // Read as much as we show.
         } catch (SAXException | ParserConfigurationException e) {
@@ -91,7 +96,14 @@ final class FeedParser {
         String link;
     }
 
-    private static final class Handler extends DefaultHandler {
+    private static final class Handler extends DefaultHandler implements org.xml.sax.ext.LexicalHandler {
+        public void startDTD(String name,String publicId,String systemId)throws SAXException{throw new SAXException("Feed document types are not supported");}
+        public void endDTD(){}
+        public void startEntity(String name){}
+        public void endEntity(String name){}
+        public void startCDATA(){}
+        public void endCDATA(){}
+        public void comment(char[] ch,int start,int length){}
         final List<Item> items = new ArrayList<>();
         final List<String> path = new ArrayList<>();
         final StringBuilder text = new StringBuilder();
@@ -99,7 +111,8 @@ final class FeedParser {
         Item item;
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) {
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if(path.size()>=32)throw new SAXException("Feed nesting is too deep");
             String name = name(localName, qName);
             // Atom's type="xhtml" content is markup inside the element: keep its text together.
             if (insideText()) text.append(' ');

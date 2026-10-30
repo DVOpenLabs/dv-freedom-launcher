@@ -57,7 +57,8 @@ speakers) and the logcat lines.
 
 Imported selectively from CleanYourTV v3.1.0 (MIT), commit
 `1684678064aa7bbb4881e6069e4cfbd4b5fc9df7`. Original author attribution is retained.
-This optional add-on is not installed or enabled by DV Freedom Setup. From this directory use
+This optional add-on is available through DV Freedom Setup → Add-on Center; installation is explicit.
+It requests no permissions. From this directory use
 `../../launcher/gradlew --no-daemon -p . testReleaseUnitTest lintRelease assembleRelease`
 (or `../../launcher/gradlew.bat` on Windows). The shared wrapper avoids another bundled binary.
 Hardware behavior and any permission prompt require separate user testing.

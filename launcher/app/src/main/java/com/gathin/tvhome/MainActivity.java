@@ -276,6 +276,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean stopped;
     /** Between onStart and onStop: Home is (at least partly) on screen. */
     private boolean started;
+    /** A late key UP after launching an app must not rearm Home's idle clock. */
+    private boolean resumed;
     /** Rebuild the tiles on the way back to Home only when apps changed meanwhile (TileRefresh). */
     private final TileRefresh tileRefresh = new TileRefresh();
     /** PackageManager's change counter at the last rebuild, to catch a package broadcast that never arrived. */
@@ -1019,6 +1021,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if(productUtilityPending){productUtilityPending=false;productRouted=true;return;}
         productRouted=ProductFeatures.routeHome(this);
         if(productRouted)return;
+        resumed = true;
         getWindow().getDecorView().setAlpha(1);
         ProductFeatures.resumed(this);
         HomePreview.attach(this, null);
@@ -1249,12 +1252,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private void restartIdleClock() {
         root.removeCallbacks(showIdleClock);
-        if (idleClockMs > 0) root.postDelayed(showIdleClock, idleClockMs);
+        if (resumed && idleClockMs > 0) root.postDelayed(showIdleClock, idleClockMs);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        resumed = false;
+        ProductFeatures.paused(this);
         HomePreview.detach(this);
         if(companionControls!=null)companionControls.stop();
         if(homePolish!=null)homePolish.stop();
@@ -2449,6 +2454,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             ((LinearLayout.LayoutParams) clockRow.getLayoutParams()).gravity = Gravity.RIGHT;
         }
         clockColumn.addView(column, clockColumn.indexOfChild(clockRow) + 1, lp);
+        // The date must remeasure when the next day's name is longer.
+        ViewGroup texts = (ViewGroup) column;
+        for (int i = 0; i < texts.getChildCount(); i++) {
+            View text = texts.getChildAt(i);
+            text.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            text.setLayoutParams(text.getLayoutParams());
+        }
     }
 
     /** The first top-bar button after Inputs that is shown, in bar order (top_bar_apps, the network pill, ...); Settings is always there. */
@@ -2477,7 +2489,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (launch == null) launch = pm.getLaunchIntentForPackage(pkg);
             if (launch == null) continue;   // not installed, or disabled
             // Use the same configured launch_actions as tiles; retain the normal entry if unavailable.
-            launch = LaunchActions.select(pkg, launchActions, launch, (targetPackage, action) -> {
+            Intent product = ProductFeatures.launchIntent(this,pkg,launchActions.get(pkg),launch);
+            if(product!=null)launch=product;
+            else launch = LaunchActions.select(pkg, launchActions, launch, (targetPackage, action) -> {
                 Intent custom = new Intent(action).setPackage(targetPackage);
                 return pm.resolveActivity(custom, 0) != null ? custom : null;
             });
@@ -3008,6 +3022,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      *  low-memory TV the app can push the launcher out of memory, and an apply() still in flight was lost then, so
      *  every Home press opened the app again. */
     private boolean openLiveTvAfterBoot() {
+        if (ProductFeatures.upstreamExtras()) return false; // Product startup coordinates all Home renderers.
         String app = openOnStartChoice ? getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE)
                 .getString(OpenOnStart.KEY, "") : "";
         if (!bootToLiveTv && app.isEmpty()) return false;

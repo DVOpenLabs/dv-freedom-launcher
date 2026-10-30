@@ -154,11 +154,11 @@ final class Scene {
         handler.postDelayed(shift, SHIFT_EVERY_MS);
         feeds = Config.feeds(dir);
         secondsMs = Config.seconds(dir) * 1000L;
-        executor = Executors.newSingleThreadExecutor();
         if (feeds.isEmpty()) {
             status(R.string.no_feeds_title, R.string.no_feeds_body);
             return;
         }
+        executor = Executors.newSingleThreadExecutor();
         headlines = new ArrayList<>(News.load(dir));
         index = -1;
         if (headlines.isEmpty()) status(R.string.loading_title, 0);

@@ -2,6 +2,12 @@ package com.gathin.tvhome;
 
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
+    static void paused(android.app.Activity a){}
+    static boolean homeAuto(String pkg,java.util.Set<String> added,java.util.List<String> favorites,java.util.Map<String,Integer> ranks,java.util.Map<String,Cards.Card> cards,android.content.pm.ResolveInfo info){return true;}
+    static android.content.Intent libraryIntent(android.content.Context c,String pkg,android.content.Intent fallback){return fallback;}
+    static boolean ignoreKey(android.content.Context c,android.view.KeyEvent e){return false;}
+    static java.util.Set<String> libraryExcluded(android.content.Context c){return null;}
+    static android.content.Intent launchIntent(android.content.Context c,String pkg,String action,android.content.Intent fallback){return null;}
     static AutoCloseable dreamWeather(android.content.Context c,android.view.View root){return null;}
     static boolean inputs(MainActivity a,boolean all){return false;}
     static void folderEntries(android.content.Context c,java.util.List<AppAdapter.Entry> e,boolean reorder){}

@@ -14,6 +14,12 @@ import org.json.*;
 final class ProductFeatures {
     static boolean videoFraming(Context c,java.io.File file,android.view.TextureView view,int w,int h){return StudioFraming.video(c,file,view,w,h);}
     static boolean upstreamExtras(){return true;}
+    static void paused(Activity a){StartupLaunch.stop(a);}
+    static boolean homeAuto(String pkg,Set<String> added,List<String> favorites,Map<String,Integer> ranks,Map<String,Cards.Card> cards,android.content.pm.ResolveInfo info){if(!OptionalToolPolicy.PACKAGES.contains(pkg))return true;return added.contains(pkg)||favorites.contains(pkg)||ranks.containsKey(pkg)||ranks.containsKey(new ComponentName(pkg,info.activityInfo.name).flattenToShortString())||cards.containsKey(pkg);}
+    static Intent libraryIntent(Context c,String pkg,Intent fallback){return AppShortcuts.intent(c,pkg,Config.load(c).launchActions.get(pkg),fallback);}
+    static Set<String> libraryExcluded(Context c){return LibraryVisibility.read(c);}
+    static Intent launchIntent(Context c,String pkg,String action,Intent fallback){return AppShortcuts.intent(c,pkg,action,fallback);}
+    static boolean ignoreKey(Context c,android.view.KeyEvent e){return RemoteIgnore.handle(c,e);}
     private static Context app;
     private static boolean initialized;
     static void init(Context c){app=c.getApplicationContext();InstallerTransfer.recover(c);if(!initialized){initialized=true;HomeHistory.initialize(c);}}
@@ -42,6 +48,7 @@ final class ProductFeatures {
         if(a instanceof ExperienceHomeActivity||(a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&(HomeCategories.enabled(a)||ExperienceChoice.enabled(a))))WallpaperPlaylist.attach(a);
         a.getWindow().getDecorView().postDelayed(()->{
             if(a.isDestroyed()||a.isFinishing()||!a.hasWindowFocus())return;
+            StartupLaunch.start(a);
             InstallerTransfer.maybePrompt(a);
             HomeAppearance.apply(a);
             if(a instanceof MainActivity&&!ExperienceChoice.enabled(a)&&PlacementSession.preview()==null&&StyleSession.preview()==null&&HomeCategories.enabled(a)){CategoryHomeActivity.openIfEnabled((MainActivity)a,Config.load(a));return;}
@@ -51,8 +58,10 @@ final class ProductFeatures {
     static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(PhoneSetupProvider.ENABLED);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
     static AutoCloseable dreamWeather(Context c,View root){View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return null;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return weather;}
     static boolean inputs(MainActivity a,boolean all){Config cfg=Config.load(a);if(cfg.coocaaSources||!cfg.sourcePanelService.isEmpty()||!cfg.inputSources.isEmpty()||!cfg.inputAction.isEmpty()||!cfg.inputUriScheme.isEmpty())return false;InputPicker.show(a,all);return true;}
-    static void setupKeys(Set<String> keys){keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
+    static void setupKeys(Set<String> keys){keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals(LibraryVisibility.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid app exclusions");LibraryVisibility.parse((String)value);return true;}
+        if(key.equals(ShortcutPolicy.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid app links");ShortcutPolicy.parse((String)value);return true;}
         if(key.equals(FolderPolicy.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid folders");FolderPolicy.parse((String)value);return true;}
         if(key.equals(FreedomControls.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid controls");FreedomControls.validate((String)value);return true;}
         if(key.equals(ShelfOptions.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid shelf sources");new ShelfOptions.Spec((String)value);return true;}

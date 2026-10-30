@@ -52,7 +52,7 @@ final class News {
                 feeds.add(items);
             } catch (IOException | RuntimeException e) {
                 // One feed down, the others still show. `adb logcat -s TvNews` says why.
-                Log.w("TvNews", url + ": " + e);
+                Log.w("TvNews", "A configured news feed could not be read");
             }
         }
         return mix(feeds, now);
@@ -65,10 +65,12 @@ final class News {
     }
 
     static FeedParser.Feed fetch(String url) throws IOException {
+        if (!Config.validUrl(url)) throw new IOException("HTTPS feed required");
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setInstanceFollowRedirects(false);
         connection.setConnectTimeout(TIMEOUT_MS);
         connection.setReadTimeout(TIMEOUT_MS);
-        connection.setRequestProperty("User-Agent", "cleanyourtv-news/1.0 (Android TV screensaver)");
+        connection.setRequestProperty("User-Agent", "DVFreedom-News/1.1 (Android TV)");
         connection.setRequestProperty("Accept", "application/rss+xml, application/atom+xml, application/xml, text/xml");
         try {
             int code = connection.getResponseCode();

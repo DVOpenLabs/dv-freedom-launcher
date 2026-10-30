@@ -26,8 +26,8 @@ android {
         applicationId selectedId
         minSdk 26
         targetSdk 34
-        versionCode communityFeatures ? 19 : 13
-        versionName communityFeatures ? '3.1-freedom-alpha18' : '3.0-community-alpha5'
+        versionCode communityFeatures ? 20 : 13
+        versionName communityFeatures ? '3.2-freedom-alpha19' : '3.0-community-alpha5'
     }
 
     signingConfigs {

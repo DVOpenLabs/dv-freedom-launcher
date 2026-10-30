@@ -15,6 +15,9 @@ public class NewsActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        if(Config.feeds(getFilesDir()).isEmpty()){
+            startActivity(new android.content.Intent(this,SettingsActivity.class));finish();return;
+        }
         // Built again on every start, so feeds changed in the settings show at once.
         scene = new Scene(this);
         setContentView(scene.root);

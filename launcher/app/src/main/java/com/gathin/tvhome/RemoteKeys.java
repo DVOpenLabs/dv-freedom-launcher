@@ -121,6 +121,7 @@ final class RemoteKeys {
         if (keyFilter) return;
         AccessibilityServiceInfo info = service.getServiceInfo();
         if (info == null) return;
+        release(service);
         info.flags &= ~AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
         service.setServiceInfo(info);
     }
@@ -196,12 +197,22 @@ final class RemoteKeys {
         }
         String button = event.getDeviceId() + ":" + event.getKeyCode() + ":" + event.getScanCode();
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            presses.down(button, event.getEventTime(), event.getRepeatCount(), holdApp, target -> launch(ctx, target));
+            presses.down(button, event.getEventTime(), event.getRepeatCount(), holdApp, ctx,
+                    target -> launch(ctx, target));
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
             presses.up(button, event.getEventTime(), event.getDownTime(), event.isCanceled(), app, holdApp,
                     target -> launch(ctx, target));
         }
         return true;
+    }
+
+    /**
+     * For a helper that stops receiving keys (unbound, destroyed, or no longer filtering): no UP will reach it to
+     * cancel a hold it saw go down, so the hold goes to the other helper if that one saw the DOWN too, and is
+     * cancelled otherwise. Safe to call more than once.
+     */
+    static void release(Context helper) {
+        if (presses != null) presses.release(helper);
     }
 
     /**
@@ -220,6 +231,8 @@ final class RemoteKeys {
             long downAt = -1, upAt = -1;
             boolean fired;
             Runnable hold;
+            /** The helpers that saw this DOWN while its hold is pending, each with the way it opens a target. */
+            final Map<Object, Consumer<String>> owners = new HashMap<>();
         }
 
         private final Map<String, Press> buttons = new HashMap<>();
@@ -229,21 +242,40 @@ final class RemoteKeys {
             this.timer = timer;
         }
 
-        void down(String button, long eventTime, int repeatCount, String holdApp, Consumer<String> open) {
+        void down(String button, long eventTime, int repeatCount, String holdApp, Object owner,
+                Consumer<String> open) {
             if (repeatCount != 0) return;
             Press press = buttons.computeIfAbsent(button, b -> new Press());
-            if (press.downAt == eventTime) return;
+            if (press.downAt == eventTime) {
+                // The other helper's copy: it can answer the hold too, should the first one leave.
+                if (press.hold != null) press.owners.putIfAbsent(owner, open);
+                return;
+            }
             if (press.hold != null) timer.cancel(press.hold);   // its UP never came
             press.downAt = eventTime;
             press.fired = false;
             press.hold = null;
+            press.owners.clear();
             if (holdApp == null) return;
+            press.owners.put(owner, open);
             press.hold = () -> {
+                Consumer<String> first = press.owners.values().iterator().next();
                 press.hold = null;
+                press.owners.clear();
                 press.fired = true;
-                open.accept(holdApp);
+                first.accept(holdApp);
             };
             timer.post(press.hold, HOLD_MS);
+        }
+
+        /** Drops this helper from every pending hold, cancelling a hold it was the last to own. */
+        void release(Object owner) {
+            for (Press press : buttons.values()) {
+                if (press.hold == null || press.owners.remove(owner) == null || !press.owners.isEmpty()) continue;
+                timer.cancel(press.hold);
+                press.hold = null;
+                press.fired = true;   // the press is over: an UP that still comes later opens nothing
+            }
         }
 
         void up(String button, long eventTime, long downTime, boolean canceled, String app, String holdApp,
@@ -255,6 +287,7 @@ final class RemoteKeys {
             if (press.hold != null) {
                 timer.cancel(press.hold);
                 press.hold = null;
+                press.owners.clear();
             }
             if (canceled || (sawDown && press.fired)) return;
             // Without its DOWN (the service started while the button was held), the event's own down time will do.
@@ -288,11 +321,14 @@ final class RemoteKeys {
         }
     }
 
-    /** Whether a target is an action word rather than an app or an input. A package name always has a dot. */
+    /**
+     * Whether a target is an action word rather than an app or an input. A package name always has a dot.
+     * "ignore" does nothing on purpose: the button is swallowed, for a remote shortcut that is pressed by accident.
+     */
     static boolean isAction(String target) {
         switch (target) {
             case "back": case "home": case "recents": case "mute": case "sleep":
-            case "screensaver": case "settings": case "wifi":
+            case "screensaver": case "settings": case "wifi": case "ignore":
                 return true;
             default:
                 return false;
@@ -329,7 +365,7 @@ final class RemoteKeys {
                 start(ctx, SystemSettings.intent(ctx, Settings.ACTION_WIFI_SETTINGS));
                 break;
             default:
-                break;   // "sleep" below Android 9: consumed, nothing to do
+                break;   // "ignore", or "sleep" below Android 9: consumed, nothing to do
         }
         return true;
     }

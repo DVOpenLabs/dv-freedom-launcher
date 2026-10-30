@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
@@ -35,6 +36,7 @@ public class MainActivity extends Activity {
     private TextView status;
     private BluetoothAdapter adapter;
     private BluetoothA2dp a2dp;
+    private boolean resumed,registered,connecting;
     /** Addresses asked to change a moment ago, shown as "Working…" until the state change arrives. */
     private final Set<String> pending = new HashSet<>();
     private final BroadcastReceiver changed = new BroadcastReceiver() {
@@ -69,13 +71,16 @@ public class MainActivity extends Activity {
         scroll.addView(list);
         page.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(page);
-        adapter = getSystemService(BluetoothManager.class).getAdapter();
+        BluetoothManager manager=getSystemService(BluetoothManager.class);
+        adapter = manager==null?null:manager.getAdapter();
+        TextView settings=new TextView(this);settings.setText("Open Bluetooth settings");settings.setTextColor(0xFFFFFFFF);settings.setTextSize(18);settings.setPadding(24,16,24,16);settings.setMinHeight(Math.round(48*dp));settings.setBackgroundResource(R.drawable.row_background);settings.setFocusable(true);settings.setClickable(true);settings.setOnClickListener(v->{try{startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));}catch(RuntimeException missing){status.setText("Open Bluetooth & accessories from your TV Settings.");}});page.addView(settings);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+        resumed=true;
+        if (Link.needsConnectPermission(Build.VERSION.SDK_INT) && checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
             return;
         }
@@ -84,37 +89,50 @@ public class MainActivity extends Activity {
 
     @Override
     public void onRequestPermissionsResult(int code, String[] permissions, int[] results) {
-        if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) start();
-        else status.setText("Needs the Nearby devices permission: run install.sh once, or allow it in the app's settings.");
+        super.onRequestPermissionsResult(code,permissions,results);
+        if(code!=1)return;
+        if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {if(resumed)start();}
+        else status.setText("Nearby devices access is off. You can allow it in this app's Android settings, or use Bluetooth settings below.");
     }
 
     private void start() {
+        if(!resumed)return;
         if (adapter == null || !adapter.isEnabled()) {
             status.setText("Bluetooth is off. Turn it on in the TV's settings.");
             return;
         }
-        registerReceiver(changed, new IntentFilter(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED));
+        if(!registered){IntentFilter filter=new IntentFilter(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED);
+            if(Build.VERSION.SDK_INT>=33)registerReceiver(changed,filter,Context.RECEIVER_EXPORTED);else registerReceiver(changed,filter);registered=true;}
         if (a2dp != null) {
             refresh();
             return;
         }
-        adapter.getProfileProxy(this, new BluetoothProfile.ServiceListener() {
+        if(connecting)return;
+        connecting=true;
+        if(!adapter.getProfileProxy(this, new BluetoothProfile.ServiceListener() {
             @Override public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                connecting=false;
+                if(!resumed||isDestroyed()){adapter.closeProfileProxy(BluetoothProfile.A2DP,proxy);return;}
                 a2dp = (BluetoothA2dp) proxy;
                 refresh();
             }
             @Override public void onServiceDisconnected(int profile) {
+                connecting=false;
                 a2dp = null;
             }
-        }, BluetoothProfile.A2DP);
+        }, BluetoothProfile.A2DP)){connecting=false;status.setText("Audio device controls are unavailable. Use Bluetooth settings below.");}
     }
 
     @Override
     protected void onPause() {
+        resumed=false;
         try {
             unregisterReceiver(changed);
         } catch (IllegalArgumentException notRegistered) {
         }
+        registered=false;
+        if(a2dp!=null){adapter.closeProfileProxy(BluetoothProfile.A2DP,a2dp);a2dp=null;}
+        pending.clear();
         main.removeCallbacksAndMessages(null);
         super.onPause();
     }
@@ -128,7 +146,7 @@ public class MainActivity extends Activity {
     /** Only runs after onResume has checked the Nearby devices permission. */
     @SuppressLint("MissingPermission")
     private void refresh() {
-        if (a2dp == null) return;
+        if (!resumed || a2dp == null) return;
         int focus = 0;
         for (int i = 0; i < list.getChildCount(); i++) if (list.getChildAt(i).isFocused()) focus = i;
         list.removeAllViews();

@@ -24,7 +24,7 @@ class CatalogTests(unittest.TestCase):
         mock=patch('setup_app.addons.apk_certificate',return_value='a'*64);mock.start();self.addCleanup(mock.stop)
     def save(self):
         body={'schema':1,'items':self.items};(self.folder/'catalog.json').write_text(json.dumps({'addons':body,'signature':base64.b64encode(self.key.sign(canonical(body))).decode()}))
-    def test_six_reviewed_artifacts_verify(self):
+    def test_all_reviewed_artifacts_verify(self):
         for id in PACKAGES:self.assertEqual(self.catalog.verify(id)['package'],PACKAGES[id])
     def test_tampered_apk_is_rejected(self):
         (self.folder/'weather.apk').write_bytes(b'changed')
