@@ -22,6 +22,6 @@ final class SettingsSearch {
         if(title.equals("setup help"))return "ai assistant onboarding wizard beginner";
         return "";
     }
-    static boolean shared(String title){return title.equals("Inputs shortcut")||title.equals("Input visibility")||title.equals("TV settings")||title.equals("Default Home")||title.equals("Bluetooth & accessories")||title.equals("Remote helper")||title.equals("TV button")||title.equals("Open on start")||title.equals("Manage offline themes")||title.startsWith("About");}
+    static boolean shared(String title){return title.equals("Inputs shortcut")||title.equals("Input visibility")||title.equals("TV settings")||title.equals("Default Home")||title.equals("Bluetooth & accessories")||title.equals("Remote helper")||title.equals("TV button")||title.equals("Open on start")||title.equals("Open after wake")||title.equals("Volume presets")||title.equals("Manage offline themes")||title.startsWith("About");}
     private SettingsSearch(){}
 }

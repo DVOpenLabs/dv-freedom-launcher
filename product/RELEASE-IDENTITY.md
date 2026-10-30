@@ -4,8 +4,8 @@ This guide documents package identity, signing and installation/recovery contrac
 
 ## New installations
 
-The full community product defaults to `com.dvopenlabs.freedomlauncher`, version code 20,
-`3.2-freedom-alpha19`, minimum Android 8/API 26. The inherited reference variant keeps its identity,
+The full community product defaults to `com.dvopenlabs.freedomlauncher`, version code 21,
+`3.2-freedom-alpha20`, minimum Android 8/API 26. The inherited reference variant keeps its identity,
 version and size gate. An existing installation requires the same application ID and compatible signer to preserve its data.
 
 `-PfreedomRelease=true` requires the standalone community identity and externally supplied PKCS12

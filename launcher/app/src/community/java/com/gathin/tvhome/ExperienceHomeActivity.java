@@ -158,4 +158,5 @@ public final class ExperienceHomeActivity extends Activity {
     @Override public void onBackPressed(){if(preview!=null){ExperienceChoice.cancel();finish();}else focusApp(0);}
     @Override protected void onSaveInstanceState(Bundle saved){saved.putString("selected",selectedPackage);super.onSaveInstanceState(saved);}
     static Map<String,Object> status(){Map<String,Object> out=new LinkedHashMap<>();ExperienceHomeActivity a=current.get();out.put("active",a!=null&&a.resumed);if(a!=null){out.put("look",a.look);out.put("preview",a.preview!=null);out.put("selected",a.selectedPackage);out.put("profile",ProfileStore.id());out.put("quiet",a.quiet);out.put("ink",a.ink);out.put("labelInk",a.labelInk);out.put("apps",a.favorites.stream().map(x->x.pkg).toArray(String[]::new));}return out;}
+    @Override public void onUserInteraction(){super.onUserInteraction();ProductFeatures.interaction(this);}
 }

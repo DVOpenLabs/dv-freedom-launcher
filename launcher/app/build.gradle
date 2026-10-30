@@ -26,8 +26,8 @@ android {
         applicationId selectedId
         minSdk 26
         targetSdk 34
-        versionCode communityFeatures ? 20 : 13
-        versionName communityFeatures ? '3.2-freedom-alpha19' : '3.0-community-alpha5'
+        versionCode communityFeatures ? 21 : 13
+        versionName communityFeatures ? '3.2-freedom-alpha20' : '3.0-community-alpha5'
     }
 
     signingConfigs {
@@ -72,6 +72,7 @@ dependencies {
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
     // Test only (never in the APK): plain JVM tests for the module card validators, src/test.
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20231013'
 }
 // Compact resource names while keeping runtime banners and named view IDs.
 // Runs before APK packaging/signing with the SDK tool pinned by this project, not a downloaded plugin.

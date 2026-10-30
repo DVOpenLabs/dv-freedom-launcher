@@ -1,0 +1,1 @@
+<resources><string name="family_guard_name">DV Freedom family app guard</string><string name="family_guard_description">Optional package-only app guard for a child-friendly profile. Does not read screen contents or filter remote buttons. Requires a separate opt-in in Family Homes. Android settings and ADB can bypass it.</string></resources>

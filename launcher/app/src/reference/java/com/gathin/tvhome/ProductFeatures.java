@@ -2,6 +2,10 @@ package com.gathin.tvhome;
 
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
+    static void interaction(android.app.Activity a){}
+    static boolean profileSelectionAllowed(android.content.Context c,String id){return true;}
+    static void profileChanged(android.content.Context c){}
+    static void filterApps(android.content.Context c,java.util.List<String> dock,java.util.List<String> hidden,java.util.List<String> top){}
     static void paused(android.app.Activity a){}
     static boolean homeAuto(String pkg,java.util.Set<String> added,java.util.List<String> favorites,java.util.Map<String,Integer> ranks,java.util.Map<String,Cards.Card> cards,android.content.pm.ResolveInfo info){return true;}
     static android.content.Intent libraryIntent(android.content.Context c,String pkg,android.content.Intent fallback){return fallback;}

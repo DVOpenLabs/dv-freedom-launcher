@@ -299,3 +299,16 @@ phone/desktop import remains available. Real removable-USB and server acceptance
 **Discover** opens the optional companion. No catalogue request is made before its own connection is
 configured. **Setup copilot** opens local appearance drafting; the optional cloud choice is documented in
 [AI setup](AI-SETUP.md). Network services are not part of the core launcher permission set.
+
+## Alpha 20: optional everyday controls
+
+**Remotes & inputs → Colour-key volume presets** assigns 0–100% volume levels to the four colour keys
+only. Every key starts Off. This uses the existing key helper if you have already enabled it; installing
+an update grants nothing. Fixed-volume/ARC outputs can refuse adjustments. Ordinary held-volume keys
+keep their existing behaviour. Presets apply across profiles and should be chosen at a safe level.
+
+**Open after wake** is separate from once-per-boot startup. Choose an app and 0–3 second delay, then
+Apply. It runs only if Home is visible within two minutes of a screen wake while the launcher process
+is alive. Another app keeps the screen; remote interaction, leaving Home or screen-off cancels a pending
+launch. This best-effort rule adds no overlay, boot receiver or permanent service. It starts Off.
+Family app restrictions still apply. New tools live under Optional TV tools until explicitly added to Home.

@@ -18,7 +18,7 @@ final class StartupLaunch {
         if(!cfg.bootToLiveTv&&!cfg.openOnStartChoice&&!global.contains(WAIT))return;
         boolean configuredLive=cfg.bootToLiveTv&&!global.contains(WAIT);
         String target=configuredLive?cfg.liveTvPackage:pkg;int boot=OpenOnStart.boot(a);SharedPreferences handled=a.getSharedPreferences(OpenOnStart.BOOT_PREFS,0);
-        if(!OpenOnStart.due(boot,handled.getInt(OpenOnStart.BOOT_KEY,-1),target,a.getPackageName()))return;
+        if(!FamilyMode.allowed(a,target)||!OpenOnStart.due(boot,handled.getInt(OpenOnStart.BOOT_KEY,-1),target,a.getPackageName()))return;
         Intent intent=OpenOnStart.intent(a.getPackageManager(),target);
         if(intent==null&&configuredLive&&!cfg.liveTvAction.isEmpty()){Intent action=new Intent(cfg.liveTvAction).setPackage(target);if(a.getPackageManager().resolveActivity(action,0)!=null)intent=action;}
         // A missing app consumes no boot marker; selecting another one still takes effect next boot.
@@ -33,7 +33,7 @@ final class StartupLaunch {
         Session(Activity a,Intent i,int seconds){this.a=a;intent=i;this.seconds=seconds;cm=a.getSystemService(ConnectivityManager.class);}
         boolean online(){try{Network n=cm==null?null:cm.getActiveNetwork();NetworkCapabilities caps=n==null?null:cm.getNetworkCapabilities(n);return caps!=null&&caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);}catch(RuntimeException missing){return false;}}
         void begin(){wait.begin(SystemClock.elapsedRealtime(),seconds);if(seconds>0){try{if(cm!=null){cm.registerDefaultNetworkCallback(callback);registered=true;}}catch(RuntimeException missing){}main.postDelayed(check,seconds*1000L);}checkNow();}
-        void checkNow(){if(closed)return;if(a.isFinishing()||a.isDestroyed()){stop(a);return;}if(wait.take(true,online(),SystemClock.elapsedRealtime())){Intent target=intent;stop(a);try{a.startActivity(target);}catch(RuntimeException missing){Toast.makeText(a,"Startup app is unavailable. Home is still ready.",Toast.LENGTH_LONG).show();}}}
+        void checkNow(){if(closed)return;String pkg=intent.getComponent()==null?intent.getPackage():intent.getComponent().getPackageName();if(a.isFinishing()||a.isDestroyed()||!a.hasWindowFocus()||!FamilyMode.allowed(a,pkg)){stop(a);return;}if(wait.take(true,online(),SystemClock.elapsedRealtime())){Intent target=intent;stop(a);try{a.startActivity(target);}catch(RuntimeException missing){Toast.makeText(a,"Startup app is unavailable. Home is still ready.",Toast.LENGTH_LONG).show();}}}
         void close(){closed=true;wait.cancel();main.removeCallbacksAndMessages(null);if(registered)try{cm.unregisterNetworkCallback(callback);}catch(RuntimeException ignored){}registered=false;}
     }
     static void show(Activity a){

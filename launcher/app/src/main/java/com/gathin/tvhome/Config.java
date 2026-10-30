@@ -646,6 +646,7 @@ final class Config {
         }
         // A top-bar app is moved there, not copied: it leaves the grid.
         for (String pkg : topBarApps) if (!hidden.contains(pkg)) hidden.add(pkg);
+        ProductFeatures.filterApps(ctx,dock,hidden,topBarApps);
         // A theme push or reset invalidates choices made on the TV. On first use, remember the
         // current theme without clearing choices from an older launcher version.
         showInputsPill = ctx.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE).getBoolean(InputShortcut.KEY,showInputsPill);

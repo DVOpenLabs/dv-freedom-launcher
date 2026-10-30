@@ -48,11 +48,12 @@ final class ProfileStore {
     }
     static boolean select(Context ctx, String id) {
         if (!enabled) return false;
+        if (!ProductFeatures.profileSelectionAllowed(ctx,id)) return false;
         boolean found = id.isEmpty();
         for (LocalProfiles.Profile row : read(ctx)) if (row.id.equals(id)) found = true;
         if (!found) return false;
         boolean saved = saveSelection(global(ctx), id);
-        if (saved) {StyleSession.PREVIEW.cancel();PlacementSession.PREVIEW.cancel();}
+        if (saved) {StyleSession.PREVIEW.cancel();PlacementSession.PREVIEW.cancel();ProductFeatures.profileChanged(ctx);}
         return saved;
     }
     static boolean saveSelection(SharedPreferences p, String id) {

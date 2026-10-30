@@ -1246,6 +1246,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public void onUserInteraction() {
         super.onUserInteraction();
+        ProductFeatures.interaction(this);
         if(homePolish!=null)homePolish.interact();
         restartIdleClock();
     }

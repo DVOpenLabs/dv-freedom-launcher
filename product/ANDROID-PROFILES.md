@@ -37,7 +37,7 @@ per-profile offline pack selection and a silent-video toggle. Library selection 
 choices; an explicit external theme push retains the reference launcher's existing theme-reset behavior.
 See [appearance integration](ANDROID-COMMUNITY.md) for the separate pack and media limits.
 
-These are preference profiles, not parental controls. They do not lock apps, switch streaming accounts,
+Ordinary profiles are preference profiles. They do not switch streaming accounts,
 create Android users or isolate app data. Profiles can be created, renamed and deleted on the TV; offline library import remains available. English fallback labels are present; translations are not complete.
 
 ## Validation and limits
@@ -50,3 +50,20 @@ No emulator, TV file-picker import, real disk-failure injection, physical remote
 or restart result is inferred from the locally created profile tests. Device installation requires an explicit owner-authorized pilot.
 Availability of Android's document picker on each TV also needs checking; TVs without a provider need
 an alternative offline import path before this feature can be offered there.
+
+## Family Homes
+
+In **Launcher settings → Profiles → Family Homes**, create a private parent PIN, select allowed apps
+and Apply to the current profile. Each child-friendly profile is activated on that TV explicitly;
+importing a profile alone never turns restrictions on. Saved app order remains intact behind the
+filtered view. Existing boot-start and new wake-start rules also respect the active allowed-app list. Parent approval lasts five minutes; use **Lock parent editing now** when finished.
+Approved child Homes can switch between one another; leaving for an unrestricted Home needs approval.
+The PIN is excluded from backups, exports and setup drafts. Keep it yourself; it cannot be recovered.
+
+The optional app guard is a second choice: opt into its behaviour, then decide whether to enable its
+separate Android Accessibility service. It receives window package names only, not screen contents,
+text or remote keys. It returns to DV Home for an unlisted app while a child Home is active. Settings,
+TV input providers, vendor windows, Android data changes and ADB remain escape routes. This is a
+convenience feature, not tamper-proof parental control or a streaming content-rating filter.
+Removing the parent PIN disables restrictions/guard behaviour on all profiles; any system service
+grant must be disabled separately in Android settings. Updates never enable the guard automatically.

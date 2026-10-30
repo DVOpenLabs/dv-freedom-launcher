@@ -164,4 +164,5 @@ public final class CategoryHomeActivity extends Activity {
     @Override public boolean onKeyDown(int code,KeyEvent event){if(code==KeyEvent.KEYCODE_TV_INPUT){if(event.getRepeatCount()==0)inputs();return true;}return super.onKeyDown(code,event);}
     @Override public void onBackPressed(){if(preview)finish();else if(!rows.isEmpty())rows.get(0).focus(0);}
     @Override protected void onSaveInstanceState(Bundle state){state.putString("row",lastRow);state.putStringArray("row_ids",selections.keySet().toArray(new String[0]));state.putStringArray("row_apps",selections.values().toArray(new String[0]));super.onSaveInstanceState(state);}
+    @Override public void onUserInteraction(){super.onUserInteraction();ProductFeatures.interaction(this);}
 }
