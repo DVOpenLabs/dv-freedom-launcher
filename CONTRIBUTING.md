@@ -61,3 +61,8 @@ safety/recovery, theme validators and their regression fixtures remain. Run
 catalogue and former root-README assertions have been removed. POSIX-only script tests require a
 POSIX host; this runner is not the entire inherited test collection.
 The reference build/size CI job remains in source, with Actions disabled; catalogue CI jobs were removed.
+
+Before publishing, run `python tools/review_changes.py` on the staged diff. It reports deterministic
+permission, privileged-command, workflow and privacy facts; inspect each review item yourself. Use
+`--working-tree` for tracked local edits. It does not certify safety, upload code, call AI, activate a bot
+or make merge decisions. See [contributor checks](product/CONTRIBUTOR-CHECKS.md).
