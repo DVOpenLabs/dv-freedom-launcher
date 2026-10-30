@@ -5,10 +5,13 @@ preview**, separate from the pinned helper recovery patch. It is not a certified
 Nothing here enables Developer Mode, connects to a TV, installs software, roots it or intercepts Home.
 
 Implemented: local profiles and avatar colours, Glass/Clean/Cinema presentations, top/middle/bottom
-app position, explicit app mappings, shared-profile import review, AI-draft review into a new profile,
+app position, Small/Medium/Large icons, compact/comfortable/wide spacing, explicit app mappings, shared-profile import review, AI-draft review into a new profile,
 local atomic storage, D-pad/Magic Remote navigation, nested Back and a root exit confirmation, bounded foreground wallpaper timing
 and a single optional muted video element. The source ships with a gradient and **no private media**.
-No external libraries, hosted fonts, analytics or AI calls are required.
+No external libraries, hosted fonts, analytics or AI calls are required. Appearance & layout choices
+use a 20-second Keep/Revert preview: browsing writes nothing, Back/timeout/hidden state reverts, and
+a changed stored revision blocks Keep. Existing profiles without size/spacing fields remain readable
+without a migration write. Native LG weather and Android companion installation are not implied.
 
 Android content shelves, layout PINs, weather, scene time windows and hardware input controls are
 not ported yet. webOS source tests do not establish real-device video/standby/remote compatibility.
