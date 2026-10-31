@@ -147,3 +147,10 @@ by [Blueprint](https://github.com/jahirfiquitiva/Blueprint). No Blueprint code o
 or bundled. Static icon bytes come only from a pack the user installed; its author’s artwork licence
 still applies. Seasonal ambient graphics are original procedural DV Freedom code, with no third-party
 media. The source register records the format and Android package-visibility references.
+
+LG Setup calls the separately installed, pinned `@webos-tools/cli@3.2.6` public Node `Installer.list`
+API for structured inventory and `Launcher.listRunningApp` for reported HDMI targets. The SDK is
+not bundled or copied into this repository. Pairing prompt
+handling, inventory validation and SDK-specific webOS staging are independent DV implementation.
+LG’s [Application Manager reference](https://webostv.developer.lge.com/develop/references/application-manager)
+defines the webOS 4.0 minimum for `getAppLoadStatus` and the public `launch` permission boundary.

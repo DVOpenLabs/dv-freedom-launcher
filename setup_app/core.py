@@ -93,7 +93,7 @@ def inspect(device):
     except ValueError: raise SetupError('The device did not return a valid Android version. Reconnect to the TV rather than a different network device.')
     if api<26:raise SetupError('This launcher needs Android 8 or newer. Nothing was changed on your TV.')
     packages=set(re.findall(r'^package:([\w.]+)$',values['packages'],re.M))
-    apps=sorted(set(re.findall(r'^([\w.]+)/[^\s]+$',values['apps'],re.M)))
+    apps=sorted(set(re.findall(r'^[ \t]*([\w.]+)/[^\s]+[ \t]*$',values['apps'],re.M)))
     apps=[{'package':p,'name':APP_NAMES.get(p,p)} for p in apps if p in packages and p not in {'com.gathin.tvhome','com.dvopenlabs.cytv.usabilitytest','com.dvopenlabs.freedomlauncher'}]
     return {'model':values['model'][:120],'android':values['android'][:24],'api':api,'apps':apps[:256],
        'existingLauncher':bool(packages & {'com.gathin.tvhome','com.dvopenlabs.cytv.usabilitytest','com.dvopenlabs.freedomlauncher'}),

@@ -13,8 +13,9 @@ use a 20-second Keep/Revert preview: browsing writes nothing, Back/timeout/hidde
 a changed stored revision blocks Keep. Existing profiles without size/spacing fields remain readable
 without a migration write. Native LG weather and Android companion installation are not implied.
 
-Android content shelves, layout PINs, weather, scene time windows and hardware input controls are
-not ported yet. webOS source tests do not establish real-device video/standby/remote compatibility.
+Android content shelves, layout PINs, weather and scene time windows are not ported yet. The Inputs
+menu can offer reviewed SDK-reported HDMI app targets; it does not enumerate every physical port or
+set a power-on source. webOS source tests do not establish real-device video/standby/remote compatibility.
 
 ## Build locally
 
@@ -39,7 +40,7 @@ explicit device step. Existing LG Home remains the recovery/exit route; Develope
 
 LG’s public [Application Manager](https://webostv.developer.lge.com/develop/references/application-manager)
 documents `getAppLoadStatus` and `launch`. This adapter uses only those methods for reviewed app IDs.
-It declares only `application.launcher` and `application.query`, the public [ACG groups](https://webostv.developer.lge.com/develop/guides/acg-guide) for those two methods on newer firmware. It does not request privileged `listLaunchPoints`, private input APIs or OSE-only permissions.
+For a default/newer package it declares only `application.launcher` and `application.query`, the public [ACG groups](https://webostv.developer.lge.com/develop/guides/acg-guide) for those two methods on newer firmware. It does not request privileged `listLaunchPoints`, private input APIs or OSE-only permissions.
 Android IDs are never guessed as LG IDs. A failed/missing/privileged-app launch is reported without
 changing another setting. Development apps may be unable to launch privileged targets, including
 some system apps; test the actual installed retail TV and firmware before claiming compatibility.
@@ -93,3 +94,49 @@ browsing does not save a choice. Favourite-only family view simplifies this prof
 It does not provide Android’s parent PIN or Accessibility guard: profile switching, vendor Home and
 system settings remain available. These are native-runtime source/browser features; physical TV
 rendering, remote navigation and decoding require separate acceptance.
+
+## SDK-specific legacy trial
+
+The first webOS 1.x hardware trial blocked package CSS and scripts because its WebKit treated
+local file URLs as separate origins. The SDK-specific packaging repair now loads the layout and
+code at the TV's full viewport. Physical remote, streaming-app launch and standby acceptance
+remain pending. A manually opened app does not replace or accelerate LG's own Home or Settings.
+
+Guided Setup now stages the exact `sdkVersion` read from the paired TV. Manual staging can pass
+`--sdk-version <reported-version>` to `prepare_launcher.py`; omit it for the default modern path.
+On webOS 4.0 and above, the bridge checks `getAppLoadStatus` before `launch`. A verified pre-4.0
+package uses `launch` directly for an ID in its reviewed local catalogue because that status API is
+unavailable. This path requests only `application.launcher`. Security/privileged-app denials remain
+errors; there is no permission-error fallback, root, input relay or Home takeover.
+
+Staging retains the SDK capability declaration when adding starter apps or shared-profile data.
+Unknown/malformed versions are refused rather than guessed. The source includes prefixed flex,
+scale and visibility handling and RGBA colour fallbacks for older WebKit. No new runtime library,
+font download or network capability is added. Hardware rendering, Magic Remote, app-launch policy,
+protected playback and standby/wake must be checked on the actual model. Browser/source checks
+cannot certify the legacy engine or grant Android feature parity.
+
+For verified webOS 1.x, staging embeds the package's reviewed CSS and five scripts into the local
+HTML. Its CSP1 policy permits these inline assets while denying external resources, connections,
+frames, media and `eval`; it does not broadly allow `file:` script loading. Generated profile and
+starter JSON escapes HTML delimiters. This compatibility edition uses the plain bundled background
+and has no live-media path. Modern/default packages retain their external-file `'self'` policy.
+After adding private bootstrap data, tooling must call `finalize` again before packaging so that
+the legacy HTML includes the reviewed data. Guided Setup does this automatically.
+
+## Inputs and readable app names
+
+The header's **Inputs** menu opens only HDMI targets reported by the pinned SDK's public
+`Launcher.listRunningApp` API during Setup. A currently running HDMI source may be the only target
+reported. The menu never guesses other port IDs; if none are available, use the LG remote's Input
+button. Selecting a listed source uses the public `launch` method and can still be denied by firmware.
+This operation changes the current source only. Power-on defaults, CEC and vendor startup settings
+stay under LG's normal settings; fixed-HDMI startup is not verified for older webOS.
+
+Manual staging accepts `--inputs /private/path/reviewed-inputs.json`, an array of exact `id`/`label`
+pairs from the SDK. Keep that device-specific file private. Setup includes its input shortcuts in the
+installation review, separately from installed apps and starter favourites.
+
+App names wrap within their tiles. The runtime measures the required caption height and expands
+the minimum tile height while retaining the saved icon size and spacing. Native legacy layout
+measurements show unclipped starter captions; physical remote/input/playback checks remain separate.

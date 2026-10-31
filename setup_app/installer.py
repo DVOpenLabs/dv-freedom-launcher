@@ -195,7 +195,10 @@ class Installer:
                 d.provider('restore',{'revision':native['revision'],'backup':point['backup']});d.launch();point['state']='restored';self._save(point)
             elif kind in ['home','accessibility']:
                 if point['state']!='kept':raise SetupError('Keep the TV preview before choosing the default Home.')
-                d.provider(kind,{'revision':native['revision']})
+                if native.get('pending'):raise SetupError('Keep or revert the pending preview before choosing Home or access.')
+                # The authorized desktop transport opens the chooser. A provider in
+                # the background may be unable to start Settings on newer Android.
+                d.open_setup_settings(kind)
             elif kind=='previous':d.open_previous(point['originalHome'])
             elif kind=='revert':
                 if not native.get('pending') or native['pending'].get('requestId')!=point['id']:raise SetupError('This preview is no longer pending.')

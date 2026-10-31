@@ -78,8 +78,9 @@ class AddonDevice(InstallerDevice):
         self._shell('am start -a android.settings.APPLICATION_DETAILS_SETTINGS -d package:'+package)
     def metadata(self,package):
         if package not in PACKAGES.values():raise SetupError('Unsupported companion package.')
+        if not re.search(r'^package:'+re.escape(package)+r'\s*$',self.read('packages'),re.M):return None
         paths=self._shell('pm path '+package).strip().splitlines()
-        if not paths:return None
+        if not paths:raise SetupError('The installed companion has no verifiable APK path. Recheck installation before proceeding.')
         if len(paths)!=1 or not paths[0].startswith('package:'):raise SetupError('Split companion installations require manual review.')
         path=paths[0][8:]
         if not re.fullmatch(r'/data/app/[A-Za-z0-9_./+=~-]+/base\.apk',path) or '..' in path:raise SetupError('Unsupported companion APK path.')

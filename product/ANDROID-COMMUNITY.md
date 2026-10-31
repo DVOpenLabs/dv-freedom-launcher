@@ -195,6 +195,12 @@ suppress the effect. Leaving Home, detaching the image or releasing its wallpape
 It adds no service, decoder, bitmap copies or network access. The slight overscan keeps screen edges
 covered; choose Off when preserving every edge of an image matters.
 
+Silent live video separately requires at least 2,000,000,000 bytes of reported RAM, no Android
+low-RAM mode and reduced motion off. Alpha 23 uses decimal GB as the setting describes, allowing
+2 GB-class devices whose usable memory is below 2 GiB. A single decoder is active only on Home;
+leaving releases it, and unsupported or failed playback retains the still image. This threshold
+correction does not enable video automatically or override reduced motion.
+
 ## Visual wallpaper browsing
 
 Browse wallpapers previews local pictures from the current theme. Browse themes shows imported packs

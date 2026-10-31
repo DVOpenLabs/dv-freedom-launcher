@@ -267,6 +267,16 @@
       }
     ]
   },
+  "webosSetupReferences": {
+    "implementation": "Independent prompt synchronization, bounded SDK inventory and legacy local packaging; no SDK implementation copied or bundled",
+    "externalTool": "@webos-tools/cli@3.2.6 public Installer.list and Launcher.listRunningApp APIs",
+    "references": [
+      "https://webostv.developer.lge.com/develop/tools/cli-dev-guide",
+      "https://webostv.developer.lge.com/develop/references/application-manager",
+      "https://webostv.developer.lge.com/develop/specifications/web-api-and-web-engine"
+    ],
+    "scope": "SDK-reported version capability handling, public launch permission boundary, and WebKit 537 legacy packaging"
+  },
   "iconPackFormatReferences": {
     "implementation": "Independent bounded data/resource reader; no external source or artwork copied",
     "references": [

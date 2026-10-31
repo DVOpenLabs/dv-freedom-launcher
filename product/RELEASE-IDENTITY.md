@@ -4,8 +4,8 @@ This guide documents package identity, signing and installation/recovery contrac
 
 ## New installations
 
-The full community product defaults to `com.dvopenlabs.freedomlauncher`, version code 22,
-`3.2-freedom-alpha21`, minimum Android 8/API 26. The inherited reference variant keeps its identity,
+The full community product defaults to `com.dvopenlabs.freedomlauncher`, version code 24,
+`3.2-freedom-alpha23`, minimum Android 8/API 26. The inherited reference variant keeps its identity,
 version and size gate. An existing installation requires the same application ID and compatible signer to preserve its data.
 
 `-PfreedomRelease=true` requires the standalone community identity and externally supplied PKCS12
@@ -55,8 +55,9 @@ a different installed signer blocks an update. Companion installation grants no 
 Home routing. Recovery records retain the previous APK/Home binding, not Android private app data;
 automatic downgrade/uninstall fallback is not provided. These generated bundles remain ignored by Git.
 
-The existing identities and signers are retained. The optional Companions package is code 5 /
-`0.1-alpha5`; Phone Remote is code 4 / `0.1-alpha4`. Weather/Sleep Timer/World Clock/Quiet Hours retain
+The existing identities and signers are retained. The optional Companions source is code 6 /
+`0.1-alpha6`; Phone Remote is code 4 / `0.1-alpha4`. A locally generated add-on catalogue must be
+rebuilt and verified before distributing updated companion binaries. Weather/Sleep Timer/World Clock/Quiet Hours retain
 their earlier package/version contracts. New phone setup is an app-owned, same-signer provider opt-in;
 it adds no Internet permission to the launcher or automatic Accessibility/system grant.
 

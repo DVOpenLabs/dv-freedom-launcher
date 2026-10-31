@@ -8,5 +8,7 @@ final class PlaybackGate {
     boolean accepts(int token){return visible&&!failed&&token==generation;}
     boolean failed(){return failed;}
     boolean fail(int token){if(!accepts(token))return false;failed=true;stop();return true;}
-    static boolean supported(long totalBytes,boolean lowRam,boolean reducedMotion){return totalBytes>=2L*1024*1024*1024&&!lowRam&&!reducedMotion;}
+    // The UI specifies reported GB, not GiB. A 2 GB-class TV can report less than
+    // 2 GiB after hardware reservations; retain the platform low-RAM veto.
+    static boolean supported(long totalBytes,boolean lowRam,boolean reducedMotion){return totalBytes>=2_000_000_000L&&!lowRam&&!reducedMotion;}
 }

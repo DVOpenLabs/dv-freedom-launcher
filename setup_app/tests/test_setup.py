@@ -52,6 +52,10 @@ class CoreTest(unittest.TestCase):
     def test_old_android_is_blocked(self):
         d=FakeDevice();original=d.read;d.read=lambda key:'25' if key=='api' else original(key)
         with self.assertRaises(SetupError):inspect(d)
+    def test_android14_indented_activity_report_keeps_only_installed_apps(self):
+        d=FakeDevice();read=d.read
+        d.read=lambda key:('4 activities found:\n  Activity #0:\n    priority=0 isDefault=true\n    example.video/.Main\n  Activity #1:\n\texample.music/.Main\n  Activity #2:\n    unavailable.app/.Main\n  Activity #3:\n    example.video/.Other' if key=='apps' else read(key))
+        self.assertEqual([a['package'] for a in inspect(d)['apps']],['example.music','example.video'])
     def test_device_checks_never_include_mutations(self):
         forbidden=['install','reboot','disable','set-home','settings put','input keyevent','grant','force-stop','uninstall']
         for command in COMMANDS.values():

@@ -6,14 +6,26 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 22; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 23; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 31 October 2026:** alpha 22 adds previewed installed icon-pack import and optional
+**Latest update — 31 October 2026:** alpha 23 corrects live video's reported-memory threshold to
+2 GB (decimal), retaining the low-RAM and reduced-motion vetoes and silent still fallback.
+Alpha 22 adds previewed installed icon-pack import and optional
 still-picture pan and zoom. Companions alpha 6 adds four original offline seasonal ambient scenes
 with expiry dates and optional gentle motion. Existing Home, wallpaper, app layout, permissions and
 screensaver selections remain saved; the new options start off.
+
+LG Setup also now waits for the developer pairing prompt and reads structured SDK app inventory.
+Verified older webOS versions get a separate legacy compatibility package; normal LG Home remains
+available. An older-WebKit file-origin repair now loads the legacy preview's layout and code on
+the TV, with wrapped app names and a separate Inputs menu for SDK-reported HDMI targets. Physical
+remote, streaming-app launch, input switching and standby acceptance remain pending. This manual
+app does not accelerate LG's own Home or Settings. Installation/launch replies do not prove usability.
+Android Setup also recognizes indented Android 14 app reports, checks fresh-install package absence
+without treating connection failures as absence, and opens system Home/accessibility choosers directly.
+It never selects Home or grants access automatically.
 
 The Add-on Centre includes optional photo/art ambient views, Discover, family Homes, calendars,
 phone controls and a separately authorized [Camera](launcher/camera/README.md) window. A separate
@@ -60,7 +72,7 @@ steps and recovery limits; they do not inherit Android installation guarantees.
 | System | What you can try now | Requirements and limits |
 | --- | --- | --- |
 | **Android TV / Google TV** | Native launcher and optional companion apps. | Android 8+ for the full product. Authorized debugging for setup. This alpha is not certified for every device or firmware. [Android guide](product/ANDROID-COMMUNITY.md). |
-| **LG webOS** | Separate manual-launch Home app and guided first-install/helper preparation. | LG developer tools and Developer Mode. Source, packaging and mock checks; physical LG acceptance pending. No automatic LG Home takeover. [Native setup](setup_app/NATIVE-SETUP.md). |
+| **LG webOS** | Separate manual-launch Home app and guided first-install/helper preparation. | LG developer tools and Developer Mode. Legacy full-screen startup/layout checked; full physical acceptance pending. No automatic LG Home takeover. [Native setup](setup_app/NATIVE-SETUP.md). |
 | **Samsung Tizen** | Manual-launch pilot with app discovery, local profiles, layouts and silent media. | Samsung SDK, Developer Mode and your signing certificate. Source/browser/mock checked; signing and physical TV acceptance pending. No Home override or automatic startup. [Samsung guide](platforms/tizen/README.md). |
 | **Hisense VIDAA** | Experimental hosted Home and guided app selection. | Existing authorized MQTT profile and a computer that stays on. Vendor debug-tile installation is manual; fresh pairing is not provided. Hardware acceptance pending. [Hosted guide](platforms/hosted/README.md). |
 | **Vizio SmartCast** | Experimental hosted Home using normal pairing and Conjure. | Trusted certificate, TV PIN pairing, captured app IDs and a computer that stays on. Firmware may decline the route. No root or privileged webview; hardware acceptance pending. [Hosted guide](platforms/hosted/README.md). |

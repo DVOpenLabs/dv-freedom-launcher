@@ -8,7 +8,7 @@ import tempfile
 import time
 import unittest
 import zipfile
-from setup_app.native import NativeInstaller,LG_TOOLS,LG_ID,TIZEN_ID,json_output,Runner
+from setup_app.native import NativeInstaller,LG_TOOLS,LG_ID,TIZEN_ID,json_output,Runner,LG_APPS_MARKER,lg_apps_output
 from setup_app.core import SetupError
 
 
@@ -29,9 +29,10 @@ def ipk(app=LG_ID,extra=None):
     return out
 
 class Vendor:
-    def __init__(self):self.calls=[];self.apps=[];self.changed=False;self.uncertain=False;self.error=None;self.target=None
+    def __init__(self):self.calls=[];self.apps=[];self.inputs=[];self.changed=False;self.uncertain=False;self.error=None;self.target=None
     def __call__(self,args,**kw):
         args=list(map(str,args));self.calls.append((args,kw));name=Path(args[1] if len(args)>1 and args[1].endswith('.js') else args[0]).stem
+        if len(args)>2 and args[1]=='-e' and 'sdk.Installer.list' in args[2]:return LG_APPS_MARKER+json.dumps([{'id':i} for i in self.apps]+[{'id':i,'input':True,'runtimeOnly':True,'visible':False} for i in self.inputs])+'\n'
         if self.error==name:raise SetupError('Simulated vendor refusal')
         if name=='ares-setup-device':self.target=args[args.index('--add')+1];return 'Success'
         if name=='ares-novacom':return 'Success'
@@ -41,7 +42,8 @@ class Vendor:
             self.apps.append(LG_ID)
             if self.uncertain:raise SetupError('Simulated lost install reply')
             return 'Success'
-        if name=='ares-package':Path(args[args.index('-o')+1],'pilot.ipk').write_bytes(ipk());return 'Success'
+        if name=='ares-package':
+            appinfo=Path(args[2],'appinfo.json').read_text(encoding='utf-8');Path(args[args.index('-o')+1],'pilot.ipk').write_bytes(ipk(extra={f'usr/palm/applications/{LG_ID}/appinfo.json':appinfo}));return 'Success'
         if name=='ares-launch':return 'Launched'
         if name=='sdb':
             if args[1]=='connect':self.target=args[2];return 'connected'
@@ -63,6 +65,7 @@ class NativeTest(unittest.TestCase):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.root=Path(self.tmp.name);self.vendor=Vendor();self.n=NativeInstaller(self.root,self.vendor)
         node=self.root/'node.exe';node.write_bytes(b'not executable fixture');lg=self.root/'lg';(lg/'bin').mkdir(parents=True)
         (lg/'package.json').write_text(json.dumps({'name':'@webos-tools/cli','version':'3.2.6'}))
+        (lg/'APIs.js').write_text('fixture')
         for name in LG_TOOLS:(lg/'bin'/f'{name}.js').write_text('fixture')
         sdk=self.root/'sdk';(sdk/'tools/ide/bin').mkdir(parents=True);(sdk/'tools'/('sdb.exe' if os.name=='nt' else 'sdb')).write_text('fixture');(sdk/'tools/ide/bin'/('tizen.bat' if os.name=='nt' else 'tizen')).write_text('fixture')
         self.config={'node':str(node),'lgRoot':str(lg),'samsungRoot':str(sdk)};self.n.configure(self.config)
@@ -78,7 +81,7 @@ class NativeTest(unittest.TestCase):
         self.connect(platform);self.n.prepare({'profile':'Owner Certificate' if platform=='tizen' else ''});self.done();return copy.deepcopy(self.n.reviewed)
     def install(self,r):return self.n.install({'id':r['id'],'reviewToken':r['reviewToken'],'confirmed':True})
     def test_lg_pairing_is_isolated_and_code_not_in_argv_records_or_public_state(self):
-        self.connect();calls=self.vendor.calls;key=next(x for x in calls if 'ares-novacom.js' in ' '.join(x[0]));self.assertEqual(key[1]['stdin'],'Ab12Cd\n');self.assertNotIn('Ab12Cd',str(key[0]));self.assertTrue(key[1]['env']['APPDATA'].startswith(str(self.n.root)));self.assertNotIn('Ab12Cd',json.dumps(self.n.public()));self.assertFalse((self.n.root/'records').exists())
+        self.connect();calls=self.vendor.calls;key=next(x for x in calls if 'ares-novacom.js' in ' '.join(x[0]));self.assertEqual(key[1]['stdin'],'Ab12Cd\n');self.assertEqual(key[1]['stdin_prompt'],'input passphrase:');self.assertNotIn('Ab12Cd',str(key[0]));self.assertTrue(key[1]['env']['APPDATA'].startswith(str(self.n.root)));self.assertNotIn('Ab12Cd',json.dumps(self.n.public()));self.assertFalse((self.n.root/'records').exists())
     def test_corrupt_tool_settings_are_kept_and_block_operations(self):
         path=self.n.root/'tools.json';path.write_text('[]')
         restarted=NativeInstaller(self.root,self.vendor)
@@ -103,8 +106,28 @@ class NativeTest(unittest.TestCase):
         self.assertIn('FREEDOM_SETUP',staged.read_text());self.assertLess(staged.read_text().index('example.music'),staged.read_text().index('example.video'))
         self.assertEqual(self.vendor.apps,['example.video','example.music'])
 
+    def test_reported_runtime_inputs_are_separate_from_installed_apps_and_reviewed(self):
+        self.vendor.apps=['example.video'];self.vendor.inputs=['com.webos.app.hdmi2'];self.connect()
+        self.assertEqual(self.n.connection['apps'],['example.video'])
+        self.assertEqual(self.n.connection['catalog'],[{'id':'example.video','label':'example.video'}])
+        self.n.prepare({'profile':''});self.done()
+        self.assertEqual(self.n.reviewed['inputs'],[{'id':'com.webos.app.hdmi2','label':'HDMI 2'}])
+        folder=Path(self.n.review_record['package']).parent/'app'
+        self.assertIn('com.webos.app.hdmi2',(folder/'bootstrap.js').read_text())
+        for row in [{'id':'arbitrary.app','input':True},{'id':'com.webos.app.hdmi2','runtimeOnly':True}]:
+            with self.assertRaises(SetupError):lg_apps_output(LG_APPS_MARKER+json.dumps([row]))
+
     def test_samsung_signing_is_named_profile_and_exact_target(self):
         r=self.review('tizen');self.assertEqual(r['profile'],'Owner Certificate');self.install(r);self.done();self.n.check({'id':r['id']},launch=True);self.done();commands=[a for a,_ in self.vendor.calls];self.assertTrue(any('install' in a and '192.168.50.20:26101' in a for a in commands));self.assertTrue(any('run' in a and TIZEN_ID in a for a in commands));self.assertFalse(any('uninstall' in a or 'root' in a or 'reboot' in a for a in commands))
+    def test_legacy_staging_preserves_starter_and_uses_only_launch_acg(self):
+        original=self.vendor.__call__
+        def legacy(args,**kw):
+            if any(str(x).endswith('ares-device.js') for x in args):return 'modelName : TEST LEGACY\nsdkVersion : 1.4.0\nfirmwareVersion : 01\n'
+            return original(args,**kw)
+        self.n.runner=legacy;self.vendor.apps=['example.video'];self.connect();self.n.prepare({'profile':'','apps':['example.video']});self.done()
+        folder=Path(self.n.review_record['package']).parent/'app';bootstrap=(folder/'bootstrap.js').read_text(encoding='utf-8');self.assertIn('FREEDOM_SETUP',bootstrap);self.assertIn('"sdkVersion": "1.4.0"',bootstrap);self.assertEqual(json.loads((folder/'appinfo.json').read_text(encoding='utf-8'))['requiredACG'],['application.launcher'])
+        self.n.validate_package('lg',Path(self.n.review_record['package']),lg_acg=['application.launcher'])
+        with self.assertRaises(SetupError):self.n.validate_package('lg',Path(self.n.review_record['package']))
     def test_unreviewed_wrong_token_expired_and_replayed_install_fail(self):
         with self.assertRaises(SetupError):self.n.install({'id':'0'*24,'reviewToken':'bad','confirmed':True})
         r=self.review()
@@ -146,6 +169,11 @@ class NativeTest(unittest.TestCase):
         self.assertEqual(json_output('target\n[]','list'),[])
         for value in ('noise','[]\ntrailing','[{}','{}'):
             with self.assertRaises(SetupError):json_output(value,'list')
+    def test_structured_inventory_ignores_status_prefix_and_preserves_exact_ids(self):
+        self.assertEqual(lg_apps_output('[Info] target\n'+LG_APPS_MARKER+'[{"id":"verified.app","title":"Name\\nid : fake.app"}]\n')[0]['id'],'verified.app')
+        self.assertEqual(lg_apps_output(LG_APPS_MARKER+'[]\n'),[])
+        for raw in ['id : untrusted.app\n',LG_APPS_MARKER+'[{}]',LG_APPS_MARKER+'[{"id":"--remove"}]',LG_APPS_MARKER+'[{"id":"a"},{"id":"a"}]',LG_APPS_MARKER+'[]\ntrailing',LG_APPS_MARKER+'[]\n'+LG_APPS_MARKER+'[]',LG_APPS_MARKER+'[{"id":"truncated"}']:
+            with self.assertRaises(SetupError):lg_apps_output(raw)
     @unittest.skipUnless(os.name=='nt','Windows vendor batch entry-point test')
     def test_windows_vendor_launcher_preserves_spaces_and_rejects_expansion(self):
         folder=self.root/'sdk tools';folder.mkdir();script=folder/'tizen.cmd';script.write_text('@echo off\necho MARKER[%~1][%~2]\n',encoding='ascii')

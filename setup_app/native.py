@@ -8,6 +8,7 @@ import tarfile
 import json
 import os
 from pathlib import Path
+import queue
 import re
 import secrets
 import shutil
@@ -22,6 +23,43 @@ ROOT=Path(__file__).resolve().parents[1]
 LG_ID='com.dvopenlabs.freedom'
 TIZEN_ID='DVFreedom1.Launcher'
 LG_TOOLS=('ares-setup-device','ares-novacom','ares-device','ares-install','ares-package','ares-launch')
+LG_APPS_MARKER='DVFREEDOM_LG_APPS_V1='
+# The pinned SDK's public Node API returns objects; --listfull is human-readable text.
+LG_APPS_SCRIPT="""const path=require('path');
+const sdk=require(path.join(process.argv[1],'APIs.js'));
+sdk.Installer.list({device:process.argv[2]}).then(async rows=>{
+ if(!Array.isArray(rows)||rows.length>2048)throw Error('Invalid inventory');
+ const apps=rows.map(x=>({id:x.id,title:x.title,visible:x.visible}));
+ const running=await sdk.Launcher.listRunningApp({device:process.argv[2]}).catch(()=>[]);
+ if(!Array.isArray(running)||running.length>256)throw Error('Invalid running inventory');
+ running.forEach(x=>{if(x&&typeof x.id==='string'&&/^com\\.webos\\.app\\.hdmi[1-9][0-9]?$/.test(x.id)){
+  let app=apps.find(a=>a.id===x.id);if(!app){app={id:x.id,visible:false,runtimeOnly:true};apps.push(app);}
+  app.input=true;app.title='HDMI '+x.id.match(/[0-9]+$/)[0];
+ }});
+ const out=JSON.stringify(apps);if(Buffer.byteLength(out)>512*1024)throw Error('Inventory too large');
+ process.stdout.write('DVFREEDOM_LG_APPS_V1='+out+'\\n');process.exit(0);
+}).catch(()=>{process.stderr.write('LG inventory unavailable\\n');process.exit(1);});"""
+
+def lg_apps_output(raw):
+    lines=[line for line in raw.splitlines() if line.strip()]
+    payloads=[line[len(LG_APPS_MARKER):] for line in lines if line.startswith(LG_APPS_MARKER)]
+    if len(payloads)!=1 or not lines[-1].startswith(LG_APPS_MARKER):
+        raise SetupError('LG did not return a complete structured app inventory. No install was attempted.')
+    try:
+        rows=json.loads(payloads[0]);seen=set()
+        if not isinstance(rows,list) or len(rows)>2048:raise ValueError()
+        for row in rows:
+            if not isinstance(row,dict) or not isinstance(row.get('id'),str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,254}',row['id']) or row['id'] in seen:raise ValueError()
+            if 'input' in row and (row['input'] is not True or not re.fullmatch(r'com\.webos\.app\.hdmi[1-9][0-9]?',row['id'])):raise ValueError()
+            if 'runtimeOnly' in row and (row['runtimeOnly'] is not True or row.get('input') is not True):raise ValueError()
+            seen.add(row['id'])
+        return rows
+    except (ValueError,TypeError):raise SetupError('LG returned an invalid app inventory. No install was attempted.')
+
+def lg_sdk(reported):
+    match=re.search(r'^sdkVersion\s*:\s*(\d{1,2}\.\d{1,2}(?:\.\d{1,3})?)\s*$',reported,re.M)
+    if not match:raise SetupError('LG did not report a recognized sdkVersion. Recheck the TV before packaging.')
+    return match[1]
 
 def fields(value,keys):
     if not isinstance(value,dict) or set(value)!=set(keys):raise SetupError('Check the fields for this setup step.')
@@ -46,19 +84,69 @@ def json_output(raw,kind):
     except (ValueError,TypeError):raise SetupError('The vendor tool returned an unfamiliar response. Stop here and keep the private setup record for support.')
 
 class Runner:
-    def __call__(self,argv,*,cwd=None,env=None,stdin=None,timeout=45):
+    def __call__(self,argv,*,cwd=None,env=None,stdin=None,stdin_prompt=None,timeout=45):
         argv=[str(a) for a in argv]
         if os.name=='nt' and Path(argv[0]).suffix.lower() in ('.bat','.cmd'):
             # Windows batch entry points need cmd; reject expansion/metacharacters before quoting every arg.
             if any(re.search(r'["&|<>^%!\r\n]',a) for a in argv):raise SetupError('The SDK or setup path contains characters unsupported by the Windows vendor launcher. Use a simple local folder.')
             argv='"'+str(Path(os.environ.get('SystemRoot','C:/Windows'))/'System32/cmd.exe')+'" /d /s /c "'+' '.join('"'+a+'"' for a in argv)+'"'
         try:
-            r=subprocess.run(argv,input=stdin,capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=timeout,cwd=cwd,env=env,shell=False,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+            if stdin_prompt is not None:
+                r=self.prompt(argv,stdin,stdin_prompt,timeout,cwd,env)
+            else:
+                r=subprocess.run(argv,input=stdin,capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=timeout,cwd=cwd,env=env,shell=False,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
         except subprocess.TimeoutExpired:raise SetupError('The vendor tool timed out. Check the TV and use Check installation before trying again; installation may have completed.')
         except OSError:raise SetupError('The vendor tool could not start. Recheck its installation folder and try again.')
         if len(r.stdout)+len(r.stderr)>1024*1024:raise SetupError('The vendor response was too large. Stop and recheck the selected tools.')
         if r.returncode:raise SetupError('The vendor tool declined this step. Check Developer Mode, the current pairing code or Samsung certificate and Permit to install. Nothing is uninstalled or reset; check installation before retrying.')
         return r.stdout
+
+    @staticmethod
+    def prompt(argv,secret,prompt,timeout,cwd,env):
+        """LG fetches the key before reading stdin. Do not send its code before that prompt."""
+        if not isinstance(secret,str) or not secret.strip() or len(secret)>128 or not isinstance(prompt,str) or not prompt:
+            raise SetupError('The developer pairing prompt is invalid.')
+        process=subprocess.Popen(argv,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+            cwd=cwd,env=env,shell=False,bufsize=0,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+        events=queue.Queue(maxsize=64)
+        stopped=threading.Event()
+        def reader(name,stream):
+            try:
+                while not stopped.is_set():
+                    block=stream.read(4096)
+                    while not stopped.is_set():
+                        try:events.put((name,block),timeout=.1);break
+                        except queue.Full:continue
+                    if not block:return
+            except (OSError,ValueError):pass
+        readers=[threading.Thread(target=reader,args=(name,stream),daemon=True)
+                 for name,stream in (('out',process.stdout),('err',process.stderr))]
+        for thread in readers:thread.start()
+        buffers={'out':bytearray(),'err':bytearray()};ended=0;sent=False;deadline=time.monotonic()+timeout
+        try:
+            while ended<2:
+                remaining=deadline-time.monotonic()
+                if remaining<=0:raise subprocess.TimeoutExpired(argv,timeout)
+                try:name,block=events.get(timeout=min(.1,remaining))
+                except queue.Empty:continue
+                if not block:ended+=1;continue
+                buffers[name].extend(block)
+                if len(buffers['out'])+len(buffers['err'])>1024*1024:
+                    raise SetupError('The vendor response was too large. Pairing was stopped.')
+                if not sent and prompt.encode('utf-8') in buffers['out']:
+                    if process.poll() is not None:raise SetupError('LG pairing ended before the code could be submitted.')
+                    process.stdin.write(secret.encode('utf-8'));process.stdin.flush();process.stdin.close();sent=True
+            if not sent:raise SetupError('LG did not request its pairing code. Check Key Server and try pairing again; no app was installed.')
+            process.wait(timeout=max(.01,deadline-time.monotonic()))
+            clean=lambda b:b.decode('utf-8',errors='replace').replace(secret.strip(),'[redacted]')
+            return subprocess.CompletedProcess(argv,process.returncode,clean(buffers['out']),clean(buffers['err']))
+        finally:
+            stopped.set()
+            if process.poll() is None:process.kill()
+            process.wait()
+            for thread in readers:thread.join(timeout=1)
+            for stream in (process.stdin,process.stdout,process.stderr):
+                if stream and not stream.closed:stream.close()
 
 class NativeInstaller:
     def __init__(self,root,runner=None):
@@ -84,14 +172,17 @@ class NativeInstaller:
             base=Path(p['lgRoot']);node=Path(p['node'])
             try:package=json.loads((base/'package.json').read_text(encoding='utf-8'))
             except (OSError,ValueError):raise SetupError('LG tools are missing. Choose Prepare LG tools, or select an existing official @webos-tools/cli folder.')
-            if not node.is_file() or package.get('name')!='@webos-tools/cli' or package.get('version')!='3.2.6' or not all((base/'bin'/f'{n}.js').is_file() for n in LG_TOOLS):raise SetupError('Use Node.js and the tested official LG CLI 3.2.6. No tool is downloaded automatically.')
+            if not node.is_file() or package.get('name')!='@webos-tools/cli' or package.get('version')!='3.2.6' or not all((base/'bin'/f'{n}.js').is_file() for n in LG_TOOLS) or not (base/'APIs.js').is_file():raise SetupError('Use Node.js and the tested official LG CLI 3.2.6. No tool is downloaded automatically.')
             return {n:[str(node),str(base/'bin'/f'{n}.js')] for n in LG_TOOLS}
         if platform!='tizen':raise SetupError('Choose LG webOS or Samsung Tizen.')
         base=Path(p['samsungRoot']);sdb=base/'tools'/('sdb.exe' if os.name=='nt' else 'sdb');cli=base/'tools/ide/bin'/('tizen.bat' if os.name=='nt' else 'tizen')
         if not sdb.is_file() or not cli.is_file():raise SetupError('Install Samsung Tizen Studio with Web CLI, TV Extension and Samsung Certificate Extension, then select its folder.')
         return {'sdb':[str(sdb)],'tizen':[str(cli)]}
     def tool_stamp(self,platform):
-        return {p:digest(p) for args in self.tools(platform).values() for p in args}
+        result={p:digest(p) for args in self.tools(platform).values() for p in args}
+        if platform=='lg':
+            api=str(Path(self.paths()['lgRoot'])/'APIs.js');result[api]=digest(api)
+        return result
     def info(self):
         result={}
         for platform in ('lg','tizen'):
@@ -138,9 +229,11 @@ class NativeInstaller:
     def call(self,conn,name,args=(),**kw):return self.runner([*self.tools(conn['platform'])[name],*args],env=self.env(conn['platform']),**kw)
     def inventory(self,c):
         if c['platform']=='lg':
-            raw=self.call(c,'ares-device',['--system-info','--device',c['target']]);rows=json_output(self.call(c,'ares-install',['--device',c['target'],'--listfull']),'list')
+            raw=self.call(c,'ares-device',['--system-info','--device',c['target']])
+            tools=self.tools('lg');rows=lg_apps_output(self.runner([tools['ares-install'][0],'-e',LG_APPS_SCRIPT,self.paths()['lgRoot'],c['target']],env=self.env('lg')))
             if any(not isinstance(r,dict) or not isinstance(r.get('id'),str) for r in rows):raise SetupError('LG returned an unfamiliar app list. Installation is blocked.')
-            ids=sorted(r['id'] for r in rows);catalog=[{'id':r['id'],'label':re.sub(r'[\x00-\x1f\x7f-\x9f]','',str(r.get('title') or r['id'])).strip()[:64] or r['id']} for r in rows if re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,254}',r['id']) and not r.get('visible') is False and r['id']!=LG_ID][:100];identity='\n'.join(line.strip() for line in raw.splitlines() if re.match(r'\s*(modelName|sdkVersion|firmwareVersion|boardType|otaId)\s*:',line))
+            inputs=[{'id':r['id'],'label':'HDMI '+re.search(r'[0-9]+$',r['id'])[0]} for r in rows if r.get('input') is True][:16]
+            ids=sorted(r['id'] for r in rows if r.get('runtimeOnly') is not True);catalog=[{'id':r['id'],'label':re.sub(r'[\x00-\x1f\x7f-\x9f]','',str(r.get('title') or r['id'])).strip()[:64] or r['id']} for r in rows if re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,254}',r['id']) and not r.get('visible') is False and r['id']!=LG_ID and r.get('input') is not True][:100];identity='\n'.join(line.strip() for line in raw.splitlines() if re.match(r'\s*(modelName|sdkVersion|firmwareVersion|boardType|otaId)\s*:',line))
             if not re.search(r'modelName\s*:',identity) or not re.search(r'firmwareVersion\s*:',identity):raise SetupError('LG model/firmware information is missing. Installation is blocked.')
         else:
             devices=self.call(c,'sdb',['devices']);matches=[x.split() for x in devices.splitlines() if x.startswith(c['target']+'\t') or x.startswith(c['target']+' ')]
@@ -152,7 +245,7 @@ class NativeInstaller:
             ids=re.findall(r'pkgid\[([A-Za-z0-9_.-]+)\]',raw)
             if not ids and not re.search(r'total\s*\[?0\]?|no packages',raw,re.I):raise SetupError('Samsung did not expose a recognizable installed-package list. This firmware needs a separate compatibility check; no install was attempted.')
         if not identity or len(identity)>65536:raise SetupError('The TV identity response is invalid. Reconnect before proceeding.')
-        return {'identity':hashlib.sha256(identity.encode()).hexdigest(),'apps':ids,'reported':identity[:1200] if c['platform']=='lg' else '\n'.join(x for x in identity.splitlines() if re.match(r'(platform_version|model_name|device_name)\s*[:=]',x))[:1200],'catalog':catalog if c['platform']=='lg' else []}
+        return {'identity':hashlib.sha256(identity.encode()).hexdigest(),'apps':ids,'reported':identity[:1200] if c['platform']=='lg' else '\n'.join(x for x in identity.splitlines() if re.match(r'(platform_version|model_name|device_name)\s*[:=]',x))[:1200],'catalog':catalog if c['platform']=='lg' else [],'inputs':inputs if c['platform']=='lg' else []}
     def connect(self,value):
         fields(value,('platform','host','model','firmware','code','prepared','pairConsent'))
         platform=value['platform'];port=9922 if platform=='lg' else 26101
@@ -167,7 +260,7 @@ class NativeInstaller:
         def action():
             if platform=='lg':
                 self.call(c,'ares-setup-device',['--add',c['target'],'--info',json.dumps({'host':host,'port':'9922','username':'prisoner','description':'DV Freedom guided test'})])
-                self.call(c,'ares-novacom',['--device',c['target'],'--getkey'],stdin=code+'\n')
+                self.call(c,'ares-novacom',['--device',c['target'],'--getkey'],stdin=code+'\n',stdin_prompt='input passphrase:')
             else:self.call(c,'sdb',['connect',c['target']])
             c.update(self.inventory(c));c['tools']=self.tool_stamp(platform);self.connection=c
         return self.work('Checking this TV. LG pairing stores its developer key locally; no app is installed.',action)
@@ -186,18 +279,20 @@ class NativeInstaller:
             if fresh['identity']!=c['identity'] or fresh['apps']!=c['apps']:raise SetupError('The TV changed since connection. Reconnect and review it again.')
             ident=secrets.token_hex(12);folder=self.root/'builds'/ident;folder.mkdir(parents=True,mode=0o700)
             if c['platform']=='lg':
-                module=importlib.import_module('platforms.webos.prepare_launcher');module.prepare(folder/'app')
-                if starter:(folder/'app/bootstrap.js').write_text('window.FREEDOM_BOOTSTRAP=null;window.FREEDOM_SETUP='+json.dumps({'schema':1,'apps':starter},ensure_ascii=True,separators=(',',':'))+';\n',encoding='utf-8')
+                module=importlib.import_module('platforms.webos.prepare_launcher');module.prepare(folder/'app',sdk_version=lg_sdk(c['reported']),inputs=fresh.get('inputs',[]))
+                if starter:
+                    with (folder/'app/bootstrap.js').open('a',encoding='utf-8') as stream:stream.write('window.FREEDOM_SETUP='+module.script_json({'schema':1,'apps':starter})+';\n')
+                module.finalize(folder/'app',lg_sdk(c['reported']))
                 self.call(c,'ares-package',[str(folder/'app'),'--no-minify','-o',str(folder)],cwd=folder,timeout=120);packages=list(folder.glob('*.ipk'))
             else:
                 module=importlib.import_module('platforms.tizen.prepare_launcher');module.prepare(folder/'app');self.call(c,'tizen',['package','-t','wgt','-s',profile,'--',str(folder/'app')],cwd=folder,timeout=120);packages=list(folder.rglob('*.wgt'))
             if len(packages)!=1 or not 0<packages[0].stat().st_size<4*1024*1024:raise SetupError('The vendor packager did not produce one expected pilot package.')
-            package=packages[0];self.validate_package(c['platform'],package)
-            record={'id':ident,'platform':c['platform'],'model':c['model'],'firmware':c['firmware'],'created':time.time(),'status':'review','device':c,'package':str(package),'sha256':digest(package),'bytes':package.stat().st_size,'profile':profile if c['platform']=='tizen' else '', 'steps':[],'starter':starter}
+            package=packages[0];acg=['application.launcher']+(['application.query'] if int(lg_sdk(c['reported']).split('.')[0])>=4 else []) if c['platform']=='lg' else None;self.validate_package(c['platform'],package,lg_acg=acg)
+            record={'id':ident,'platform':c['platform'],'model':c['model'],'firmware':c['firmware'],'created':time.time(),'status':'review','device':c,'package':str(package),'sha256':digest(package),'bytes':package.stat().st_size,'profile':profile if c['platform']=='tizen' else '', 'steps':[],'starter':starter,'lgAccess':acg if c['platform']=='lg' else [],'inputs':fresh.get('inputs',[])}
             atomic(self.root/'records'/f'{ident}.json',record)
             self.operation=self.safe_record(record);self.reviewed={**self.safe_record(record),'reviewToken':secrets.token_urlsafe(32),'expires':time.time()+900};self.review_record=record
         return self.work('Building the local app package. Samsung uses only your selected existing certificate profile.',action)
-    def validate_package(self,platform,path):
+    def validate_package(self,platform,path,*,lg_acg=None):
         if platform=='lg':
             raw=Path(path).read_bytes();offset=8;members={}
             if not raw.startswith(b'!<arch>\n'):raise SetupError('LG did not produce an IPK archive.')
@@ -228,7 +323,7 @@ class NativeInstaller:
                         elif name.startswith(prefix) and name[len(prefix):] in allowed:
                             if name.endswith('/appinfo.json'):
                                 app=json.load(tar.extractfile(item));found=True
-                                if app.get('id')!=LG_ID or app.get('version')!='0.1.0' or app.get('requiredACG')!=['application.launcher','application.query']:raise ValueError()
+                                if app.get('id')!=LG_ID or app.get('version')!='0.1.0' or app.get('requiredACG')!=(lg_acg or ['application.launcher','application.query']):raise ValueError()
                         else:raise ValueError()
                 if not found:raise ValueError()
             except (ValueError,TypeError,KeyError,UnicodeError,tarfile.TarError):raise SetupError('The LG package contains an unexpected app, service or payload. Installation is blocked.')
@@ -240,7 +335,7 @@ class NativeInstaller:
             privileges={v.get('name') for v in root.findall('t:privilege',ns)};setting=root.find('t:setting',ns)
             if privileges!={'http://tizen.org/privilege/application.info','http://tizen.org/privilege/application.launch'} or setting is None or setting.get('background-support')!='disable' or root.findall('t:service',ns) or root.findall('t:metadata',ns) or root.findall('{http://www.w3.org/ns/widgets}access'):raise SetupError('Samsung package privileges or background behavior changed. Installation is blocked.')
             # Signatures are generated by Samsung's selected SDK; the TV is the final certificate verifier.
-    def safe_record(self,r):return {**{k:copy.deepcopy(r[k]) for k in ('id','platform','model','firmware','created','status','sha256','bytes','profile','steps')},'starter':copy.deepcopy(r.get('starter',[]))}
+    def safe_record(self,r):return {**{k:copy.deepcopy(r[k]) for k in ('id','platform','model','firmware','created','status','sha256','bytes','profile','steps')},'starter':copy.deepcopy(r.get('starter',[])),'lgAccess':copy.deepcopy(r.get('lgAccess',[])),'inputs':copy.deepcopy(r.get('inputs',[]))}
     def read_record(self,ident):
         if not isinstance(ident,str) or not re.fullmatch('[0-9a-f]{24}',ident):raise SetupError('Choose a saved native installation record.')
         try:

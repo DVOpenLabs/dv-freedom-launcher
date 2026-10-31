@@ -5,8 +5,11 @@ TV, packages this repository's native app, reviews the exact target/package, ins
 confirmation, verifies the app ID in the TV's package list and offers a separate launch button.
 It does not select a new Home, install a helper, restart a TV or copy Android settings into a native TV.
 
-**Development pilot: no real LG or Samsung hardware acceptance yet.** Vendor CLI packaging, browser
-journeys and simulated failures have been tested. A supported-looking model is not a compatibility
+**Development pilot: LG pairing, inventory and first-install/launch requests have been exercised on
+a legacy TV. Its older-WebKit file-origin resource failure is repaired, with full-screen code/layout
+startup verified on the TV; physical navigation and app-launch acceptance remain pending. This
+manual app does not accelerate LG's own Home or Settings. Samsung hardware acceptance is
+still pending. Vendor CLI packaging, browser journeys and simulated failures are also checked. A supported-looking model is not a compatibility
 promise. The native apps have fewer features than the Android edition. Keep the original Home and remote.
 
 ## LG: your first test
@@ -95,3 +98,41 @@ Do not upload the directory publicly: the vendor connection material and TV meta
 Samsung uses its existing SDK certificate configuration outside this app; no universal signing key ships.
 The installer has no arbitrary command/file-upload route, root/uninstall/reboot control or Home selector
 on the native paths. OS security warnings and vendor terms are never bypassed/accepted for the user.
+
+## LG pairing and older televisions
+
+Setup waits for the pinned CLI’s complete pairing prompt before sending the code over stdin. The
+code is never a command-line argument and any echoed value is redacted. LG’s tool retains its key
+and passphrase in the private isolated connection directory. A downloaded key alone does not count
+as successful pairing: identity and structured app inventory must also succeed.
+
+The SDK’s `ares-install --listfull` output is intended for people, not JSON parsing. Setup uses the
+pinned SDK’s public `Installer.list` Node API with a bounded, tagged JSON response. Duplicate/invalid
+IDs, missing payloads and partial output block preparation/installation; displayed app titles cannot
+introduce new app IDs. Existing-app and changed-TV/tool/package checks remain in force.
+
+A package is staged for the **sdkVersion reported by the checked TV**. On webOS 4.0+, the app checks
+installation status before opening an app. On verified older versions, which lack `getAppLoadStatus`,
+it sends the selected reviewed ID to LG’s public `launch` method and shows LG’s response. This
+legacy package requests only `application.launcher`; the newer package also requests
+`application.query`. The exact access is shown before installation. A denied/privileged launch is
+never retried through root, a helper or elevated access.
+
+Legacy CSS uses prefixed flex/transform declarations and older-engine-compatible colour syntax;
+visibility handling includes the older WebKit event. This does not certify every old model, codec or
+firmware. Developer Mode must actually pair and report the TV correctly; an approximate model year
+or version entered in the form is not enough. LG’s current documentation describes the normal
+Developer Mode flow from webOS 3.0 onward; do not assume an app is available on every older set.
+
+Verified webOS 1.x stages a self-contained local HTML page to avoid its opaque file-origin resource
+failure. It embeds only the reviewed package CSS/scripts, escapes starter/profile JSON and denies
+network resources, external code, frames, media and `eval`. This lightweight compatibility preview
+uses a plain background; it does not provide live wallpaper or Android feature parity. This repair
+does not relax the GUI's first-install-only guard or implement general native update/backup support.
+
+Setup also reads currently running HDMI app targets through the pinned SDK's public
+`Launcher.listRunningApp` API. Only reported, validated HDMI IDs enter the separate input-shortcut
+review; they are not treated as installed user apps. The preview's **Inputs** menu opens a selected
+target through public `launch`. Other ports are not guessed, and an empty list points to the LG remote.
+This does not set a power-on input, change CEC, install a startup helper or bypass firmware launch
+restrictions. Native source switching still needs model-specific physical acceptance.

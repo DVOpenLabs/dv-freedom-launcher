@@ -21,6 +21,10 @@ reviewed hosted Home listener binds one selected LAN address for its paired TV. 
 
 The optional Home-only redirect is explained separately. Setup can open Accessibility settings;
 the person must select any helper there. It never grants a permission or selects Home silently.
+After Keep, the authorized desktop connection opens the system chooser directly so that newer
+Android background-activity restrictions do not hide it. A firmware override can still require the
+separately explained Home-only redirect. Android 14's indented app reports and paired fresh-install
+package checks are supported; connection errors never count as proof that an app is absent.
 Stop waits for the current safe boundary; it does not interrupt Android during a package commit.
 
 TCP ADB uses this app's dedicated local key. Pairing-code mode can use existing Android Platform
@@ -45,7 +49,8 @@ extracts only the required allowlisted files. See [third-party notices](../THIRD
   media are not automatically migrated into the new standalone identity.
 
 Native LG/Samsung pairing, packaging, reviewed first installation, verification and separate launch are
-implemented; hardware acceptance is pending. See [the native setup guide](NATIVE-SETUP.md). Native updates
+implemented. Legacy LG full-screen startup/layout has been checked; complete physical acceptance
+and Samsung hardware acceptance remain pending. See [the native setup guide](NATIVE-SETUP.md). Native updates
 stop before overwriting existing apps; they do not reuse Android backup/preview semantics. Debloating,
 personal media import and AI-provider calls are not part of this installer.
 

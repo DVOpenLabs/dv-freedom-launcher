@@ -46,6 +46,7 @@ class FakeInstallerDevice:
         return {'schema':1,'api':1,'package':PACKAGE,'profile':self.s['profile'],'revision':self.s['revision'],
          'pending':self.s['pending'],'result':self.s.get('result',''),'backup':{'schema':1,'profile':self.s['profile'],'values':{'app_position':'top'}}}
     def open_previous(self,component):self.s['log'].append('previous')
+    def open_setup_settings(self,kind):self.s['log'].append(kind+'-settings')
 
 class InstallerTest(unittest.TestCase):
     def setUp(self):
@@ -106,6 +107,13 @@ class InstallerTest(unittest.TestCase):
         r=self.start();checked=self.i.check({'id':r['id']})
         with self.assertRaises(SetupError):self.i.action('home',{'id':r['id'],'revision':checked['revision']})
         self.assertNotIn('home',self.d['log'])
+    def test_kept_preview_opens_chooser_without_changing_home_or_grants(self):
+        r=self.start();self.d['pending']=None;self.d['result']=json.dumps({'id':'native-preview','requestId':r['id'],'outcome':'kept'})
+        checked=self.i.check({'id':r['id']});self.i.action('home',{'id':r['id'],'revision':checked['revision']})
+        self.assertIn('home-settings',self.d['log']);self.assertNotIn('home',self.d['log'])
+        self.d['pending']={'id':'another-preview'}
+        with self.assertRaises(SetupError):self.i.action('accessibility',{'id':r['id'],'revision':checked['revision']})
+        self.assertNotIn('accessibility-settings',self.d['log'])
     def test_recovery_point_cannot_be_a_path(self):
         for id in ['../../private','/absolute',None]:
             with self.assertRaises(SetupError):self.i._load(id)

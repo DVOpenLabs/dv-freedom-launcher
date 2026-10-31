@@ -63,8 +63,12 @@ class InstallerDevice(Device):
         return hashlib.sha256(('dv-freedom-device:'+value).encode()).hexdigest()
     def metadata(self,package=PACKAGE):
         if package!=PACKAGE:raise SetupError('Unsupported installer package.')
+        # On paired Android 14, `pm path` exits nonzero for an absent app. Establish
+        # absence with the successful package-list query; do not swallow ADB errors.
+        packages=self.read('packages')
+        if not re.search(r'^package:'+re.escape(PACKAGE)+r'\s*$',packages,re.M):return None
         value=self._shell('pm path '+PACKAGE).strip()
-        if not value:return None
+        if not value:raise SetupError('The installed launcher has no verifiable APK path. Recheck installation before proceeding.')
         lines=value.splitlines()
         if len(lines)!=1 or not lines[0].startswith('package:'):raise SetupError('Split or unusual launcher installations require manual review.')
         path=lines[0][8:]
@@ -107,6 +111,11 @@ class InstallerDevice(Device):
         if result.get('schema')!=1:raise SetupError('Unsupported launcher setup interface.')
         return result
     def launch(self):self._shell('am start -n '+PACKAGE+'/com.gathin.tvhome.MainActivity')
+    def open_setup_settings(self,kind):
+        intents={'home':'android.settings.HOME_SETTINGS','accessibility':'android.settings.ACCESSIBILITY_SETTINGS'}
+        if kind not in intents:raise SetupError('Unsupported setup settings screen.')
+        result=self._shell('am start -a '+intents[kind])
+        if 'Error:' in result or 'Exception' in result:raise SetupError('This TV could not open that settings screen. Use its remote to open settings; no Home or access grant was changed.')
     def open_previous(self,component):
         selected=self._shell('settings get secure enabled_accessibility_services').strip().split(':')
         if PACKAGE+'/com.gathin.tvhome.StockHomeRedirectService' in selected:raise SetupError('Turn off DV Freedom’s Home-only redirect in TV Accessibility settings before opening the original Home. Restoring a profile does not revoke that separate permission.')

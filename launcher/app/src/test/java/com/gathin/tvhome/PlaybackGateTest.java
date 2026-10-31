@@ -15,10 +15,18 @@ public class PlaybackGateTest {
         assertFalse(gate.accepts(gate.begin()));
     }
     @Test public void conservativeMemoryAndMotionGate() {
-        long threshold = 2L * 1024 * 1024 * 1024;
+        long threshold = 2_000_000_000L;
         assertTrue(PlaybackGate.supported(threshold, false, false));
         assertFalse(PlaybackGate.supported(threshold - 1, false, false));
         assertFalse(PlaybackGate.supported(threshold, true, false));
         assertFalse(PlaybackGate.supported(threshold, false, true));
+    }
+    @Test public void reportedDecimalGigabytesDoNotRequireTwoGibibytes() {
+        long reportedBytes = 1_982_996L * 1024;
+        assertTrue(reportedBytes < 2L * 1024 * 1024 * 1024);
+        assertTrue(PlaybackGate.supported(reportedBytes, false, false));
+        assertFalse(PlaybackGate.supported(reportedBytes, true, false));
+        assertFalse(PlaybackGate.supported(reportedBytes, false, true));
+        assertFalse(PlaybackGate.supported(1536L * 1024 * 1024, false, false));
     }
 }
