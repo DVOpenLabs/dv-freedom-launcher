@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 /** Opt-in searchable Watch Next metadata. At most 96 rows read once per foreground session. */
 final class ContentShelves {
     static final String KEY="private_content_shelf_enabled",PERMISSION="android.permission.READ_TV_LISTINGS";
-    static final class Card {final String pkg,title,kind,poster;String description="";long duration,engagement;final Intent intent;final HomeCategories.App app;final int progress;Card(String p,String t,String k,Intent i,HomeCategories.App a,int progress,String poster){this.poster=poster;pkg=p;title=t;kind=k;intent=i;app=a;this.progress=progress;}}
+    static final class Card {final String pkg,title,kind,poster;String description="";long duration,engagement;boolean watchNext;final Intent intent;final HomeCategories.App app;final int progress;Card(String p,String t,String k,Intent i,HomeCategories.App a,int progress,String poster){this.poster=poster;pkg=p;title=t;kind=k;intent=i;app=a;this.progress=progress;}}
     static boolean granted(Context c){return c.checkSelfPermission(PERMISSION)==PackageManager.PERMISSION_GRANTED;}
     static boolean enabled(Context c){return granted(c)&&ProfileStore.preferences(c).getBoolean(KEY,false);}
     static String status(Context c){return ProfileStore.preferences(c).getBoolean(KEY,false)?granted(c)?"On":"Permission unavailable":"Off";}
@@ -29,12 +29,12 @@ final class ContentShelves {
             if(rows!=null){int scanned=0;while(scanned++<96&&rows.moveToNext()&&!cancel.isCanceled()){
                 String pkg=rows.getString(0),title=rows.getString(1);int type=rows.getInt(2);
                 if(rows.isNull(2)||rows.isNull(3)||rows.getInt(7)!=1||!ContentShelfPolicy.accepted(pkg,title,type,rows.getLong(3),rows.isNull(4)?-1:rows.getLong(4),rows.isNull(5)?-1:rows.getLong(5),now,allowed.keySet()))continue;
-                Intent intent=safeIntent(c,rows.getString(6),pkg);if(intent==null||!seen.add(pkg+"\n"+intent.getDataString()))continue;
+                Intent intent=safeIntent(c,rows.getString(6),pkg);if(intent==null)continue;
                 HomeCategories.App app=allowed.get(pkg);Card card=new Card(pkg,title,ContentShelfPolicy.kind(type)+" · "+app.label,intent,app,ContentShelfPolicy.progress(type,rows.isNull(4)?-1:rows.getLong(4),rows.isNull(5)?-1:rows.getLong(5)),rows.getString(8));
-                card.description=bounded(rows.getString(9));card.duration=rows.getLong(5);card.engagement=rows.getLong(3);result.add(card);
+                card.description=bounded(rows.getString(9));card.duration=rows.getLong(5);card.engagement=rows.getLong(3);card.watchNext=true;result.add(card);
             }}
         }catch(RuntimeException missing){unavailable[0]=true;result.clear();seen.clear();}
-        newest(result);return readPreviews(c,cancel,allowed,limited(result,options.count),seen,unavailable);
+        result=uniqueNewest(result,seen);return readPreviews(c,cancel,allowed,limited(result,options.count),seen,unavailable);
     }
     static List<Card> readPreviews(Context c,CancellationSignal cancel,Map<String,HomeCategories.App> visible,List<Card> result,Set<String> seen,boolean[] unavailable){
         ShelfOptions.Spec options=ShelfOptions.read(c);if(cancel.isCanceled()||result.size()>=12||!options.preview)return result;
@@ -44,16 +44,19 @@ final class ContentShelves {
             while(scanned++<96&&rows.moveToNext()&&!cancel.isCanceled()){
                 String pkg=rows.getString(0),title=rows.getString(1);
                 if(!ContentShelfPolicy.preview(pkg,title,rows.getInt(4)==1,visible.keySet())||!options.accepts(pkg))continue;
-                Intent intent=safeIntent(c,rows.getString(2),pkg);if(intent==null||!seen.add(pkg+"\n"+intent.getDataString()))continue;
+                Intent intent=safeIntent(c,rows.getString(2),pkg);if(intent==null)continue;
                 HomeCategories.App app=visible.get(pkg);Card card=new Card(pkg,title,"From "+app.label,intent,app,-1,rows.getString(3));card.description=bounded(rows.getString(5));card.duration=rows.getLong(6);card.engagement=rows.getLong(7);previews.add(card);
             }
         }catch(RuntimeException missing){unavailable[0]=true;/* A missing preview source does not remove Watch Next. */}
-        newest(previews);result.addAll(previews);return limited(result,options.count);
+        result.addAll(uniqueNewest(previews,seen));return limited(result,options.count);
     }
+    static List<Card> uniqueNewest(List<Card> cards,Set<String> seen){return ShelfSelection.newest(cards,c->c.pkg+"\n"+c.intent.getDataString(),c->c.engagement,seen);}
     static void newest(List<Card> cards){cards.sort((a,b)->Long.compare(b.engagement,a.engagement));}
     static String bounded(String value){return value==null?"":value.substring(0,Math.min(value.length(),1200));}
     static List<Card> limited(List<Card> cards,int limit){Map<String,Integer> counts=new HashMap<>();List<Card> out=new ArrayList<>();for(Card card:cards){int n=counts.getOrDefault(card.pkg,0);if(n<limit){out.add(card);counts.put(card.pkg,n+1);if(out.size()==12)break;}}return out;}
-    static void details(Activity a,Card card){new AlertDialog.Builder(a).setTitle(card.title).setMessage(card.kind+(card.duration>0?" · "+Math.round(card.duration/60000d)+" min":"")+(card.progress>=0?" · "+card.progress+"% watched":"")+(card.description.isEmpty()?"":"\n\n"+card.description)+"\n\nShared by "+card.app.label+". Availability and playback are controlled by that app.").setPositiveButton("Open title",(d,w)->{try{a.startActivity(card.intent);}catch(Exception unavailable){Toast.makeText(a,"Title unavailable in its app",Toast.LENGTH_LONG).show();}}).setNeutralButton("Open app",(d,w)->card.app.launch(a,Config.load(a))).setNegativeButton("Back",null).show();}
+    static String freshness(Activity a,Card card){return card.watchNext&&card.engagement>0?"\nLast engagement shared by the app: "+android.text.format.DateFormat.getMediumDateFormat(a).format(new java.util.Date(card.engagement)):"\nSuggestion shared by the app; no viewing time supplied.";}
+    static void details(Activity a,Card card){new AlertDialog.Builder(a).setTitle(card.title).setMessage(card.kind+freshness(a,card)+(card.duration>0?" · "+Math.round(card.duration/60000d)+" min":"")+(card.progress>=0?" · "+card.progress+"% watched":"")+(card.description.isEmpty()?"":"\n\n"+card.description)+"\n\nShared by "+card.app.label+". Availability and playback are controlled by that app.").setPositiveButton("Open title",(d,w)->{try{a.startActivity(card.intent);}catch(Exception unavailable){offerApp(a,card);}}).setNeutralButton("Open app",(d,w)->card.app.launch(a,Config.load(a))).setNegativeButton("Back",null).show();}
+    static void offerApp(Activity a,Card card){new AlertDialog.Builder(a).setTitle("Title unavailable").setMessage("The app no longer opens this shared link. You can open "+card.app.label+" instead.").setNegativeButton("Back",null).setPositiveButton("Open app",(d,w)->card.app.launch(a,Config.load(a))).show();}
     static final class Row {
         final Activity a;
         final LinearLayout host;
@@ -63,7 +66,7 @@ final class ContentShelves {
         final boolean panel;
         final ExecutorService worker=Executors.newSingleThreadExecutor();
         CancellationSignal cancel=new CancellationSignal();
-        volatile boolean active;boolean registered;String rendered="";int readGeneration,paintGeneration;
+        volatile boolean active;boolean registered,renderedCards;String rendered="";int readGeneration,paintGeneration;
         final Handler main=new Handler(Looper.getMainLooper());
         final Application.ActivityLifecycleCallbacks lifecycle=new Application.ActivityLifecycleCallbacks(){
             public void onActivityCreated(Activity x,Bundle b){} public void onActivityStarted(Activity x){}
@@ -86,25 +89,26 @@ final class ContentShelves {
         void resume(){if(active||closed||!profile.equals(ProfileStore.id())||!enabled(a))return;active=true;cancel=new CancellationSignal();
             if(!registered)try{a.getContentResolver().registerContentObserver(OptionalPanels.URI,true,observer);registered=true;}catch(Exception absent){}
             int generation=++readGeneration;CancellationSignal signal=cancel;Map<String,HomeCategories.App> visible=new HashMap<>();for(HomeCategories.App app:HomeCategories.catalog(a,config))visible.put(app.pkg,app);
-            worker.execute(()->{boolean[] unavailable={false};List<Card> cards=read(a,signal,visible,unavailable);main.post(()->{if(generation!=readGeneration||!current())return;if(unavailable[0]&&cards.isEmpty()&&host.getChildCount()>0){if(host.getChildAt(0) instanceof TextView)((TextView)host.getChildAt(0)).setText("Saved items · source unavailable");return;}render(cards);});});
+            worker.execute(()->{boolean[] unavailable={false};List<Card> cards=read(a,signal,visible,unavailable);main.post(()->{if(generation!=readGeneration||!current())return;if(unavailable[0]&&cards.isEmpty()&&renderedCards&&host.getChildCount()>0){if(host.getChildAt(0) instanceof TextView)((TextView)host.getChildAt(0)).setText("Saved items · source unavailable; may be out of date");return;}render(cards,unavailable[0]);});});
         }
         void pause(){active=false;readGeneration++;cancel.cancel();main.removeCallbacksAndMessages(null);if(registered)try{a.getContentResolver().unregisterContentObserver(observer);}catch(Exception ignored){}registered=false;}
 
         boolean current(){return !closed&&active&&profile.equals(ProfileStore.id())&&enabled(a);}
-        void render(List<Card> cards){
-            if(!current())return;StringBuilder fingerprint=new StringBuilder();for(Card card:cards)fingerprint.append(card.pkg).append("\u0000").append(card.intent.getDataString()).append("\u0000").append(card.title).append("\u0000").append(card.progress).append("\u0000").append(card.poster).append("\n");String next=fingerprint.toString();if(next.equals(rendered)&&host.getChildCount()>0)return;
-            boolean hadFocus=host.hasFocus();Object focusTag=lastFocused==null?null:lastFocused.getTag();rendered=next;paintGeneration++;posters.clear();host.removeAllViews();
+        void render(List<Card> cards,boolean unavailable){
+            if(!current())return;StringBuilder fingerprint=new StringBuilder(unavailable?"partial\n":"");for(Card card:cards)fingerprint.append(card.pkg).append("\u0000").append(card.intent.getDataString()).append("\u0000").append(card.title).append("\u0000").append(card.progress).append("\u0000").append(card.engagement).append("\u0000").append(card.description).append("\u0000").append(card.kind).append("\u0000").append(card.duration).append("\u0000").append(card.poster).append("\n");String next=fingerprint.toString();if(next.equals(rendered)&&host.getChildCount()>0)return;
+            boolean hadFocus=host.hasFocus();Object focusTag=lastFocused==null?null:lastFocused.getTag();rendered=next;renderedCards=!cards.isEmpty();paintGeneration++;posters.clear();host.removeAllViews();
             if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).shelfReady(!cards.isEmpty());
             if(cards.isEmpty()){
                 if(hadFocus&&returnFocus!=null)returnFocus.requestFocus();host.setVisibility(View.GONE);
-                if(panel){host.setVisibility(View.VISIBLE);TextView empty=label("No shared items yet. Open a supported app and watch something, then return here. Some apps do not share TV listings.",18);empty.setSingleLine(false);host.addView(empty);}
+                if(panel){host.setVisibility(View.VISIBLE);TextView empty=label(unavailable?"The TV’s shared-content source is unavailable. Your streaming apps still work independently. Return to Home and try again later.":"No shared titles match this profile’s sources. Check Shelf sources & limits, then open an app and watch something. Some apps publish no TV listings. Items older than 30 days are omitted.",18);empty.setSingleLine(false);host.addView(empty);}
                 return;
             }
             host.setVisibility(View.VISIBLE);
             if(!panel&&a.getResources().getConfiguration().fontScale>1.2f){
                 TextView browse=label("Browse shared titles from your apps",20);browse.setPadding(dp(20),dp(18),dp(20),dp(18));browse.setFocusable(true);browse.setClickable(true);browse.setBackgroundResource(R.drawable.settings_choice_bg);browse.setOnClickListener(v->a.startActivity(new Intent(a,ContentShelfActivity.class)));host.addView(browse);return;
             }
-            host.addView(label("From your apps",17));
+            host.addView(label(unavailable?"From your apps · some sources unavailable":"From your apps",17));
+            if(panel)host.addView(label("Read on this visit · hold OK for source, progress and details. Up to 96 entries per provider are scanned; this is not your complete watch history.",15));
             HorizontalScrollView scroll=new HorizontalScrollView(a);scroll.setHorizontalScrollBarEnabled(false);scroll.setClipToPadding(false);
             LinearLayout line=new LinearLayout(a);line.setPadding(dp(5),dp(4),dp(5),dp(4));scroll.addView(line);host.addView(scroll);
             for(Card card:cards)addCard(line,card);
@@ -122,7 +126,7 @@ final class ContentShelves {
             tile.addView(kind,new LinearLayout.LayoutParams(dp(150),panel?-2:dp(16)));
             if(card.progress>=0){ProgressBar progress=new ProgressBar(a,null,android.R.attr.progressBarStyleHorizontal);progress.setMax(100);progress.setProgress(card.progress);progress.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);tile.addView(progress,new LinearLayout.LayoutParams(dp(150),dp(4)));}
             tile.setContentDescription(card.title+", "+card.kind+(card.progress>=0?", "+card.progress+" percent watched":""));
-            tile.setOnClickListener(v->{try{a.startActivity(card.intent);}catch(Exception missing){Toast.makeText(a,"This item is no longer available in its app",Toast.LENGTH_LONG).show();}});
+            tile.setOnClickListener(v->{try{a.startActivity(card.intent);}catch(Exception missing){offerApp(a,card);}});
             tile.setOnLongClickListener(v->{details(a,card);return true;});
             tile.setOnFocusChangeListener((v,on)->{if(on)lastFocused=v;});
             tile.setOnKeyListener((v,k,e)->navigate(line,tile,k,e));

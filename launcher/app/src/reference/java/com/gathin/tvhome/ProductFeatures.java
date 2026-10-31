@@ -2,6 +2,24 @@ package com.gathin.tvhome;
 
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
+    static boolean gridRepeat(MainActivity a,android.view.KeyEvent e){return false;}
+    static void gridRepeatStop(android.app.Activity a){}
+    static boolean tileLift(boolean effects,boolean animations){return effects;}
+    static boolean redirectConnected(StockHomeRedirectService s){return false;}
+    static boolean redirectWindow(StockHomeRedirectService s,android.view.accessibility.AccessibilityEvent e){return false;}
+    static void closeRedirect(StockHomeRedirectService s){}
+    static boolean storageReady(android.content.Context c){return true;}
+    static boolean lockedStartup(android.app.Activity a){return false;}
+    static boolean awaitingUnlock(android.app.Activity a){return false;}
+    static void closeStartup(android.app.Activity a){}
+    static void overlayLoaded(boolean cached){}
+    static void recoverOverlayCopy(java.io.File copy){}
+    static boolean overlayChoicesReady(){return true;}
+    static boolean keepOverlayCopy(java.io.File copy){return false;}
+    static boolean saveOverlayCopy(java.io.File copy,byte[] bytes){return false;}
+    static void overlayReset(android.content.Context c){}
+    static int deleteTheme(android.content.Context c,android.net.Uri uri){return -1;}
+
     static void interaction(android.app.Activity a){}
     static boolean profileSelectionAllowed(android.content.Context c,String id){return true;}
     static void profileChanged(android.content.Context c){}

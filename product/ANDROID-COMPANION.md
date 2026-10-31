@@ -6,7 +6,11 @@ uses-permission is added. Personal artwork remains outside the APK.
 
 ## Categorized Launcher settings
 
-The settings page uses a short menu beside contextual guidance: **Home appearance**, **Apps & profiles**, **Wallpaper**, **Remotes & inputs** and **Advanced**. Up/Down selects a category; Right or OK opens its detail page. Back returns to the menu, then closes settings. Detail pages retain current values and native controls, with restrained focus surfaces rather than a card behind every row. Selected category/detail state survives recreation without writing settings while browsing. Offline theme controls keep their capability gates; on-TV profile creation is an explicit opt-in. See [Home polish](ANDROID-COMMUNITY.md).
+The settings page has seven sections: **Appearance**, **Apps & rows**, **Wallpaper**, **Profiles**,
+**Remotes & inputs**, **Backup & restore** and **System**. Up/Down selects a category; Right or OK opens
+its controls. Back returns to the parent, then closes settings. Contextual help and still previews
+explain visual controls. Browsing saves nothing; changes retain their Apply/Cancel or Keep/Revert
+contracts. See the [feature guide](ANDROID-COMMUNITY.md) for presets and compatibility controls.
 
 Layout captions show current values, including theme values, and apps-per-row now offers 4 through 8
 so an existing eight-app layout has a matching selected control. Numeric rows retain Left/Right
@@ -316,3 +320,8 @@ Family/Game Day calendars merge duplicate titles at the same start time across t
 keep upcoming timed events in order, and show minute/hour or Tomorrow countdowns rather than labelling
 every nearby event Today. All-day wording uses calendar dates across DST. This remains cached calendar
 information, not a live-score service; reload the panel to update the countdown wording.
+
+Home Assistant refreshes have one owner per visible connection generation. Repeated refreshes
+coalesce into one follow-up; leaving or rebuilding the page discards stale results and queued actions.
+Climate, security and sensor state remain informational. No real Home Assistant connection is implied
+by unconfigured-panel tests.

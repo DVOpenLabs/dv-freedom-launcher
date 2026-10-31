@@ -12,12 +12,30 @@ import org.json.*;
 
 /** Optional full-product features, compiled into the existing APK and data identity. */
 final class ProductFeatures {
+    static boolean tileLift(boolean effects,boolean animations){return effects&&animations;}
+    static boolean redirectConnected(StockHomeRedirectService s){HomeRedirect.connect(s);return true;}
+    static boolean redirectWindow(StockHomeRedirectService s,android.view.accessibility.AccessibilityEvent e){HomeRedirect.window(s,e);return true;}
+    static void closeRedirect(StockHomeRedirectService s){HomeRedirect.close(s);}
+    static boolean storageReady(Context c){return ProductStartup.unlocked(c);}
+    static boolean lockedStartup(Activity a){return ProductStartup.await(a);}
+    static boolean awaitingUnlock(Activity a){return ProductStartup.waiting(a);}
+    static void closeStartup(Activity a){ProductStartup.close(a);}
+    static void overlayLoaded(boolean cached){OverlayRecovery.cached=cached;}
+    static boolean overlayChoicesReady(){return !OverlayRecovery.cached;}
+    static boolean keepOverlayCopy(java.io.File copy){return OverlayRecovery.keep(copy);}
+    static void recoverOverlayCopy(java.io.File copy){OverlayRecovery.recover(copy);}
+    static boolean saveOverlayCopy(java.io.File copy,byte[] bytes){OverlayRecovery.save(copy,bytes);return true;}
+    static void overlayReset(Context c){OverlayRecovery.reset(c);}
+    static int deleteTheme(Context c,android.net.Uri uri){return ThemeDeletion.delete(c,uri);}
+
     static boolean profileSelectionAllowed(Context c,String id){return FamilyMode.canSelect(c,id);}
     static void profileChanged(Context c){Config.load(c);FamilyGuard.refresh(c);}
     static void filterApps(Context c,List<String> dock,List<String> hidden,List<String> top){FamilyMode.filter(c,dock,hidden,top);}
     static boolean videoFraming(Context c,java.io.File file,android.view.TextureView view,int w,int h){return StudioFraming.video(c,file,view,w,h);}
     static boolean upstreamExtras(){return true;}
-    static void paused(Activity a){StartupLaunch.stop(a);WakeRules.paused(a);}
+    static boolean gridRepeat(MainActivity a,KeyEvent e){return GridRepeat.key(a,e);}
+    static void gridRepeatStop(Activity a){GridRepeat.stop(a);}
+    static void paused(Activity a){GridRepeat.stop(a);OverlayRecovery.pause(a);StartupLaunch.stop(a);WakeRules.paused(a);}
     static void interaction(Activity a){WakeRules.interaction();}
     static boolean homeAuto(String pkg,Set<String> added,List<String> favorites,Map<String,Integer> ranks,Map<String,Cards.Card> cards,android.content.pm.ResolveInfo info){if(!OptionalToolPolicy.PACKAGES.contains(pkg))return true;return added.contains(pkg)||favorites.contains(pkg)||ranks.containsKey(pkg)||ranks.containsKey(new ComponentName(pkg,info.activityInfo.name).flattenToShortString())||cards.containsKey(pkg);}
     static Intent libraryIntent(Context c,String pkg,Intent fallback){return AppShortcuts.intent(c,pkg,Config.load(c).launchActions.get(pkg),fallback);}
@@ -45,7 +63,7 @@ final class ProductFeatures {
         }return false;
     }
     static void wallpaperSample(Activity a,android.graphics.Bitmap bitmap){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).sample(bitmap);}
-    static void resumed(Activity a){
+    static void resumed(Activity a){OverlayRecovery.resume(a);
         WakeRules.attach(a);
         WeatherClient.attach(a);
         OptionalPanels.attach(a);
@@ -63,8 +81,10 @@ final class ProductFeatures {
     static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(PhoneSetupProvider.ENABLED);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
     static AutoCloseable dreamWeather(Context c,View root){View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return null;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return weather;}
     static boolean inputs(MainActivity a,boolean all){Config cfg=Config.load(a);if(cfg.coocaaSources||!cfg.sourcePanelService.isEmpty()||!cfg.inputSources.isEmpty()||!cfg.inputAction.isEmpty()||!cfg.inputUriScheme.isEmpty())return false;InputPicker.show(a,all);return true;}
-    static void setupKeys(Set<String> keys){keys.add(FamilyPolicy.KEY);keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
+    static void setupKeys(Set<String> keys){keys.add(GridRepeatPolicy.KEY);keys.add(FamilyPolicy.KEY);keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals(TileSpacing.FOCUS)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid focus outline");return true;}
+        if(key.equals(GridRepeatPolicy.KEY)){if(!GridRepeatPolicy.valid(value))throw new IllegalArgumentException("Invalid arrow speed");return true;}
         if(key.equals(FamilyPolicy.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid family Home");new FamilyPolicy((String)value);return true;}
         if(key.equals(LibraryVisibility.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid app exclusions");LibraryVisibility.parse((String)value);return true;}
         if(key.equals(ShortcutPolicy.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid app links");ShortcutPolicy.parse((String)value);return true;}

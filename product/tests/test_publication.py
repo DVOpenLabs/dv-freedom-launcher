@@ -38,7 +38,9 @@ class PublicationTests(unittest.TestCase):
                 self.assertNotIn(target,INTERNAL,name+' -> '+link)
     def test_product_docs_have_an_explicit_public_purpose(self):
         guides={'AI-SETUP.md','ANDROID-COMMUNITY.md','ANDROID-COMPANION.md','ANDROID-PROFILES.md',
-                'README.md','RELEASE-IDENTITY.md','STREAMER-HOME.md','THIRD-PARTY.md'}
+                'README.md','RELEASE-IDENTITY.md','STREAMER-HOME.md','THIRD-PARTY.md',
+                # Reviewed public installation/permission guide and reproducible contributor checks.
+                'ADDONS.md','CONTRIBUTOR-CHECKS.md'}
         extras={p for p in self.tracked() if p.startswith('product/') and p.count('/')==1 and p.endswith('.md') and Path(p).name not in guides}
         self.assertEqual(set(),extras,'New public product documents require an explicit publication review')
     def test_no_generated_or_key_artifacts_in_publication(self):

@@ -30,7 +30,7 @@ public final class GuidedSetupActivity extends Activity {
     private TextView text(String s,int size){TextView v=new TextView(this);v.setText(s);v.setTextSize(size);v.setTextColor(0xfff5f7fa);v.setTypeface(font);return v;}
     private TextView action(LinearLayout host,String label,Runnable run){TextView v=text(label,18);v.setPadding(dp(18),dp(12),dp(18),dp(12));v.setMinHeight(dp(50));v.setBackgroundResource(R.drawable.settings_choice_bg);v.setFocusable(true);v.setClickable(true);v.setOnFocusChangeListener((x,on)->{if(on&&host==body)focusRow=body.indexOfChild(v);});v.setOnClickListener(x->run.run());LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(host==footer?-2:-1,-2);p.bottomMargin=dp(7);if(host==footer)p.leftMargin=dp(12);host.addView(v,p);return v;}
     private void presets() {
-        String[] labels={"Everyday · Glass, medium icons, all names", "Big & clear · Clean, large icons, larger text", "Movie night · Cinema, selected name, quiet idle"};
+        String[] labels={"Everyday · Glass, medium icons, all names", "Big & clear · Clean, large icons, larger text", "Movie night · Cinema, selected name, quiet idle", "Minimal · Clean, small icons, selected name"};
         new AlertDialog.Builder(this).setTitle("Starting points · draft only")
                 .setItems(labels,(dialog,index)->{settings.putAll(HomePresets.settings(index));render();})
                 .setNegativeButton("Cancel",null).show();

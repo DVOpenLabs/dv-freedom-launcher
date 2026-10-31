@@ -16,9 +16,12 @@ final class FreedomUi {
         t.setOnClickListener(v->click.run());LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(a,8);b.addView(t,p);return t;
     }
     static AlertDialog sheet(Activity a,String title,LinearLayout body){
-        LinearLayout root=body(a);root.setBackgroundColor(0xff111c2b);root.addView(text(a,title,26));
+        return sheet(a,title,body,a.getString(android.R.string.cancel));
+    }
+    static AlertDialog sheet(Activity a,String title,LinearLayout body,String dismissLabel){
+        LinearLayout root=body(a);root.setBackgroundColor(a.getColor(R.color.freedom_canvas));root.addView(text(a,title,26));
         ScrollView scroll=new ScrollView(a);scroll.setFillViewport(false);scroll.addView(body);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-        LinearLayout footer=new LinearLayout(a);root.addView(footer);AlertDialog dialog=new AlertDialog.Builder(a).setView(root).create();TextView close=action(a,footer,a.getString(android.R.string.cancel),dialog::dismiss);
+        LinearLayout footer=new LinearLayout(a);root.addView(footer);AlertDialog dialog=new AlertDialog.Builder(a).setView(root).create();TextView close=action(a,footer,dismissLabel,dialog::dismiss);
         dialog.setOnShowListener(v->{bound(a,dialog);root.post(()->{if(!first(body))close.requestFocusFromTouch();});});dialog.show();return dialog;
     }
     static AlertDialog checklist(Activity a,String title,String[] labels,boolean[] checked,java.util.function.Consumer<AlertDialog> apply){

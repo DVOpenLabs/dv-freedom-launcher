@@ -32,7 +32,8 @@ case "$OUT" in *Success*) ;; *) echo "ERROR: pm install failed" >&2; exit 1 ;; e
 if [ -n "$CONFIG" ]; then
   STAGE=/data/local/tmp/smart-home-config.json
   tv --push "$CONFIG" "$STAGE" >/dev/null
-  tv "content write --uri content://$PKG.config/config.json < $STAGE; rm -f $STAGE; echo config pushed"
+  tv "am start -n $PKG/.MainActivity >/dev/null" >/dev/null
+  "$PY" -I ../../tools/provider_io.py put --uri "content://$PKG.config/config.json" --stage "$STAGE"
 fi
 tv "am start -n $PKG/.MainActivity >/dev/null; echo opened"
 echo "Installed. Smart Home is open on the TV; press Home and answer Show card for the card."

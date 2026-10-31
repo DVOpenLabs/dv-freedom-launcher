@@ -11,7 +11,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 BOUNDARY = r'''
-import hashlib, json, os, shutil, sys
+import hashlib, json, os, re, shutil, sys
 from pathlib import Path
 
 pictures = Path(os.environ["FAKE_PICTURES"])
@@ -44,6 +44,8 @@ else:
         pass  # Settings, screensaver and launch operations are intercepted, never executed.
     else:
         raise AssertionError("unexpected TV command: " + command)
+    marker = re.search(r"DV_IO_[a-f0-9]{32}", command)
+    if marker: print(marker.group())
 '''
 
 
@@ -62,6 +64,7 @@ class PhotoSyncTest(unittest.TestCase):
         python = tools / "venv" / "bin" / "python"
         python.parent.mkdir(parents=True)
         python.symlink_to(sys.executable)
+        shutil.copy2(ROOT / "tools" / "provider_io.py", tools / "provider_io.py")
         for name in ("tv.py", "b64push.py"):
             (tools / name).write_text(BOUNDARY)
         self.local, self.device, self.stage = (self.base / name for name in ("local", "device", "stage"))

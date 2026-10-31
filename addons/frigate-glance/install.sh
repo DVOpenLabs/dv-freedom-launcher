@@ -50,12 +50,9 @@ tv "appops set $PKG SYSTEM_ALERT_WINDOW allow; cmd appops set $PKG APP_AUTO_STAR
 
 # The config goes into the app's files folder, or through its provider where the shell may not write there.
 # The log is cleared first: through the provider the service picks the config up, and logs its connection, at once.
-tv "logcat -c" >/dev/null
 STAGE=/data/local/tmp/fg-config.json
 tv --push "$CONFIG" "$STAGE" >/dev/null
-OUT=$(tv "d=/sdcard/Android/data/$PKG/files; if { mkdir -p \$d 2>/dev/null && cp $STAGE \$d/config.json 2>/dev/null; } || content write --uri content://$PKG.config/config.json < $STAGE; then echo config pushed; else echo config not written; fi; rm -f $STAGE")
-echo "$OUT"
-case "$OUT" in *"config pushed"*) ;; *) echo "ERROR: the config could not be written on the TV" >&2; exit 1 ;; esac
+"$PY" -I ../../tools/provider_io.py put --uri "content://$PKG.config/config.json" --stage "$STAGE" --fallback "/sdcard/Android/data/$PKG/files/config.json"
 
 # The key service, added to whatever accessibility services are already on (the launcher's, for one). A service
 # that was already listed is unbound by the reinstall and binds again only once the list changes.

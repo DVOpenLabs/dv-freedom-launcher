@@ -9,7 +9,7 @@ The system delivers only Google launcher window-state events. The implementation
 `com.google.android.apps.tv.launcherx.home.HomeActivity`, ignores Google's Settings and dispatch screens,
 and opens this package's own MainActivity. On binding it also opens Home once after user unlock when
 the display is interactive, so the same Home can return after reboot. It does not wake a sleeping device.
-Same-tick duplicate attempts are coalesced; distinct rapid Home presses are retained. It requests no screen-content retrieval, remote-key filtering,
+Pending repeated Home-window events are coalesced in the full product. It requests no screen-content retrieval, remote-key filtering,
 gestures, notification access, new network permission, periodic polling or boot receiver.
 
 This is an alternative to another Home redirect, not a second watcher to enable alongside it. Deployment
@@ -33,3 +33,9 @@ and rebind helpers, so capture focus and screenshots without it while testing th
 The initial target is the Google TV Streamer (`kirkwood`, Android 14). This is a fork feature, not an
 upstream contribution or a general compatibility claim for every Google TV. Eight JVM policy tests
 check exact matching and duplicate/rapid-press handling; native service binding and firmware acceptance are separate.
+
+The full-product helper waits briefly (220 ms) after an exact Google Home-window event. A later
+Google profile/results/settings window cancels that pending redirect; repeated Home events coalesce.
+This uses window names only, with no key filtering or screen-content reading. Initial service binding
+still schedules Home after unlock; firmware-specific Assistant, profile and Cast behavior needs
+physical acceptance. Updating preserves existing access; it does not grant or revoke it.

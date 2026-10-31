@@ -18,6 +18,7 @@ public final class StockHomeRedirectService extends AccessibilityService {
 
     @Override protected void onServiceConnected() {
         super.onServiceConnected();
+        if (ProductFeatures.redirectConnected(this)) return;
         UserManager users = getSystemService(UserManager.class);
         if (users == null || users.isUserUnlocked()) {
             openHome();
@@ -34,6 +35,7 @@ public final class StockHomeRedirectService extends AccessibilityService {
     }
 
     @Override public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (ProductFeatures.redirectWindow(this,event)) return;
         if (event != null && event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
                 && StockHomeRedirectPolicy.isHome(event.getPackageName(), event.getClassName())) openHome();
     }
@@ -54,6 +56,6 @@ public final class StockHomeRedirectService extends AccessibilityService {
     private void stopWaiting() {
         if (unlock != null) { unregisterReceiver(unlock); unlock = null; }
     }
-    @Override public void onDestroy() { stopWaiting(); super.onDestroy(); }
+    @Override public void onDestroy() { ProductFeatures.closeRedirect(this); stopWaiting(); super.onDestroy(); }
     @Override public void onInterrupt() { }
 }

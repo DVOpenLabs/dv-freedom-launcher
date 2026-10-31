@@ -97,7 +97,7 @@ import java.util.Set;
 public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void attachBaseContext(android.content.Context base) {
-        super.attachBaseContext(LauncherLocale.wrap(base));   // locale
+        super.attachBaseContext(ProductFeatures.storageReady(base) ? LauncherLocale.wrap(base) : base);   // locale
     }
 
 
@@ -404,6 +404,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (ProductFeatures.lockedStartup(this)) return;
         ProductFeatures.init(this);
         setContentView(R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
@@ -984,6 +985,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if (ProductFeatures.awaitingUnlock(this)) return;
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;
@@ -1004,6 +1006,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onStart() {
         super.onStart();
+        if (ProductFeatures.awaitingUnlock(this)) return;
         stopped = false;
         started = true;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -1018,6 +1021,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        if (ProductFeatures.awaitingUnlock(this)) return;
         if(productUtilityPending){productUtilityPending=false;productRouted=true;return;}
         productRouted=ProductFeatures.routeHome(this);
         if(productRouted)return;
@@ -1259,6 +1263,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onPause() {
         super.onPause();
+        if (ProductFeatures.awaitingUnlock(this)) return;
         resumed = false;
         ProductFeatures.paused(this);
         HomePreview.detach(this);
@@ -1285,6 +1290,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onStop() {
         super.onStop();
+        if (ProductFeatures.awaitingUnlock(this)) return;
         if(!isChangingConfigurations())PlacementSession.PREVIEW.cancel();
         if(placementPrompt!=null){placementPrompt.dismiss();placementPrompt=null;}
         if (stylePickerEnabled) {
@@ -1306,6 +1312,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
+        if (ProductFeatures.awaitingUnlock(this)) return;
         // RUNNING_LOW and CRITICAL also arrive while Home is visible when an accessibility service keeps the
         // process in the foreground; never blank the screen the owner is looking at.
         if (!MemoryTrimPolicy.shouldRelease(level, started)) return;
@@ -1324,6 +1331,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+        if(!hasFocus)ProductFeatures.gridRepeatStop(this);
+        if (ProductFeatures.awaitingUnlock(this)) return;
         if (hasFocus) {
             startPendingSettingsReorder();
             if (libraryFocusPending && appLibrary == null) focusLibrary();
@@ -1334,6 +1343,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (ProductFeatures.awaitingUnlock(this)) { ProductFeatures.closeStartup(this); return; }
         if(companionControls!=null)companionControls.close();
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
@@ -1377,8 +1387,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * - a tile carried: arrows move it; Back (or OK) puts it down and the mode stays on for the next one.
      * Other keys (volume, Home) pass through; leaving the launcher ends the mode and saves.
      */
+    boolean productGridRepeatAllowed(){View v=getCurrentFocus();return resumed&&hasWindowFocus()&&!singleRow&&!reordering&&appLibrary==null&&openPopup==null&&cardPrompt==null&&v!=null&&v.getId()==R.id.card;}
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        if (ProductFeatures.awaitingUnlock(this)) return super.dispatchKeyEvent(event);
         if(homePolish!=null&&homePolish.key(event))return true;
         if (tvButton != null && tvButton.handle(event)) return true;
         // Vendor keys (TCL Netflix button, 4062) never reach the key services, only the focused window.
@@ -1395,6 +1408,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 return true;
             }
         }
+        if (ProductFeatures.gridRepeat(this,event)) return true;
         if (!reordering) return super.dispatchKeyEvent(event);
         if (dockEditing) return dispatchDockEdit(event);
         boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
@@ -1777,7 +1791,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         float w = card.getWidth() * scale + 2 * pad;
         float h = card.getHeight() * scale + 2 * pad;
         float x = r.exactCenterX() - w / 2f;
-        float y = r.exactCenterY() - h / 2f - (advancedEffects ? 4f * density : 0f);
+        float y = r.exactCenterY() - h / 2f - (ProductFeatures.tileLift(advancedEffects,animations) ? 4f * density : 0f);
 
         ViewGroup.LayoutParams lp = glass.getLayoutParams();
         if (lp.width != (int) w || lp.height != (int) h || card.getWidth() != glassCardW) {

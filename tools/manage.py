@@ -25,6 +25,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -394,12 +395,22 @@ def cmd_status():
     return 0
 
 
+def install_theme(folder, extra=()):
+    if os.name == "nt":
+        shell = shutil.which("pwsh") or shutil.which("powershell")
+        if not shell:
+            print("PowerShell is required for Windows theme commands. Nothing was pushed.", file=sys.stderr)
+            return 2
+        return run([shell, "-NoProfile", "-NonInteractive", "-File", str(TOOLS / "theme.ps1"), str(folder)] + list(extra), ROOT)
+    return run(["bash", str(TOOLS / "theme.sh"), str(folder)] + list(extra), ROOT)
+
+
 def cmd_install(name, extra):
     item = find(name)
     if not item or item["kind"] == "switch":
         sys.exit(f"no add-on or theme called {name}")
     if item["kind"] == "theme":
-        return run(["bash", str(TOOLS / "theme.sh"), str(ROOT / "themes" / item["id"])] + extra, ROOT)
+        return install_theme(ROOT / "themes" / item["id"], extra)
     return install_addon(item, extra)
 
 
@@ -434,7 +445,7 @@ def cmd_set(key, value, theme_folder):
         # written and the theme on the TV is untouched, so say which file and why rather than a traceback.
         sys.exit(f"cannot write {f}: {reason(e)}. Nothing was pushed.")
     print(f"{key} = {json.dumps(parsed)} in {f}")
-    return run(["bash", str(TOOLS / "theme.sh"), str(folder)], ROOT)
+    return install_theme(folder)
 
 
 SET_USAGE = ("set takes a switch, its value and --theme <your theme folder>, e.g. "

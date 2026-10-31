@@ -5,6 +5,45 @@ package, signing path and data directory. It does not install Projectivy, a seco
 The interface takes design inspiration from Projectivy; the implementation and artwork are independent.
 See the [alpha limitations](../README.md#alpha-limitations) before trying it on a new device.
 
+## Reliability and recovery
+
+The full product uses a last-known-good configuration copy while early-boot theme storage is
+unreadable. Recovery retries run only while Home is visible, for a bounded early-boot interval;
+malformed JSON never triggers a recreate loop. Explicit theme reset also invalidates the private
+copy. Before Android user unlock, Home displays a storage-free starting screen; it does not move
+profiles or private data into device-protected storage. Cold-boot behavior still needs acceptance on
+each firmware; installing this alpha does not change your selected Home or permissions.
+
+**System → Compatibility & recovery** shows local Home, optional-access, screensaver and input
+availability, with links to Saved setups and Recent changes. It never fixes settings automatically.
+**System → Storage & USB** explains safe eject and opens system Storage where available, with TV settings as a fallback. It does not
+format, remove or unmount drives. You can also add it under Control Center → Choose quick controls.
+A streaming box’s input list cannot enumerate the connected television’s HDMI ports; use the TV remote.
+
+## Appearance starting points
+
+**Appearance → Appearance presets** offers Everyday, Big & clear, Movie night and Minimal. Each has
+a still illustration and a summary, followed by a 20-second Keep/Revert confirmation. Back, leaving
+the screen or timeout saves nothing. Keep changes only the listed appearance choices in the active
+profile; apps, wallpaper/live video, playlists, explicit text color, accounts and TV settings stay saved.
+The illustration uses schematic app tiles and does not run video or reproduce every moving frame.
+The Guided Setup wizard also offers these four starting points as editable drafts.
+
+**Appearance → Focus & motion → Held arrow speed** offers System (default), Gentle (180 ms) and Slow
+(280 ms). It filters existing held-arrow repeat events in Classic’s multi-row app grid. The first press
+stays immediate. Single-row layouts, Glass/Clean/Cinema, menus, Input and volume retain normal behavior.
+No synthetic keys, timer or background service is created. Speed is profile-owned and included in saved setups.
+
+**Apps & rows → App management help** links to favorite ordering, app names/artwork, exclusions and
+system Apps. An installed background package without a launchable screen cannot become a working tile.
+Check family/profile visibility and exclusions before assuming an app is missing.
+
+Content shelves rank duplicate Watch Next entries by the app’s last engagement before applying
+per-app limits. Hold OK for source, supplied progress/time and Open app fallback. The browser
+explains unavailable sources separately from empty/filtered content; empty inline rows still collapse.
+Watch Next omits entries older than 30 days. Reads scan at most 96 rows per provider and show at most
+12 titles, so they are not a complete viewing-history view. No account scraping or background polling occurs.
+
 ## Settings that work with a remote
 
 ### App browsers, startup and shortcuts

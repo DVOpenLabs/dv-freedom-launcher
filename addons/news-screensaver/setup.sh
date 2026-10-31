@@ -48,7 +48,7 @@ if [ "$ARG" = --off ]; then
 fi
 
 if [ "$ARG" = --default-feeds ]; then
-  tv "content delete --uri $URI/feeds.txt" >/dev/null
+  "$PY" -I provider_io.py delete --uri "$URI/feeds.txt"
   echo "feeds: the built-in default"
 elif [ -n "$FEEDS" ]; then
   [ -f "$FEEDS" ] || { echo "no feeds file $FEEDS (copy feeds.example.txt to feeds.txt and edit it)" >&2; exit 1; }
@@ -75,11 +75,11 @@ elif [ -n "$FEEDS" ]; then
   [ "$N" -gt 0 ] || echo "warning: no feeds in $FEEDS: the screensaver will say so" >&2
   # Git Bash: the venv's Windows Python needs a Windows path for the temp file.
   "$PY" -I b64push.py "$(cygpath -w "$CLEAN" 2>/dev/null || printf '%s' "$CLEAN")" "$TMP-feeds.txt" | grep -q md5 || { echo "sending the feeds failed" >&2; exit 1; }
-  tv "content write --uri $URI/feeds.txt < $TMP-feeds.txt; rm -f $TMP-feeds.txt" >/dev/null
+  "$PY" -I provider_io.py put --uri "$URI/feeds.txt" --stage "$TMP-feeds.txt"
   echo "feeds: $N from $FEEDS"
 fi
 
-[ -z "$SECONDS_PER_HEADLINE" ] || tv "printf '%s' $SECONDS_PER_HEADLINE > $TMP-seconds.txt; content write --uri $URI/seconds.txt < $TMP-seconds.txt; rm -f $TMP-seconds.txt" >/dev/null
+[ -z "$SECONDS_PER_HEADLINE" ] || "$PY" -I provider_io.py put --uri "$URI/seconds.txt" --stage "$TMP-seconds.txt" --text "$SECONDS_PER_HEADLINE"
 tv "[ -f $BEFORE ] || { settings get secure screensaver_components; settings get secure screensaver_enabled; } > $BEFORE; settings put secure screensaver_components $DREAM; settings put secure screensaver_enabled 1" >/dev/null
 [ "$IDLE_MINUTES" -eq 0 ] || tv "settings put system screen_off_timeout $((IDLE_MINUTES * 60000))" >/dev/null
 echo "On the TV now:"

@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'com.dvopenlabs.freedom.companions'
     compileSdk 34
-    defaultConfig { applicationId 'com.dvopenlabs.freedom.companions'; minSdk 26; targetSdk 34; versionCode 4; versionName '0.1-alpha4' }
+    defaultConfig { applicationId 'com.dvopenlabs.freedom.companions'; minSdk 26; targetSdk 34; versionCode 5; versionName '0.1-alpha5' }
     buildTypes { release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'; signingConfig signingConfigs.debug } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     testOptions { unitTests.returnDefaultValues = true }

@@ -3,6 +3,23 @@ import org.junit.Test;
 import java.util.*;
 import static org.junit.Assert.*;
 public class HomePresetsTest {
+    @Test public void focusOutlineRoundTripsAsABoolean(){
+        assertEquals(Boolean.TRUE,SetupValues.validate(Collections.singletonMap(TileSpacing.FOCUS,true)).get(TileSpacing.FOCUS));
+        assertEquals(Boolean.FALSE,SetupValues.validate(Collections.singletonMap(TileSpacing.FOCUS,false)).get(TileSpacing.FOCUS));
+        assertThrows(IllegalArgumentException.class,()->SetupValues.validate(Collections.singletonMap(TileSpacing.FOCUS,"true")));
+    }
+    @Test public void galleryOnlyChangesReviewedAppearance(){
+        for(int i=0;i<HomePresets.NAMES.length;i++){
+            Map<String,Object> values=PresetGallery.values(i);
+            assertFalse(values.containsKey(HomePolish.INK));
+            assertFalse(values.containsKey(HomePolish.HEADER));
+            assertFalse(values.containsKey(DesktopLayout.STATE));
+            assertFalse(values.containsKey(ThemeLibrary.LIVE));
+            assertFalse(values.containsKey(WallpaperPlaylistChoice.KEY));
+            assertFalse(values.containsKey(ThemeLibrary.CHOICE));
+            SetupValues.validate(values);
+        }
+    }
     @Test public void presetsStayInsideTheValidatedSetupBoundary() {
         for(int i=0;i<HomePresets.NAMES.length;i++) {
             Map<String,Object> draft=new HashMap<>();draft.put("schema",1);draft.put("settings",HomePresets.settings(i));

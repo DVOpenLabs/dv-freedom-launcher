@@ -42,17 +42,21 @@ $tmp = '/data/local/tmp/cyt-theme'
 function Stage($name) { "$tmp-$($name -replace '/', '-')" }
 # Android 8 and 9 have no `content write`: they print "[ERROR] Unsupported operation: write" but exit 0, so
 # that message counts as a failure and cp runs.
-function Put($name) { $t = Stage $name; "rm -f $dir/$name 2>/dev/null; { o=`$(content write --uri $uri/$name < $t 2>&1) && case `"`$o`" in *'Unsupported operation'*) false ;; esac; } || cp $t $dir/$name 2>/dev/null; rm -f $t" }
-function Drop($name) { "rm -f $dir/$name 2>/dev/null; content delete --uri $uri/$name 2>/dev/null" }
+function Put($name) { Invoke-Tv provider_io.py put --uri "$uri/$name" --stage (Stage $name) --fallback "$dir/$name" }
+function Drop($name) { Invoke-Tv provider_io.py delete --uri "$uri/$name" }
+function Write-Revision { Invoke-Tv provider_io.py put --uri "$uri/theme_revision" --stage "$tmp-theme_revision" --fallback "$dir/theme_revision" --text $revision }
+function Clear-Collection { Invoke-Tv provider_io.py delete --uri "$uri/wallpapers" }
 
 # The collection a theme can push. A push empties it before writing the theme's own pictures, and -Reset has to
 # empty it too: the launcher's wallpaper picker lists that folder itself, and an on-TV pick of one of its
 # pictures is read back from it, so a reset that left the pictures behind still shows the theme it just removed.
 # Both paths use this one string (the same one theme.sh has).
-$clearWallpapers = "mkdir -p $dir/wallpapers 2>/dev/null; rm -f $dir/wallpapers/*.[jJ][pP][gG] $dir/wallpapers/*.[jJ][pP][eE][gG] $dir/wallpapers/*.[pP][nN][gG] $dir/wallpapers/*.[wW][eE][bB][pP] 2>/dev/null; content delete --uri $uri/wallpapers 2>/dev/null"
-
 if ($Reset) {
-    Invoke-Tv tv.py "mkdir -p $dir 2>/dev/null; $(Drop 'config.json'); $(Drop 'wallpaper.jpg'); $(Drop 'wallpapers/captions.txt'); $clearWallpapers; printf '%s' '$revision' > $tmp-theme_revision; $(Put 'theme_revision')" | Out-Null
+    Drop 'config.json'
+    Drop 'wallpaper.jpg'
+    Drop 'wallpapers/captions.txt'
+    Clear-Collection
+    Write-Revision
     & $py -I theme_restart.py
     if ($LASTEXITCODE) { throw 'Home restart recovery failed' }
     Write-Host 'reset'
@@ -82,23 +86,23 @@ if (Test-Path $wallpapers -PathType Container) {
 # Tolerated, as in theme.sh: a TV that locks Android/data still takes the files through ThemeProvider.
 Invoke-Tv tv.py "mkdir -p $dir 2>/dev/null; true" | Out-Null
 Invoke-Tv tv.py --push $config "$tmp-config.json" | Out-Null
-Invoke-Tv tv.py (Put 'config.json')
+Put 'config.json'
 $wall = Join-Path $Theme 'wallpaper.jpg'
-if (Test-Path $wall) { Invoke-Tv b64push.py $wall "$tmp-wallpaper.jpg"; Invoke-Tv tv.py (Put 'wallpaper.jpg') } else { Invoke-Tv tv.py (Drop 'wallpaper.jpg') | Out-Null }
-Invoke-Tv tv.py $clearWallpapers | Out-Null
+if (Test-Path $wall) { Invoke-Tv b64push.py $wall "$tmp-wallpaper.jpg"; Put 'wallpaper.jpg' } else { Drop 'wallpaper.jpg' }
+Clear-Collection
 foreach ($image in $images) {
     Invoke-Tv b64push.py $image.FullName (Stage "wallpapers/$($image.Name)")
-    Invoke-Tv tv.py (Put "wallpapers/$($image.Name)") | Out-Null
+    Put "wallpapers/$($image.Name)"
 }
 # The collection's names (wallpaper_captions); a theme without them leaves no stale names behind.
 $captions = Join-Path $Theme 'wallpapers\captions.txt'
 if (Test-Path $captions -PathType Leaf) {
     Invoke-Tv b64push.py $captions (Stage 'wallpapers/captions.txt')
-    Invoke-Tv tv.py (Put 'wallpapers/captions.txt') | Out-Null
+    Put 'wallpapers/captions.txt'
 } else {
-    Invoke-Tv tv.py (Drop 'wallpapers/captions.txt') | Out-Null
+    Drop 'wallpapers/captions.txt'
 }
-Invoke-Tv tv.py "printf '%s' '$revision' > $tmp-theme_revision; $(Put 'theme_revision')" | Out-Null
+Write-Revision
 & $py -I theme_restart.py
 if ($LASTEXITCODE) { throw 'Home restart recovery failed' }
 Write-Host 'applied'

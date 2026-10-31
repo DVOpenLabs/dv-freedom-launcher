@@ -237,3 +237,13 @@ Open a PR with a new folder here containing:
 Then add a row to the table above with the screenshot, the same way as the others. Keep the dock list
 generic (the big streaming apps) unless the theme is for a specific TV, and say which TV you tried it on
 in the PR description.
+
+Advanced theme scripts require a returned acknowledgement for each provider write/delete before
+claiming completion or requesting a Home restart. A zero shell exit with provider diagnostics fails.
+Legacy copy fallback is retained for writes; deletion without a responding provider is refused.
+Partial earlier writes are possible: this is not a multi-file transaction or automatic rollback.
+Use current providers for explicit deletion failures and keep a recovery point before replacing media.
+Ordinary GUI launcher updates do not run these theme-reset scripts.
+
+The retained Photos 1.1 and News 1.2-freedom source also report deletion errors explicitly.
+An older provider that silently swallows its own failure cannot give that stronger guarantee.

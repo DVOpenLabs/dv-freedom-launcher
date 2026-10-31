@@ -136,3 +136,8 @@ OkHttp/Okio and Kotlin. Exact runtime versions and attribution are retained in
 [media3-NOTICE.txt](licenses/media3-NOTICE.txt), with Apache/other applicable licence texts copied into
 the app’s generated notices. No Corner Player code, camera imagery, native decoder extension or
 Frigate source is linked into the core launcher. It is MIT product code with separately reviewed access.
+
+Reliability safeguards and preset/remote interactions also draw on failure cases discussed in the
+MIT CleanYourTV community. Exact references and adaptation scopes are in [sources.json](sources.json).
+The implementations retain DV’s permission, profile and recovery contracts. The provider helper’s
+output handling follows Android’s [content command behavior](https://github.com/aosp-mirror/platform_frameworks_base/blob/android14-release/cmds/content/src/com/android/commands/content/Content.java); no AOSP source was copied.

@@ -45,17 +45,22 @@ TMP=/data/local/tmp/cyt-theme
 stage() { echo "$TMP-${1//\//-}"; }
 # Android 8 and 9 have no `content write`: they print the usage and "[ERROR] Unsupported operation: write" but
 # exit 0, so the exit status alone would skip cp and leave the file deleted. Treat that message as a failure.
-put() { echo "rm -f $DIR/$1 2>/dev/null; { o=\$(content write --uri $URI/$1 < $(stage "$1") 2>&1) && case \"\$o\" in *'Unsupported operation'*) false ;; esac; } || cp $(stage "$1") $DIR/$1 2>/dev/null; rm -f $(stage "$1")"; }
-del() { echo "rm -f $DIR/$1 2>/dev/null; content delete --uri $URI/$1 2>/dev/null"; }
+# provider_io requires an acknowledgement returned by the TV, not an echoed command.
+put() { "$PY" -I provider_io.py put --uri "$URI/$1" --stage "$(stage "$1")" --fallback "$DIR/$1"; }
+del() { "$PY" -I provider_io.py delete --uri "$URI/$1"; }
+revision() { "$PY" -I provider_io.py put --uri "$URI/theme_revision" --stage "$TMP-theme_revision" --fallback "$DIR/theme_revision" --text "$REVISION"; }
+clear_collection() { "$PY" -I provider_io.py delete --uri "$URI/wallpapers"; }
 
 # The collection a theme can push. A push empties it before writing the theme's own pictures, and --reset has to
 # empty it too: the launcher's wallpaper picker (LauncherSettingsActivity.showWallpaperPicker) lists that folder
 # itself, and an on-TV pick of one of its pictures is read back from it (WallpaperRotation.chosen), so a reset
 # that left the pictures behind still shows the theme it just removed. Both paths use this one string.
-CLEAR_WALLPAPERS="mkdir -p $DIR/wallpapers 2>/dev/null; rm -f $DIR/wallpapers/*.[jJ][pP][gG] $DIR/wallpapers/*.[jJ][pP][eE][gG] $DIR/wallpapers/*.[pP][nN][gG] $DIR/wallpapers/*.[wW][eE][bB][pP] 2>/dev/null; content delete --uri $URI/wallpapers 2>/dev/null"
-
 if [ "${1:-}" = --reset ]; then
-  tv "mkdir -p $DIR 2>/dev/null; $(del config.json); $(del wallpaper.jpg); $(del wallpapers/captions.txt); $CLEAR_WALLPAPERS; printf '%s' '$REVISION' > $TMP-theme_revision; $(put theme_revision)" >/dev/null
+  del config.json
+  del wallpaper.jpg
+  del wallpapers/captions.txt
+  clear_collection
+  revision
   "$PY" -I theme_restart.py
   echo reset
   exit 0
@@ -103,26 +108,26 @@ fi
 
 tv "mkdir -p $DIR" >/dev/null 2>&1 || true
 tv --push "$THEME/config.json" "$TMP-config.json" >/dev/null
-tv "$(put config.json)"
+put config.json
 if [ -f "$THEME/wallpaper.jpg" ]; then
   "$PY" -I b64push.py "$THEME/wallpaper.jpg" "$TMP-wallpaper.jpg"
-  tv "$(put wallpaper.jpg)"
+  put wallpaper.jpg
 else
-  tv "$(del wallpaper.jpg)" >/dev/null
+  del wallpaper.jpg
 fi
-tv "$CLEAR_WALLPAPERS" >/dev/null
+clear_collection
 for NAME in $NAMES; do
   "$PY" -I b64push.py "$THEME/wallpapers/$NAME" "$(stage "wallpapers/$NAME")"
-  tv "$(put "wallpapers/$NAME")" >/dev/null
+  put "wallpapers/$NAME"
 done
 # The collection's names (wallpaper_captions); a theme without them leaves no stale names behind.
 if [ -f "$THEME/wallpapers/captions.txt" ]; then
   "$PY" -I b64push.py "$THEME/wallpapers/captions.txt" "$(stage wallpapers/captions.txt)"
-  tv "$(put wallpapers/captions.txt)" >/dev/null
+  put wallpapers/captions.txt
 else
-  tv "$(del wallpapers/captions.txt)" >/dev/null
+  del wallpapers/captions.txt
 fi
-tv "printf '%s' '$REVISION' > $TMP-theme_revision; $(put theme_revision)" >/dev/null
+revision
 "$PY" -I theme_restart.py
 echo applied
 echo "Theme $(basename "$THEME") is on the TV. Undo with: tools/theme.sh --reset"

@@ -208,5 +208,63 @@
       "transport": "OkHttp 4.12.0; private RTSP-over-TCP, same-origin HTTPS",
       "licenseNotices": "product/licenses/media3-1.4.1-LICENSE.txt"
     }
+  },
+  "reliabilityReferences": {
+    "repository": "https://github.com/Gathin23/cleanyourtv",
+    "license": "MIT",
+    "implementation": "Independent DV adaptations of reported failure cases and interaction concepts; no wholesale patch import",
+    "references": [
+      {
+        "pullRequest": 1734,
+        "use": "Reject transient setup/recovery Homes in desktop and phone Setup"
+      },
+      {
+        "pullRequest": 2696,
+        "use": "Conservative core/middleware package protections"
+      },
+      {
+        "pullRequest": 2327,
+        "use": "Bounded early-storage fallback with explicit reset invalidation"
+      },
+      {
+        "pullRequest": 1448,
+        "use": "Storage-free pre-unlock Home entry"
+      },
+      {
+        "issue": 2779,
+        "use": "Deferred Home-only redirect with later-window cancellation"
+      },
+      {
+        "pullRequests": [
+          842,
+          2336,
+          2403
+        ],
+        "use": "Acknowledged provider operations in retained advanced scripts"
+      },
+      {
+        "pullRequest": 2836,
+        "use": "Rank Watch Next duplicates before selection limits"
+      },
+      {
+        "pullRequest": 2759,
+        "use": "Refresh ownership and stable entity focus in primary DV Companions; thermostat code not imported"
+      },
+      {
+        "pullRequests": [
+          2575,
+          2713
+        ],
+        "use": "Geometry failure cases reviewed; only demonstrated no-animation lift mismatch corrected"
+      },
+      {
+        "pullRequest": 2681,
+        "use": "Optional slower Classic-grid OS repeat filtering; no repeating timer copied"
+      },
+      {
+        "pullRequest": 2807,
+        "use": "Appearance starting-point concept; independent still gallery and timed confirmation"
+      }
+    ]
   }
 }

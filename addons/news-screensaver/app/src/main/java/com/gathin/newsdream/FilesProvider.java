@@ -42,10 +42,13 @@ public class FilesProvider extends ContentProvider {
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         try {
             File f = file(uri);
+            if (f.getParentFile().list() == null) throw new IllegalStateException("News settings are unreadable");
+            boolean present = f.exists();
+            if (present && !f.delete()) throw new IllegalStateException("News settings could not be removed");
             if (Config.FEEDS.equals(f.getName())) News.clearCache(f.getParentFile());
-            return f.delete() ? 1 : 0;
+            return present ? 1 : 0;
         } catch (FileNotFoundException e) {
-            return 0;
+            throw new IllegalArgumentException("Unsupported news settings path", e);
         }
     }
 

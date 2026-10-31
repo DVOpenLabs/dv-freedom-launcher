@@ -4,8 +4,8 @@ This guide documents package identity, signing and installation/recovery contrac
 
 ## New installations
 
-The full community product defaults to `com.dvopenlabs.freedomlauncher`, version code 21,
-`3.2-freedom-alpha20`, minimum Android 8/API 26. The inherited reference variant keeps its identity,
+The full community product defaults to `com.dvopenlabs.freedomlauncher`, version code 22,
+`3.2-freedom-alpha21`, minimum Android 8/API 26. The inherited reference variant keeps its identity,
 version and size gate. An existing installation requires the same application ID and compatible signer to preserve its data.
 
 `-PfreedomRelease=true` requires the standalone community identity and externally supplied PKCS12
@@ -23,7 +23,7 @@ The Windows executable has no Authenticode signature yet. This is not a signed p
 
 - Review binds the TV fingerprint, active native profile/revision, exact choices and signed artifact.
 - Only the fixed standalone package can be installed. A changed signer, downgrade, stale review,
-  ambiguous original Home or device mismatch fails closed. No uninstall/reinstall fallback exists.
+  ambiguous, recovery, setup or fallback original Home or device mismatch fails closed. No uninstall/reinstall fallback exists.
 - Before an update, save active-profile settings, wallpaper references and installed APK locally.
   A fresh install saves its initial native baseline before preview. No account or media-file backup
   is implied. No all-profile backup or automatic APK downgrade is offered.
@@ -55,7 +55,11 @@ a different installed signer blocks an update. Companion installation grants no 
 Home routing. Recovery records retain the previous APK/Home binding, not Android private app data;
 automatic downgrade/uninstall fallback is not provided. These generated bundles remain ignored by Git.
 
-The existing identities and signers are retained. The optional Companions package is code 3 /
-`0.1-alpha3`; Phone Remote is code 4 / `0.1-alpha4`. Weather/Sleep Timer/World Clock/Quiet Hours retain
+The existing identities and signers are retained. The optional Companions package is code 5 /
+`0.1-alpha5`; Phone Remote is code 4 / `0.1-alpha4`. Weather/Sleep Timer/World Clock/Quiet Hours retain
 their earlier package/version contracts. New phone setup is an app-owned, same-signer provider opt-in;
 it adds no Internet permission to the launcher or automatic Accessibility/system grant.
+
+The separate native phone Setup is code 2 / `0.1-alpha2`. Both desktop and phone Setup reject
+boot/setup/recovery placeholders as an original Home, including in saved recovery records. Select a
+working Home in TV settings before creating a new review if a previous record points to a placeholder.

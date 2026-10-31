@@ -11,8 +11,8 @@ android {
         // Android 8 and up, as the launcher.
         minSdk 26
         targetSdk 34
-        versionCode 2
-        versionName '1.1-freedom'
+        versionCode 3
+        versionName '1.2-freedom'
     }
 
     buildTypes {

@@ -21,6 +21,18 @@ authorized timed corner window. All new connections and restricted modes start o
 [Feature guide](product/ANDROID-COMMUNITY.md) ·
 [Report feedback](https://github.com/DVOpenLabs/dv-freedom-launcher/issues/new/choose)
 
+## New in the Android alpha
+
+Appearance now includes four illustrated presets with timed Keep/Revert and optional slower held
+arrows for the Classic grid. System adds a read-only **Compatibility & recovery** screen and safe
+**Storage & USB** guidance. App-management help makes existing controls easier to find; shared-content
+shelves choose the newest duplicate and explain source/empty-state limits.
+
+The reliability work strengthens early-storage recovery, explicit theme reset, pre-unlock startup,
+Home-only redirect timing and optional Home Assistant refresh ownership. Desktop and phone Setup
+reject recovery/setup placeholders as an original Home. See the [feature guide](product/ANDROID-COMMUNITY.md)
+for behavior, access paths and firmware-testing limits. Source updates do not publish a new binary release.
+
 ## One setup, a clear path for each device
 
 ![DV Freedom Setup showing the available device paths](docs/screenshots/setup-paths.jpg)

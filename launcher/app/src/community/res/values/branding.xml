@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="starting_home">Starting DV Freedom…</string>
     <string name="freedom_app_name" translatable="false">DV Freedom Launcher</string>
     <string name="freedom_tagline">Your TV. Your way.</string>
     <string name="freedom_about">About DV Freedom Launcher</string>

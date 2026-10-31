@@ -653,7 +653,7 @@ final class Config {
         SharedPreferences choices = ProfileStore.preferences(ctx);
         if (inputVisibilityChoice) hideInactiveHdmi = choices.getBoolean(HdmiVisibility.CHOICE, hideInactiveHdmi);
         // Unmounted storage looks like a theme reset; compare only once the file is readable.
-        if (mounted) syncThemeChoices(choices, baseDir, file);
+        if (mounted && ProductFeatures.overlayChoicesReady()) syncThemeChoices(choices, baseDir, file);
         int chosenColumns = choices.getInt("columns", columns);
         if (chosenColumns >= 4 && chosenColumns <= 8) columns = chosenColumns;
         int chosenRows = choices.getInt(ROWS_BELOW_DOCK_KEY, rowsBelow);
@@ -836,18 +836,33 @@ final class Config {
      */
     private static JSONObject readOverlay(Context ctx, File file, boolean mounted) {
         File copy = new File(ctx.getFilesDir(), FILE_NAME);
+        ProductFeatures.recoverOverlayCopy(copy);
+        ProductFeatures.overlayLoaded(!mounted);
         if (!mounted) return read(copy);
         JSONObject json = read(file);
+        if (json == null && ProductFeatures.keepOverlayCopy(copy)) {
+            ProductFeatures.overlayLoaded(true);
+            return read(copy);
+        }
         if (json == null) {
             copy.delete();
         } else {
+            byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
+            if (ProductFeatures.saveOverlayCopy(copy, bytes)) return json;
             try (FileOutputStream out = new FileOutputStream(copy)) {
-                out.write(json.toString().getBytes(StandardCharsets.UTF_8));
+                out.write(bytes);
             } catch (IOException e) {
                 Log.w(TAG, "could not keep a copy of " + file + ": " + e.getMessage());
             }
         }
         return json;
+    }
+
+    /** No side effects: an invalid or partial file must not trigger an early-boot recreate loop. */
+    static boolean overlayReadable(Context ctx) {
+        File dir = dir(ctx);
+        return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+                && dir != null && read(new File(dir, FILE_NAME)) != null;
     }
 
     private static JSONObject read(File file) {

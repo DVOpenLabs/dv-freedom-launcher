@@ -65,7 +65,7 @@ if args and args[0] == "--push":
     with open(src, "rb") as f, open(dst, "wb") as g:
         g.write(f.read())
 else:
-    Device().shell(" ".join(args))
+    print(Device().shell(" ".join(args)), end="")
 '''
 
 # Stands in for `content write/delete` against content://com.gathin.tvhome.theme, which on a TV runs inside
@@ -108,12 +108,13 @@ class ThemePushTest(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.base, ignore_errors=True)
         self.tools = self.base / "tools"
         self.tools.mkdir()
-        for name in ("theme.sh", "b64push.py", "theme_restart.py"):
+        for name in ("theme.sh", "b64push.py", "theme_restart.py", "provider_io.py"):
             shutil.copy2(TOOLS / name, self.tools / name)
         (self.tools / "tv.py").write_text(FAKE_TV)
         venv = self.tools / "venv" / "bin"
         venv.mkdir(parents=True)
-        (venv / "python").symlink_to(sys.executable)
+        if os.name == "posix":
+            (venv / "python").symlink_to(sys.executable)
         self.bin = self.base / "bin"
         self.bin.mkdir()
         content = self.bin / "content"
@@ -171,7 +172,7 @@ class ThemePushTest(unittest.TestCase):
         self.assertEqual((self.device / "config.json").read_bytes(), self.config,
                          "the theme has to land on the TV")
         put = self.command_for("config.json")
-        self.assertTrue(put.startswith(f"rm -f {DEVICE_DIR}/config.json"),
+        self.assertIn(f"rm -f {DEVICE_DIR}/config.json", put,
                         f"a file the shell owns stops the provider truncating it: {put}")
         self.assertLess(put.index("content write"), put.index("cp "),
                         f"cp creates a shell-owned file on Android 14: {put}")
@@ -180,12 +181,13 @@ class ThemePushTest(unittest.TestCase):
         self.assertNotIn(f"cp {self.stage}-config.json {DEVICE_DIR}/config.json", " | ".join(self.shell_commands()),
                          "the provider is available, so cp must not run")
 
-    def test_without_the_provider_cp_still_delivers_the_theme(self):
+    def test_missing_provider_does_not_claim_unverified_cleanup_succeeded(self):
         result = self.run_theme(str(self.theme), FAKE_NO_PROVIDER="1")
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertEqual((self.device / "config.json").read_bytes(), self.config,
-                         "firmware without the provider keeps the old path")
-        self.assertTrue(self.provider_calls(), "the provider is tried first")
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("is on the TV", result.stdout)
+        self.assertFalse(any("am start" in c for c in self.shell_commands()))
+        # Legacy copying can complete an earlier write; this is not an atomic rollback.
+        self.assertEqual((self.device / "config.json").read_bytes(), self.config)
 
     def test_android_8_without_content_write_falls_back_to_cp(self):
         """Android 8/9 `content` has no write: it exits 0 after printing an error, so the status alone is not enough."""
@@ -257,31 +259,18 @@ class ThemePushTest(unittest.TestCase):
         self.assertIn("unsupported wallpaper filename: bad name.JpG", result.stderr)
         self.assertFalse((self.device / "wallpapers" / "bad name.JpG").exists())
 
-    def test_mixed_case_collection_is_replaced_and_reset_without_the_provider(self):
+    def test_no_provider_cleanup_is_refused_before_restart(self):
         collection = self.theme / "wallpapers"
         collection.mkdir()
-        first = collection / "previous.JpG"
-        first.write_bytes(b"\x00\xfffirst picture")
-
+        (collection / "previous.JpG").write_bytes(b"first picture")
         pushed = self.run_theme(str(self.theme), FAKE_NO_PROVIDER="1")
-        self.assertEqual(pushed.returncode, 0, pushed.stdout + pushed.stderr)
-        device_collection = self.device / "wallpapers"
-        self.assertEqual(sorted(path.name for path in device_collection.iterdir()), [first.name])
-        self.assertEqual((device_collection / first.name).read_bytes(), first.read_bytes())
-
-        first.unlink()
-        second = collection / "next.PnG"
-        second.write_bytes(b"\x00\xffsecond picture")
-        replaced = self.run_theme(str(self.theme), FAKE_NO_PROVIDER="1")
-        self.assertEqual(replaced.returncode, 0, replaced.stdout + replaced.stderr)
-        self.assertEqual(sorted(path.name for path in device_collection.iterdir()), [second.name],
-                         "without the provider, the shell must still remove the previous collection")
-        self.assertEqual((device_collection / second.name).read_bytes(), second.read_bytes())
-
+        self.assertNotEqual(pushed.returncode, 0, pushed.stdout + pushed.stderr)
+        self.assertIn("did not confirm", pushed.stderr)
+        self.assertFalse(any("am start" in value for value in self.shell_commands()))
         reset = self.run_theme("--reset", FAKE_NO_PROVIDER="1")
-        self.assertEqual(reset.returncode, 0, reset.stdout + reset.stderr)
-        self.assertEqual(list(device_collection.iterdir()), [],
-                         "reset must remove mixed-case images even without the provider")
+        self.assertNotEqual(reset.returncode, 0, reset.stdout + reset.stderr)
+        self.assertNotIn("reset\n", reset.stdout)
+        self.assertFalse(any("am start" in value for value in self.shell_commands()))
 
     def test_restart_failure_stops_apply_and_reset_success_messages(self):
         for arguments in ((str(self.theme),), ("--reset",)):
@@ -303,10 +292,12 @@ class ThemePushTest(unittest.TestCase):
         """theme.ps1 cannot run here, so pin the order that the fix depends on."""
         script = (TOOLS / "theme.ps1").read_text(encoding="utf-8")
         put = next(line for line in script.splitlines() if line.startswith("function Put("))
-        self.assertIn("rm -f $dir/$name", put)
-        self.assertLess(put.index("rm -f $dir/$name"), put.index("content write"), put)
-        self.assertLess(put.index("content write"), put.index("cp $t $dir/$name"), put)
-        self.assertIn("Unsupported operation", put, "Android 8/9 exit 0 without writing; cp has to run then")
+        self.assertIn('Invoke-Tv provider_io.py put', put)
+        self.assertIn('--stage (Stage $name)', put)
+        self.assertIn('--fallback "$dir/$name"', put)
+        helper = (TOOLS / "provider_io.py").read_text(encoding="utf-8")
+        self.assertLess(helper.index('rm -f {q(fallback)}'), helper.index('|| {{ mkdir -p'))
+        self.assertIn('[ -z "$o" ]', helper, "zero-exit provider errors must not count as success")
 
     def test_reset_clears_the_wallpaper_collection(self):
         """--reset promises the built-in config.xml, but the picker reads wallpapers/ from the TV itself."""
@@ -337,27 +328,21 @@ class ThemePushTest(unittest.TestCase):
         self.assertEqual(reset.returncode, 0, reset.stdout + reset.stderr)
         reset_commands = self.shell_commands()
 
-        clear = [c for c in push_commands
-                 if "content delete --uri content://com.gathin.tvhome.theme/wallpapers 2>/dev/null" in c]
-        self.assertEqual(len(clear), 1, f"a push empties the collection first: {push_commands}")
-        self.assertIn(f"{DEVICE_DIR}/wallpapers/*.[jJ][pP][gG]", clear[0])
-        self.assertIn(f"{DEVICE_DIR}/wallpapers/*.[wW][eE][bB][pP]", clear[0],
-                      "the shell fallback clears every extension spelling the script pushes")
-        joined = " | ".join(reset_commands)
-        self.assertIn(clear[0], joined,
-                      "the reset has to run the very same clear, or the two paths drift apart again")
-        self.assertIn(f"content delete --uri content://com.gathin.tvhome.theme/wallpapers/captions.txt", joined)
+        uri = "content delete --uri content://com.gathin.tvhome.theme/wallpapers "
+        self.assertEqual(1, sum(uri in command for command in push_commands))
+        self.assertEqual(1, sum(uri in command for command in reset_commands))
+        self.assertTrue(any("content delete --uri content://com.gathin.tvhome.theme/wallpapers/captions.txt" in command for command in reset_commands))
 
     def test_the_windows_script_clears_the_collection_on_reset(self):
         """theme.ps1 cannot run here, so the -Reset branch is pinned as text against theme.sh."""
         script = (TOOLS / "theme.ps1").read_text(encoding="utf-8")
-        reset = next(line for line in script.splitlines() if line.strip().startswith("Invoke-Tv tv.py \"mkdir -p $dir"))
-        self.assertIn("$(Drop 'wallpapers/captions.txt')", reset)
-        self.assertIn("$clearWallpapers", reset, "one shared clear, as in theme.sh")
-        clear = next(line for line in script.splitlines() if line.startswith("$clearWallpapers = "))
-        self.assertIn("rm -f $dir/wallpapers/*.[jJ][pP][gG]", clear)
-        self.assertIn("content delete --uri $uri/wallpapers", clear)
-        self.assertNotIn("captions", clear, "the captions file is dropped on its own line, as in theme.sh")
+        reset = script.split("if ($Reset) {", 1)[1].split("exit 0", 1)[0]
+        self.assertIn("Drop 'wallpapers/captions.txt'", reset)
+        self.assertIn("Clear-Collection", reset)
+        clear = next(line for line in script.splitlines() if line.startswith("function Clear-Collection"))
+        self.assertIn('Invoke-Tv provider_io.py delete --uri "$uri/wallpapers"', clear)
+        self.assertLess(reset.index("Clear-Collection"), reset.index("theme_restart.py"))
+
 
 
 if __name__ == "__main__":

@@ -67,7 +67,7 @@ while read -r SUM NAME; do
   KEEP=
   for F in ${FILES[@]+"${FILES[@]}"}; do [ "$(basename "$F")" = "$NAME" ] && KEEP=1; done
   if [ -z "$KEEP" ]; then
-    tv "rm -f $DIR/$NAME 2>/dev/null; content delete --uri $URI/$NAME 2>/dev/null" >/dev/null
+    "$PY" -I provider_io.py delete --uri "$URI/$NAME"
     echo "removed $NAME"
   fi
 done <<< "$ON_TV"
@@ -78,11 +78,11 @@ for F in ${FILES[@]+"${FILES[@]}"}; do
   echo "sending $NAME"
   "$PY" -I b64push.py "$F" "$TMP-$NAME" | grep md5 || { echo "sending $NAME failed; run the script again to resume" >&2; exit 1; }
   # Written through the app's FilesProvider so the app owns the file (on TCL G10 a copied one gives EACCES).
-  tv "rm -f $DIR/$NAME 2>/dev/null; content write --uri $URI/$NAME < $TMP-$NAME 2>/dev/null || { mkdir -p $DIR; cp $TMP-$NAME $DIR/$NAME; }; rm -f $TMP-$NAME" >/dev/null
+  "$PY" -I provider_io.py put --uri "$URI/$NAME" --stage "$TMP-$NAME" --fallback "$DIR/$NAME"
   SENT=$((SENT + 1))
 done
 
-tv "printf '%s' $SECONDS_PER_PICTURE > $TMP-seconds.txt; content write --uri content://$PKG.files/seconds.txt < $TMP-seconds.txt; rm -f $TMP-seconds.txt" >/dev/null
+"$PY" -I provider_io.py put --uri "content://$PKG.files/seconds.txt" --stage "$TMP-seconds.txt" --text "$SECONDS_PER_PICTURE"
 tv "[ -f $BEFORE ] || { settings get secure screensaver_components; settings get secure screensaver_enabled; } > $BEFORE; settings put secure screensaver_components $DREAM; settings put secure screensaver_enabled 1" >/dev/null
 [ "$IDLE_MINUTES" -eq 0 ] || tv "settings put system screen_off_timeout $((IDLE_MINUTES * 60000))" >/dev/null
 COUNT=$(tv "ls $DIR 2>/dev/null | wc -l" | tr -d '\r ')

@@ -47,17 +47,29 @@ public class FilesProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         File dir = dir();
-        if (dir != null && Media.isFolder(uri.getPathSegments())) {
-            File[] files = new File(dir, Media.PICTURES).listFiles((d, name) -> Media.file(name));
-            int n = 0;
-            if (files != null) for (File f : files) if (f.delete()) n++;
-            return n;
+        if (dir == null || !dir.isDirectory() || dir.list() == null)
+            throw new IllegalStateException("Photo storage is unavailable");
+        if (Media.isFolder(uri.getPathSegments())) {
+            File folder = new File(dir, Media.PICTURES);
+            if (!folder.exists()) return 0;
+            File[] files = folder.listFiles((d, name) -> Media.file(name));
+            if (files == null) throw new IllegalStateException("Photo folder is unreadable");
+            int count = 0;
+            for (File f : files) count += remove(f);
+            return count;
         }
-        try {
-            return file(uri).delete() ? 1 : 0;
-        } catch (FileNotFoundException e) {
-            return 0;
-        }
+        String path = Media.path(uri.getPathSegments());
+        if (path == null) throw new IllegalArgumentException("Unsupported photo path");
+        return remove(new File(dir, path));
+    }
+
+    private static int remove(File file) {
+        File parent = file.getParentFile();
+        if (parent != null && parent.exists() && parent.list() == null)
+            throw new IllegalStateException("Photo folder is unreadable");
+        if (!file.exists()) return 0;
+        if (!file.delete()) throw new IllegalStateException("Photo file could not be removed");
+        return 1;
     }
 
     @Override public boolean onCreate() { return true; }
