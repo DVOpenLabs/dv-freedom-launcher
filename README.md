@@ -6,16 +6,19 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 20; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 21; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 30 October 2026:** alpha 20 expands the searchable Add-on Centre, adds photo/art
-ambient views, richer Discover filters and reviewed service links, child-friendly Homes, optional
-colour-key volume presets and a foreground wake rule. A separate Android phone Setup app uses paired
-TLS and the same signed TV release. Native LG/Samsung gain favourite-only views and picture framing.
-Optional [Camera](launcher/camera/README.md) adds silent personal-stream viewing and a separately
-authorized timed corner window. All new connections and restricted modes start off. See the guides for requirements and testing limits.
+**Latest update — 31 October 2026:** alpha 21 strengthens setup recovery, startup/storage handling,
+Home redirect timing and shared-content correctness. It adds reviewed appearance presets,
+compatibility/recovery guidance, safe Storage/USB access and optional slower Classic-grid arrows.
+Your existing Home settings and optional-access choices stay saved during an update.
+
+The Add-on Centre includes optional photo/art ambient views, Discover, family Homes, calendars,
+phone controls and a separately authorized [Camera](launcher/camera/README.md) window. A separate
+Android phone Setup app uses paired TLS and the signed TV release contract. Connections and
+restricted modes start off. See the guides for requirements and testing limits.
 
 [Try Setup](#try-the-setup-gui) · [Platform comparison](#choose-your-platform) ·
 [Feature guide](product/ANDROID-COMMUNITY.md) ·
