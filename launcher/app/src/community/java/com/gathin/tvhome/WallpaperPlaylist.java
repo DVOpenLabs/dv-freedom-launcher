@@ -51,13 +51,14 @@ final class WallpaperPlaylist {
     private void start(){
         if(active||closed)return;
         if(raw.equals(playback.getString("spec",""))){String current=playback.getString("current","");for(int i=0;i<entries.size();i++)if(entries.get(i).token.equals(current)&&i!=index){index=i;loaded=false;poster.setImageDrawable(null);bitmap=null;}clock.restore(playback.getLong("remaining",clock.period));}
-        active=true;updateScene();if(scene.isEmpty())clock.start(SystemClock.elapsedRealtime());if(loaded&&video!=null)video.start();schedule();handler.removeCallbacks(scenePulse);handler.postDelayed(scenePulse,60000-System.currentTimeMillis()%60000);
+        active=true;updateScene();if(scene.isEmpty())clock.start(SystemClock.elapsedRealtime());if(loaded&&video!=null)video.start();if(loaded&&video==null)StillMotion.start(poster,config.reducedMotion,false);schedule();handler.removeCallbacks(scenePulse);handler.postDelayed(scenePulse,60000-System.currentTimeMillis()%60000);
     }
-    private void stop(){if(!active)return;clock.stop(SystemClock.elapsedRealtime());active=false;generation++;handler.removeCallbacks(deadline);handler.removeCallbacks(scenePulse);if(video!=null)video.stop();save();}
+    private void stop(){StillMotion.stop(poster);if(!active)return;clock.stop(SystemClock.elapsedRealtime());active=false;generation++;handler.removeCallbacks(deadline);handler.removeCallbacks(scenePulse);if(video!=null)video.stop();save();}
     private void save(){playback.edit().putString("spec",raw).putString("current",entries.get(index).token).putLong("remaining",clock.remaining(SystemClock.elapsedRealtime())).apply();}
     private void schedule(){handler.removeCallbacks(deadline);if(active&&!closed&&scene.isEmpty()&&entries.size()>1)handler.postDelayed(deadline,Math.max(1,clock.remaining(SystemClock.elapsedRealtime())));}
     private void next(){index=PlaylistPolicy.next(entries.size(),index,spec.shuffle,random);clock.reset(SystemClock.elapsedRealtime());loaded=false;displayIndex=index;load();save();schedule();}
     private void load(){
+        StillMotion.stop(poster);
         int token=++generation;ThemeLibrary.Entry entry=entries.get(displayIndex);if(video!=null){video.close();layer.removeView(video.view());video=null;}
         decoder.execute(()->{Bitmap decoded=decode(new File(entry.directory,Config.WALLPAPER_NAME));handler.post(()->{
             if(closed||!active||generation!=token){if(decoded!=null)decoded.recycle();return;}
@@ -65,7 +66,7 @@ final class WallpaperPlaylist {
             File file=new File(entry.directory,"video.mp4");
             if(ThemeLibrary.liveAllowed()&&ProfileStore.preferences(activity).getBoolean(ThemeLibrary.LIVE,false)&&file.isFile()&&LiveVideo.supported(activity,config.reducedMotion)){
                 video=new LiveVideo(activity,file,0);layer.addView(video.view(),1,new FrameLayout.LayoutParams(-1,-1));video.start();
-            }
+            }else if(bitmap!=null)StillMotion.start(poster,config.reducedMotion,false);
         });});
     }
     private Bitmap decode(File file){

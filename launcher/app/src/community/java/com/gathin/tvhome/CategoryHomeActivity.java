@@ -159,6 +159,7 @@ public final class CategoryHomeActivity extends Activity {
     }
     @Override protected void onResume(){super.onResume();resumed=true;render();ProductFeatures.resumed(this);}
     @Override protected void onPause(){resumed=false;ProductFeatures.paused(this);timer.removeCallbacks(tick);timer.removeCallbacks(idleTimeout);idle.stop();touchWake=false;restoreChrome(false);if(wallpaper!=null)wallpaper.stop();if(video!=null)video.stop();super.onPause();}
+    @Override public void onTrimMemory(int level){super.onTrimMemory(level);ProductFeatures.trimArtwork(level);}
     @Override protected void onDestroy(){release();timer.removeCallbacksAndMessages(null);super.onDestroy();}
     @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(!focused)timer.removeCallbacks(idleTimeout);else if(resumed){armIdle();String current=ProfileStore.id()+"\n"+ProfileStore.preferences(this).getString(HomeCategories.KEY,"");if(!current.equals(rendered))root.post(()->{if(resumed&&hasWindowFocus())render();});}}
     @Override public boolean onKeyDown(int code,KeyEvent event){if(code==KeyEvent.KEYCODE_TV_INPUT){if(event.getRepeatCount()==0)inputs();return true;}return super.onKeyDown(code,event);}

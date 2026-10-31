@@ -325,3 +325,21 @@ Home Assistant refreshes have one owner per visible connection generation. Repea
 coalesce into one follow-up; leaving or rebuilding the page discards stale results and queued actions.
 Climate, security and sensor state remain informational. No real Home Assistant connection is implied
 by unconfigured-panel tests.
+
+## Seasonal ambient looks
+
+Companions alpha 6 adds **Seasonal ambient looks**: Autumn glow, Winter light, Spring bloom and
+Summer tide. These are original procedural scenes drawn on the TV, with no image pack, download,
+location lookup or season guessing. Open the existing Companions hub; browse and Preview before Apply.
+
+Choose On, a scene, an expiry date (7/30/90-day shortcuts) and optional gentle motion/clock drift.
+Preview saves nothing. Cancel or Back discards the draft. Apply changes only the companion’s seasonal
+choice. Reopening the editor preserves its saved dates; it does not silently extend the season.
+After the inclusive local expiry day, ambient returns to the existing Photo & Art choice. Clock drift
+and motifs stop when Android animations are disabled. Moving scenes redraw at most fifteen times per
+second; static scenes refresh the clock once a minute. Work stops away from the ambient surface.
+
+This setting starts off, does not change Home wallpaper, and does not select or take over Android’s
+screensaver. The system picker remains a separate user choice. Preview saved Photo & Art appearance
+explicitly bypasses seasonal mode. No screen mode guarantees protection from OLED image retention.
+Camera remains an independent optional integration requiring a user-configured source.

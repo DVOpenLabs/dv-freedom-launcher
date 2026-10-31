@@ -7,6 +7,7 @@
         <activity android:name=".SetupCopilotActivity" android:exported="true" />
         <activity android:name=".DiscoverActivity" android:exported="true" />
         <activity android:name=".PhotoSourcesActivity" android:exported="true" />
+        <activity android:name=".SeasonalSettingsActivity" android:exported="false" />
         <activity android:name=".AmbientSettingsActivity" android:exported="false" />
         <activity android:name=".AmbientActivity" android:exported="false" />
         <activity android:name=".ArtGalleryActivity" android:exported="false" />

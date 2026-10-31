@@ -45,6 +45,35 @@ final class NativeTileEditor {
             if(!profile.equals(ProfileStore.id())||!values.equals(ProfileStore.preferences(c).getAll())||!order.equals(DesktopLayout.orderStamp(c)))throw new IllegalStateException("Home changed. Open this editor again.");
         }
     }
+    static final class PackGuard {
+        final Guard guard;
+        PackGuard(Context c)throws Exception{guard=new Guard(c);}
+    }
+    static boolean hasArtwork(Context c,String pkg){return choices(c).containsKey(pkg);}
+    static void applyPack(Activity a,Map<String,byte[]> images,PackGuard expected)throws Exception{
+        if(a.isFinishing()||a.isDestroyed())throw new IOException("Open the artwork editor again");
+        expected.guard.check(a);
+        if(!ProductFeatures.allowEdit(a,()->{}))throw new IOException("Unlock editing and review the icons again");
+        if(images.isEmpty()||images.size()>ArtworkSpec.MAX_ITEMS)throw new IOException("Choose 1–64 icons");
+        Map<String,String> next=choices(a);Map<String,byte[]> unique=new LinkedHashMap<>();int total=0;
+        for(var item:images.entrySet()){
+            byte[] bytes=item.getValue();if(!LayoutDraft.packageName(item.getKey())||bytes==null||bytes.length>1024*1024||(total+=bytes.length)>MAX_INPUT)throw new IOException("Choose fewer icons");
+            StringBuilder hash=new StringBuilder();for(byte b:MessageDigest.getInstance("SHA-256").digest(bytes))hash.append(String.format(Locale.ROOT,"%02x",b&255));
+            String token="image:"+hash;next.put(item.getKey(),token);unique.put(token,bytes);
+        }
+        String encoded=ArtworkSpec.encode(next);if(encoded.equals(ProfileStore.preferences(a).getString(KEY,""))){message(a,"Selected artwork already matches");return;}File directory=folder(a);File[] files=directory.listFiles();long size=0;int count=0;
+        if(directory.exists()&&files==null)throw new IOException("Artwork storage unavailable");
+        if(files!=null)for(File f:files){if(Files.isSymbolicLink(f.toPath()))throw new IOException("Invalid artwork storage");if(f.getName().matches("[a-f0-9]{64}\\.jpg")){count++;size+=f.length();}}
+        for(var item:unique.entrySet())if(!asset(a,item.getKey()).isFile()){count++;size+=item.getValue().length;}
+        if(count>64||size>MAX_LIBRARY)throw new IOException("Artwork library is full");
+        List<File> created=new ArrayList<>();boolean committed=false;
+        try{
+            for(var item:unique.entrySet()){File file=asset(a,item.getKey());boolean existed=file.isFile();publish(a,item.getValue());if(!existed)created.add(file);}
+            validateAssets(a,encoded);ProductFeatures.beforeChange(a,"Import icon pack artwork");
+            SharedPreferences p=ProfileStore.preferences(a);Map<String,Object> values=new HashMap<>();values.put(KEY,encoded);values.put(Config.SETTINGS_REVISION_KEY,p.getLong(Config.SETTINGS_REVISION_KEY,0)+1);
+            if(!SetupValues.commit(p,values))throw new IOException("Artwork could not be saved");committed=true;ArtworkCache.clear();done(a);
+        }finally{if(!committed)for(File file:created)file.delete();}
+    }
     static boolean validate(String raw){try{ArtworkSpec.parse(raw);return true;}catch(RuntimeException invalid){return false;}}
     static void validateAssets(Context c,String raw)throws IOException{
         try{for(String value:ArtworkSpec.parse(raw).values()){
@@ -66,11 +95,8 @@ final class NativeTileEditor {
         try{
             if("icon".equals(value))return new IconCard(c.getPackageManager().getApplicationIcon(pkg));
             if(value.startsWith("banner_")){int id=c.getResources().getIdentifier(value,"drawable",c.getPackageName());return id==0?null:c.getDrawable(id);}
-            File file=asset(c,value);if(!file.isFile()||file.length()>1024*1024)return null;
-            BitmapFactory.Options bounds=new BitmapFactory.Options();bounds.inJustDecodeBounds=true;BitmapFactory.decodeFile(file.getPath(),bounds);
-            if(bounds.outWidth<1||bounds.outHeight<1||bounds.outWidth>960||bounds.outHeight>540)return null;
-            bounds.inJustDecodeBounds=false;bounds.inSampleSize=2;bounds.inPreferredConfig=Bitmap.Config.RGB_565;
-            Bitmap bitmap=BitmapFactory.decodeFile(file.getPath(),bounds);return bitmap==null?null:new BitmapDrawable(c.getResources(),bitmap);
+            Bitmap bitmap=ArtworkCache.read(c,asset(c,value));
+            return bitmap==null?null:new BitmapDrawable(c.getResources(),bitmap);
         }catch(Exception|OutOfMemoryError unavailable){return null;}
     }
     static void show(Activity a){
@@ -142,9 +168,10 @@ final class NativeTileEditor {
     }
     private static void art(Activity a,String pkg)throws Exception{
         Guard guard=new Guard(a);
-        new AlertDialog.Builder(a).setTitle("App artwork").setItems(new String[]{"Original artwork","App icon","TV banner","Choose image…"},(d,which)->{
+        new AlertDialog.Builder(a).setTitle("App artwork").setItems(new String[]{"Original artwork","App icon","TV banner","Choose image…","Installed icon pack…"},(d,which)->{
             try{
-                if(which==3){PENDING.put(a,new Pending(pkg,guard));try{a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("image/*").addCategory(Intent.CATEGORY_OPENABLE),IMPORT);}catch(android.content.ActivityNotFoundException unavailable){PENDING.remove(a);message(a,"This TV has no image picker. Choose original artwork, App icon or TV banner instead.");}}
+                if(which==4){PackGuard packGuard=new PackGuard(a);IconPacks.pick(a,bytes->{try{applyPack(a,Collections.singletonMap(pkg,bytes),packGuard);}catch(Exception failed){error(a,failed);}});}
+                else if(which==3){PENDING.put(a,new Pending(pkg,guard));try{a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("image/*").addCategory(Intent.CATEGORY_OPENABLE),IMPORT);}catch(android.content.ActivityNotFoundException unavailable){PENDING.remove(a);message(a,"This TV has no image picker. Choose original artwork, App icon or TV banner instead.");}}
                 else saveArt(a,pkg,which==0?null:which==1?"icon":"banner_tv",guard);
             }catch(Exception failure){error(a,failure);}
         }).setNegativeButton(android.R.string.cancel,null).show();

@@ -2,6 +2,8 @@ package com.gathin.tvhome;
 
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
+    static void trimArtwork(int level){}
+    static void stillMotion(android.widget.ImageView image,boolean active,boolean reduced){}
     static boolean gridRepeat(MainActivity a,android.view.KeyEvent e){return false;}
     static void gridRepeatStop(android.app.Activity a){}
     static boolean tileLift(boolean effects,boolean animations){return effects;}

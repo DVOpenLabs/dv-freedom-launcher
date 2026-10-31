@@ -44,6 +44,7 @@ final class WallpaperPlayer {
     /** config wallpaper_true_color: ARGB_8888 instead of RGB_565. */
     private final Bitmap.Config bitmapConfig;
     private final int height;
+    private final boolean reducedMotion;
     /** wallpaper_dim as an ARGB black, painted into each picture once instead of a full-screen shade view. */
     private final int dimColor;
     /** The picture on screen, released once the next one has been drawn. */
@@ -66,6 +67,7 @@ final class WallpaperPlayer {
 
     WallpaperPlayer(Context context, FrameLayout root, Config config) {
         this.root = root;
+        reducedMotion = config.reducedMotion;
         backgroundColor = config.backgroundColor;
         boolean playlist = ProductFeatures.playlistEnabled(context);
         files = new ArrayList<>(playlist ? Collections.emptyList() : config.wallpapers);
@@ -133,15 +135,18 @@ final class WallpaperPlayer {
 
     void start() {
         active = true;
+        ProductFeatures.stillMotion(image,true,reducedMotion);
         update();
     }
 
     void stop() {
         active = false;
+        ProductFeatures.stillMotion(image,false,reducedMotion);
     }
 
     /** Drops the wallpaper texture when Home is hidden and Android asks the process to free memory. */
     void releaseForMemoryPressure() {
+        ProductFeatures.stillMotion(image,false,reducedMotion);
         if (current == null) return;
         image.setImageDrawable(null);
         // The renderer may still have a queued frame that references this hardware bitmap. Drop our references and
@@ -164,6 +169,7 @@ final class WallpaperPlayer {
 
     void close() {
         active = false;
+        ProductFeatures.stillMotion(image,false,reducedMotion);
         closed = true;headerSample=null;
         decoder.shutdownNow();
     }
@@ -269,6 +275,7 @@ final class WallpaperPlayer {
         // The wallpaper covers the whole root; avoid drawing the fallback colour under it.
         root.setBackground(null);
         image.setImageBitmap(bitmap);
+        ProductFeatures.stillMotion(image,active,reducedMotion);
         if(headerSample!=null)headerSample.accept(bitmap);
         if (old != null && old != bitmap) image.postDelayed(old::recycle, 500);
     }

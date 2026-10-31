@@ -6,14 +6,14 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 21; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 22; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 31 October 2026:** alpha 21 strengthens setup recovery, startup/storage handling,
-Home redirect timing and shared-content correctness. It adds reviewed appearance presets,
-compatibility/recovery guidance, safe Storage/USB access and optional slower Classic-grid arrows.
-Your existing Home settings and optional-access choices stay saved during an update.
+**Latest update — 31 October 2026:** alpha 22 adds previewed installed icon-pack import and optional
+still-picture pan and zoom. Companions alpha 6 adds four original offline seasonal ambient scenes
+with expiry dates and optional gentle motion. Existing Home, wallpaper, app layout, permissions and
+screensaver selections remain saved; the new options start off.
 
 The Add-on Centre includes optional photo/art ambient views, Discover, family Homes, calendars,
 phone controls and a separately authorized [Camera](launcher/camera/README.md) window. A separate
@@ -26,15 +26,22 @@ restricted modes start off. See the guides for requirements and testing limits.
 
 ## New in the Android alpha
 
-Appearance now includes four illustrated presets with timed Keep/Revert and optional slower held
-arrows for the Classic grid. System adds a read-only **Compatibility & recovery** screen and safe
-**Storage & USB** guidance. App-management help makes existing controls easier to find; shared-content
-shelves choose the newest duplicate and explain source/empty-state limits.
+**Apps & rows → Installed icon packs** reads supported local ADW/GO/Nova appfilter data and static
+artwork. Review matched apps and preview before Apply; existing custom art is kept unless selected.
+Unmatched apps have a manual resource picker. No pack code runs and nothing is downloaded.
 
-The reliability work strengthens early-storage recovery, explicit theme reset, pre-unlock startup,
-Home-only redirect timing and optional Home Assistant refresh ownership. Desktop and phone Setup
-reject recovery/setup placeholders as an original Home. See the [feature guide](product/ANDROID-COMMUNITY.md)
-for behavior, access paths and firmware-testing limits. Source updates do not publish a new binary release.
+**Wallpaper → Still picture motion** offers slow whole-picture pan and zoom, separately from silent
+live video. It follows the current profile, stops away from Home and respects reduced motion and
+power saving. It does not animate characters, hair or auras.
+
+**Companions → Seasonal ambient looks** offers Autumn glow, Winter light, Spring bloom and Summer
+tide, with preview/Apply, an expiry date and optional drifting clock. Scenes draw locally without
+artwork downloads. They do not select Android’s screensaver or change the Home wallpaper.
+
+The alpha also retains appearance presets, compatibility/recovery guidance, Storage/USB access and
+slower Classic-grid arrows. See the [feature guide](product/ANDROID-COMMUNITY.md) and
+[Companions guide](product/ANDROID-COMPANION.md#seasonal-ambient-looks) for limits.
+Source publication does not publish a new downloadable binary release.
 
 ## One setup, a clear path for each device
 

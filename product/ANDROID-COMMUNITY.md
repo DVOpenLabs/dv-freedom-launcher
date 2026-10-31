@@ -159,7 +159,41 @@ Overrides are profile-scoped, capped at 64 apps and 16 KiB of metadata. Imported
 decoding, normalized to a bounded JPEG, and stored using a content hash. The source limit is 8 MiB/4K;
 stored output is at most 960 × 540 and 1 MiB. The total art store is capped at 64 files/32 MiB. Home decodes
 smaller thumbnails. Saved setups and recovery entries retain their asset references; no unsafe automatic
-deletion is used. This is a local image picker, not an icon-pack marketplace.
+deletion is used. Installed packs also offer the explicit import workflow below; there is no icon marketplace.
+
+## Installed icon packs
+
+In **Apps & rows → Installed icon packs**, choose a supported pack you already installed. The launcher
+recognizes ADW/GO/Nova discovery intents and appfilter mappings. Exact activity matches take precedence;
+an explicit package fallback may also match. Invalid rows are skipped. Some packs use other formats
+and will not appear or match every app. No icon-pack code is loaded or launched.
+
+The checklist initially selects favorites that have no custom artwork. Custom artwork is kept unless
+you explicitly check that app. Prepare the selected icons, review actual previews, then Apply or Cancel.
+In **Customize apps → Artwork → Installed icon pack**, search a pack’s icon names for unmatched apps;
+the picker shows up to forty matches at a time. Original artwork remains a per-app reset choice.
+
+Only bounded static raster/vector resources are accepted. Animated/adaptive/composite drawables and
+packs with unsupported resources can be refused. Appfilter input is capped at 2 MiB, 8,192 rows and
+bounded nesting/events; prepared imports at 8 MiB total. The existing 64-file/32 MiB private artwork
+library still applies. Imported icons become independent landscape JPEG copies; uninstalling a pack
+later does not remove those copies. Pack author licences still govern redistributing their art.
+Portable setup exports do not carry icon bytes; backups need the referenced local artwork to remain.
+Import never changes app order, app names, wallpaper, permissions or installed packages.
+
+Imported-art thumbnails use an access-ordered cache capped at 2 MiB/twelve entries. Profile/revision
+changes and memory-pressure callbacks clear its references without recycling bitmaps still held by
+views. This reduces repeated custom-art decoding; it is not a general TV-speed or playback claim.
+
+## Still picture motion
+
+**Wallpaper → Still picture motion** has Off/Gentle choices with Apply/Cancel, per profile. Off is the
+default. Gentle applies a 45-second reversing pan and zoom to the visible still image, including still
+playlist entries. This is whole-picture motion, not live animation of hair, water or character effects.
+A live video is never transformed. Reduced motion, Android’s disabled animations and power saving
+suppress the effect. Leaving Home, detaching the image or releasing its wallpaper stops the animator.
+It adds no service, decoder, bitmap copies or network access. The slight overscan keeps screen edges
+covered; choose Off when preserving every edge of an image matters.
 
 ## Visual wallpaper browsing
 

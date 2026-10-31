@@ -4,7 +4,10 @@
     <!-- Preserve the existing same-signer pilots' previously granted local weather bridge. -->
     <uses-permission android:name="com.dvopenlabs.cytv.weatherpreview.READ_WEATHER" />
     <uses-permission android:name="com.dvopenlabs.freedom.companions.READ" />
-    <queries><package android:name="com.dvopenlabs.freedom.companions" /><package android:name="com.dvopenlabs.freedom.remote" /><package android:name="io.github.sumyabazar1.weather" /><package android:name="com.dvopenlabs.cytv.weatherpreview" /></queries>
+    <queries>
+        <intent><action android:name="org.adw.launcher.THEMES" /></intent>
+        <intent><action android:name="com.gau.go.launcherex.theme" /></intent>
+        <intent><action android:name="android.intent.action.MAIN" /><category android:name="com.teslacoilsw.launcher.THEME" /></intent><package android:name="com.dvopenlabs.freedom.companions" /><package android:name="com.dvopenlabs.freedom.remote" /><package android:name="io.github.sumyabazar1.weather" /><package android:name="com.dvopenlabs.cytv.weatherpreview" /></queries>
     <application android:label="@string/freedom_app_name" android:theme="@style/Theme.Freedom" tools:replace="android:label,android:theme">
         <activity android:name="com.gathin.tvhome.MainActivity" android:directBootAware="true" />
         <meta-data android:name="com.dvopenlabs.weather.CLIENT" android:value="true" />

@@ -266,5 +266,14 @@
         "use": "Appearance starting-point concept; independent still gallery and timed confirmation"
       }
     ]
+  },
+  "iconPackFormatReferences": {
+    "implementation": "Independent bounded data/resource reader; no external source or artwork copied",
+    "references": [
+      "https://github.com/jahirfiquitiva/Blueprint/blob/master/app/src/main/AndroidManifest.xml",
+      "https://github.com/jahirfiquitiva/Blueprint/blob/master/app/src/main/assets/appfilter.xml",
+      "https://developer.android.com/training/package-visibility/declaring"
+    ],
+    "scope": "ADW, GO and Nova discovery intents; appfilter ComponentInfo mapping; scoped package queries"
   }
 }

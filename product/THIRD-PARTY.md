@@ -141,3 +141,9 @@ Reliability safeguards and preset/remote interactions also draw on failure cases
 MIT CleanYourTV community. Exact references and adaptation scopes are in [sources.json](sources.json).
 The implementations retain DV’s permission, profile and recovery contracts. The provider helper’s
 output handling follows Android’s [content command behavior](https://github.com/aosp-mirror/platform_frameworks_base/blob/android14-release/cmds/content/src/com/android/commands/content/Content.java); no AOSP source was copied.
+
+Installed icon-pack support independently reads the documented appfilter data convention illustrated
+by [Blueprint](https://github.com/jahirfiquitiva/Blueprint). No Blueprint code or icon artwork is copied
+or bundled. Static icon bytes come only from a pack the user installed; its author’s artwork licence
+still applies. Seasonal ambient graphics are original procedural DV Freedom code, with no third-party
+media. The source register records the format and Android package-visibility references.
