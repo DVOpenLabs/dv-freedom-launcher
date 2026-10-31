@@ -6,14 +6,14 @@ import shlex
 import time
 from .core import Device,SetupError
 from .release import MAX_APK
+from .home import require_stable_home
 
 PACKAGE='com.dvopenlabs.freedomlauncher'
 METHODS={'status','backup','preview','revert','restore','home','accessibility'}
 class InstallerDevice(Device):
     def preserve_home(self,component):
         """Restore only a cleared chooser to the exact recorded Home, never override a new choice."""
-        if not isinstance(component,str) or not re.fullmatch(r'[A-Za-z][\w.]*/[A-Za-z.][\w.$]*',component) or any(x in component.lower() for x in ('factory','hkcfac','resolveractivity','chooseractivity')):
-            raise SetupError('The recorded Home cannot be safely restored.')
+        require_stable_home(component)
         current=self.read('home').strip().splitlines()
         if current and current[-1]==component:return
         if not current or current[-1]!='android/com.android.internal.app.ResolverActivity':

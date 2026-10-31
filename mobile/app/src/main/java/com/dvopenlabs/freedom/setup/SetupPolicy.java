@@ -11,7 +11,14 @@ final class SetupPolicy {
     static final int MAX_APK=40*1024*1024;
     static String host(String s){if(s==null||!s.matches("[0-9]{1,3}(\\.[0-9]{1,3}){3}"))throw new IllegalArgumentException("Use the IPv4 address shown by the TV");String[] p=s.split("\\.");for(String n:p)if(Integer.parseInt(n)>255||n.length()>1&&n.startsWith("0"))throw new IllegalArgumentException("Invalid TV address");int a=Integer.parseInt(p[0]),b=Integer.parseInt(p[1]);if(!(a==10||a==192&&b==168||a==172&&b>=16&&b<=31))throw new IllegalArgumentException("Use a private home-network TV address");return s;}
     static int port(String value){try{int p=Integer.parseInt(value);if(p<1||p>65535)throw new IllegalArgumentException();return p;}catch(Exception bad){throw new IllegalArgumentException("Port must be 1 to 65535");}}
-    static String component(String s){if(s==null||!s.matches("[A-Za-z][\\w.]*/[A-Za-z.][\\w.$]*")||s.toLowerCase(Locale.ROOT).matches(".*(factory|hkcfac|resolveractivity|chooseractivity).*"))throw new IllegalArgumentException("Select a stable original Home on your TV first");return s;}
+    static String component(String s){
+        if(s==null||!s.matches("[A-Za-z][\\w.]*/[A-Za-z.][\\w.$]*"))throw new IllegalArgumentException("Select a stable original Home on your TV first");
+        String pkg=s.substring(0,s.indexOf('/')),activity=s.substring(s.indexOf('/')+1),lower=s.toLowerCase(Locale.ROOT);
+        if(Arrays.asList("android","com.google.android.tungsten.setupwraith","com.android.settings","com.android.tv.settings","com.android.provision").contains(pkg)
+                ||lower.matches(".*(factory|hkcfac|resolveractivity|chooseractivity|fallbackhome).*")
+                ||activity.substring(activity.lastIndexOf('.')+1).equalsIgnoreCase("RecoveryActivity"))throw new IllegalArgumentException("Select a working original Home, not a setup or recovery screen");
+        return s;
+    }
     static String sha(byte[] bytes)throws Exception{StringBuilder b=new StringBuilder();for(byte x:MessageDigest.getInstance("SHA-256").digest(bytes))b.append(String.format(Locale.ROOT,"%02x",x&255));return b.toString();}
     static String quote(String value){return "'"+value.replace("'","'\\''")+"'";}
     static void fields(JSONObject o,String... fields){Set<String> expected=new HashSet<>(Arrays.asList(fields));if(o.length()!=expected.size())throw new IllegalArgumentException("Unexpected record fields");Iterator<String> k=o.keys();while(k.hasNext())if(!expected.contains(k.next()))throw new IllegalArgumentException("Unexpected record fields");}

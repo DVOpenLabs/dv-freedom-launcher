@@ -210,3 +210,7 @@ python -m setup_app.build_phone --key-dir <same-private-directory>
 The Add-on Centre contains 48 curated package/source/guide entries and 19 supported signed package
 definitions. Only verified artifacts included in the bundle can be installed. New runtime/special
 access and configured network sources remain separate choices. See [Add-ons](../product/ADDONS.md).
+
+A boot/setup/recovery placeholder is not a restorable original Home. Setup rejects it in a new review
+and when reading older recovery records. Select a working Home in TV settings, then review again;
+Setup does not guess another launcher or override a newly selected Home.

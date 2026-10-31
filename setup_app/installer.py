@@ -11,6 +11,7 @@ import threading
 from .core import SetupError,validate_plan
 from .release import Catalog,apk_certificate,digest,canonical
 from .transport import InstallerDevice,PACKAGE
+from .home import require_stable_home
 
 class Installer:
     def __init__(self,session,catalog=None,factory=InstallerDevice):
@@ -42,6 +43,7 @@ class Installer:
             if file.stat().st_size>1024*1024:raise ValueError()
             value=json.loads(file.read_text(encoding='utf-8'))
             if not isinstance(value,dict) or value.get('id')!=id or not {'device','release','choices','state','originalHome','backup'}<=set(value):raise ValueError()
+            require_stable_home(value['originalHome'])
             return value
         except (OSError,ValueError):raise SetupError('This recovery point is unavailable.')
     def _open(self):
@@ -75,8 +77,7 @@ class Installer:
             installed=self._installed(d,release,id)
             if installed:native=self._native(d)
             lines=d.read('home').strip().splitlines();home=lines[-1] if lines else ''
-            if not re.fullmatch(r'[A-Za-z][\w.]*/[A-Za-z.][\w.$]*',home) or any(x in home.lower() for x in ['factory','hkcfac']):raise SetupError('The original Home could not be safely recorded. Installation is blocked.')
-            if 'ResolverActivity' in home or 'ChooserActivity' in home:raise SetupError('Select your current original Home as the default in TV settings first, then prepare the recovery point again. Nothing was installed.')
+            require_stable_home(home)
             point={'id':id,'createdAt':datetime.now(timezone.utc).isoformat(),'state':'reviewed','device':fingerprint,'originalHome':home,
               'release':{k:v for k,v in release.items() if k!='path'},'installed':installed,'backup':native['backup'] if native else None,
               'beforeProfile':native['profile'] if native else None,'beforeRevision':native['revision'] if native else None,'choices':plan}
