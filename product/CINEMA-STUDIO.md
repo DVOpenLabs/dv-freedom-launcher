@@ -57,6 +57,7 @@ system settings remain saved. No scene is selected by an upgrade.
 Received JPEG/PNG images have an **Add to Cinema artwork** action in the existing media review. This
 uses a separate library and does not consume wallpaper theme slots or select the image. Local file
 imports and received artwork require review; failed imports leave the saved Cinema setup unchanged.
+Each received file opens its own fresh review, including when the previous review is still in the task.
 
 ## Create it on a computer
 
@@ -66,6 +67,7 @@ Android TV through the normal Setup journey, then choose **Read my connected TV*
 and saved Cinema draft. Read requires exactly one compatible standalone or earlier DV development
 pilot installation. It refuses an ambiguous target and never migrates or changes a package identity.
 Received Cinema artwork is listed by name; image bytes are not downloaded into the creator.
+The authorized read also returns local wallpaper names/tokens, capacity and storage totals; it does not select them.
 
 **Send draft for TV review** stages a profile/revision-bound draft for two minutes. The TV performs
 its own validation and still requires Apply. A changed profile or Home invalidates a stale draft.

@@ -4,7 +4,7 @@ import java.util.*;
 
 /** Bounded local-media choices and a clock that consumes time only while Home is visible. */
 final class PlaylistPolicy {
-    static final int MAX_ITEMS=8,DEFAULT_SECONDS=900;
+    static final int MAX_ITEMS=ThemeLibrary.MAX_PACKS,DEFAULT_SECONDS=900;
     static final class Spec {
         final boolean enabled,shuffle;final int seconds;final List<String> tokens;
         Spec(boolean enabled,int seconds,boolean shuffle,List<String> tokens){

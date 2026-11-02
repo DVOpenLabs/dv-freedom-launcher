@@ -211,7 +211,7 @@ wallpaper dimming and reduced-motion behavior stay in their existing controllers
 
 ## Wallpaper playlists
 
-Wallpaper → Wallpaper playlist rotates between up to eight imported local backgrounds. Import packs
+Wallpaper → Wallpaper playlist rotates between up to 24 imported local backgrounds. Import packs
 through Manage offline themes first; each supplies a still picture and may include a silent video.
 Choose wallpapers, arrange their order, then Apply. The editor defaults to 15 minutes and also offers
 1, 5, 30 and 60 minutes, sequential order or shuffle without immediate repeats. Cancel discards the draft.
@@ -398,3 +398,10 @@ Alpha 24 adds a profile-scoped [Cinema Studio](CINEMA-STUDIO.md): transparent lo
 personal collections and mood cards, optional procedural scene atmosphere, a desktop draft creator
 and separate offline Play screens. Open Appearance → Cinema Studio; all effects start unconfigured.
 It does not migrate Home, request a new permission or replace saved wallpaper playlists on upgrade.
+
+
+Alpha 25 allows 24 theme-library and playlist entries while retaining the 128 MiB library quota and
+one visible video decoder. Existing playlists retain their order, interval and shuffle settings.
+Use **Arrange wallpapers → [wallpaper] → Move to start** to put a selected entry first; save with Apply.
+A changed playlist starts at its first entry. Importing new media alone still does not select it.
+The inherited reference edition retains its eight-pack limit.

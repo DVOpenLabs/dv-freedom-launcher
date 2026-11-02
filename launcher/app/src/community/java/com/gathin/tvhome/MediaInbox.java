@@ -83,7 +83,7 @@ final class MediaInbox {
         synchronized(LOCK){JSONObject receipt=load(c);if(!MediaInboxPolicy.id(id)||!id.equals(receipt.getString("id")))throw new IOException("Transfer unavailable");return new JSONObject().put("schema",1).put("id",id).put("state",receipt.getString("state"));}
     }
     static void review(Context c,String id)throws Exception{
-        synchronized(LOCK){JSONObject receipt=load(c);if(!MediaInboxPolicy.id(id)||!id.equals(receipt.getString("id"))||!"ready".equals(receipt.getString("state")))throw new IOException("Media is not ready for review");bound(c,receipt);c.startActivity(new Intent(c,MediaReviewActivity.class).putExtra("id",id).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}
+        synchronized(LOCK){JSONObject receipt=load(c);if(!MediaInboxPolicy.id(id)||!id.equals(receipt.getString("id"))||!"ready".equals(receipt.getString("state")))throw new IOException("Media is not ready for review");bound(c,receipt);c.startActivity(new Intent(c,MediaReviewActivity.class).putExtra("id",id).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP));}
     }
     static String label(Context c){try{JSONObject receipt=load(c);return "ready".equals(receipt.optString("state"))?receipt.optString("name"):"No file waiting";}catch(Exception none){return "No file waiting";}}
     static void show(android.app.Activity a){try{review(a,load(a).getString("id"));}catch(Exception missing){android.widget.Toast.makeText(a,"Send a file using DV Freedom Setup → Use your phone, then choose Review on TV.",android.widget.Toast.LENGTH_LONG).show();}}

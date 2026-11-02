@@ -6,11 +6,15 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 24; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 25; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 2 November 2026:** alpha 24 adds optional Cinema Studio and its desktop creator.
+**Latest update — 2 November 2026:** alpha 25 expands the Android wallpaper library and playlist to 24
+entries under the existing 128 MiB storage quota, and adds **Move to start** in playlist arrangement.
+Consecutive phone-media reviews now open the newly received file instead of reusing an older review.
+Long playlist lists scroll within the dialog so their confirmation buttons remain visible.
+Alpha 24 adds optional Cinema Studio and its desktop creator.
 Existing preferences, Home routing and wallpaper playlists remain saved.
 
 **Previous update — 31 October 2026:** alpha 23 corrects live video's reported-memory threshold to

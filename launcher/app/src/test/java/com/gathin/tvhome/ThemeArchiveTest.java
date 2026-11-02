@@ -107,12 +107,12 @@ public class ThemeArchiveTest {
         ThemeLibrary.Entry second=ThemeLibrary.importPack(root,new ByteArrayInputStream(archive),dir->{});
         assertNotEquals(first.token,second.token); assertEquals(2,ThemeLibrary.list(root).size());
     }
-    @Test public void cleansInterruptedStagingAndRejectsNinthPack() throws Exception {
+    @Test public void cleansInterruptedStagingAndRejectsCapacityOverflow() throws Exception {
         File root=temporary.newFolder();File stale=new File(root,".import-"+UUID.randomUUID());assertTrue(stale.mkdir());
         Files.write(new File(stale,"partial").toPath(),new byte[]{1});byte[] archive=zip(valid("{}"));
-        for(int i=0;i<8;i++)ThemeLibrary.importPack(root,new ByteArrayInputStream(archive),dir->{});
+        for(int i=0;i<ThemeLibrary.MAX_PACKS;i++)ThemeLibrary.importPack(root,new ByteArrayInputStream(archive),dir->{});
         assertFalse(stale.exists());
         try{ThemeLibrary.importPack(root,new ByteArrayInputStream(archive),dir->{});fail();}catch(IOException expected){}
-        assertEquals(8,ThemeLibrary.list(root).size()); assertEquals(8,root.list().length);
+        assertEquals(ThemeLibrary.MAX_PACKS,ThemeLibrary.list(root).size()); assertEquals(ThemeLibrary.MAX_PACKS,root.list().length);
     }
 }

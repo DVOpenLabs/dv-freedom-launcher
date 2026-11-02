@@ -12,6 +12,7 @@ import org.json.*;
 
 /** Optional full-product features, compiled into the existing APK and data identity. */
 final class ProductFeatures {
+    static final int MAX_THEME_PACKS=24;
     static void trimArtwork(int level){if(level>=android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW){ArtworkCache.clear();CinemaAssets.trim();}}
     static void stillMotion(android.widget.ImageView image,boolean active,boolean reduced){StillMotion.background(image,active,reduced);}
     static boolean tileLift(boolean effects,boolean animations){return effects&&animations;}

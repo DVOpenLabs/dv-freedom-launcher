@@ -18,7 +18,7 @@ import java.util.UUID;
 /** Small immutable-pack library. ZIPs and personal media stay outside the APK. */
 final class ThemeLibrary {
     static final String CHOICE="theme_pack_id", LIVE="live_wallpaper";
-    static final int MAX_PACKS=8;
+    static final int MAX_PACKS=ProductFeatures.MAX_THEME_PACKS;
     static final long MAX_LIBRARY_BYTES=128L*1024*1024;
     private static boolean enabled, liveAllowed;
     private static Entry active;
