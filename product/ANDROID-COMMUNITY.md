@@ -391,3 +391,10 @@ Apply. It runs only if Home is visible within two minutes of a screen wake while
 is alive. Another app keeps the screen; remote interaction, leaving Home or screen-off cancels a pending
 launch. This best-effort rule adds no overlay, boot receiver or permanent service. It starts Off.
 Family app restrictions still apply. New tools live under Optional TV tools until explicitly added to Home.
+
+## Cinema Studio
+
+Alpha 24 adds a profile-scoped [Cinema Studio](CINEMA-STUDIO.md): transparent logos/theme emblems,
+personal collections and mood cards, optional procedural scene atmosphere, a desktop draft creator
+and separate offline Play screens. Open Appearance → Cinema Studio; all effects start unconfigured.
+It does not migrate Home, request a new permission or replace saved wallpaper playlists on upgrade.

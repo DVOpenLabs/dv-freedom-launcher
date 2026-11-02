@@ -20,7 +20,7 @@ import java.util.zip.*;
 /** Local media review. Import only adds a new library entry; it never selects or replaces a theme. */
 public final class MediaReviewActivity extends Activity {
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
-    private JSONObject receipt;private String id;private Bitmap preview;private TextView status,add,discard;private ImageView image;private boolean busy;
+    private JSONObject receipt;private String id;private Bitmap preview;private TextView status,add,discard,cinemaAdd;private ImageView image;private boolean busy;
     private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
     private TextView label(String text,int size){TextView v=new TextView(this);v.setText(text);v.setTextSize(size);v.setTextColor(getColor(R.color.freedom_text));v.setTypeface(SettingsTypography.regular(this));return v;}
     private TextView button(LinearLayout host,String text,Runnable action){TextView v=label(text,18);v.setPadding(dp(18),dp(12),dp(18),dp(12));v.setMinHeight(dp(50));v.setFocusable(true);v.setFocusableInTouchMode(true);v.setClickable(true);v.setBackgroundResource(R.drawable.settings_choice_bg);v.setOnClickListener(x->action.run());LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.topMargin=dp(12);host.addView(v,p);return v;}
@@ -34,8 +34,9 @@ public final class MediaReviewActivity extends Activity {
         image=new ImageView(this);image.setScaleType(ImageView.ScaleType.FIT_CENTER);image.setContentDescription("Received wallpaper preview");content.addView(image,new LinearLayout.LayoutParams(0,-1,1.2f));
         ScrollView scroll=new ScrollView(this);LinearLayout.LayoutParams right=new LinearLayout.LayoutParams(0,-1,1);right.leftMargin=dp(30);content.addView(scroll,right);LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.VERTICAL);scroll.addView(actions);
         actions.addView(label(receipt.optString("name"),22));status=label("Checking the file…",16);status.setTextColor(getColor(R.color.freedom_secondary));status.setPadding(0,dp(14),0,dp(12));actions.addView(status);
-        actions.addView(label("Add this file to the wallpaper library. Your current wallpaper, app layout and TV settings stay saved. Select it later from the library when you are ready.",17));
+        actions.addView(label("Choose a local library. Importing keeps your current wallpaper, app layout and TV settings saved. Select the artwork later when you are ready.",17));
         add=button(actions,"Add to wallpaper library",this::importFile);add.setEnabled(false);add.setAlpha(.5f);
+        if(!"mp4".equals(receipt.optString("kind")))cinemaAdd=button(actions,"Add to Cinema artwork · does not select it",this::importCinema);
         TextView cancel=button(actions,"Back · keep for later review",this::finish);discard=button(actions,"Discard received TV copy",()->{if(busy)return;try{MediaInbox.state(this,id,"discarded");finish();}catch(Exception failure){message(failure);}});
         setContentView(root);cancel.requestFocus();worker.execute(()->{
             try{Bitmap bitmap=decode();runOnUiThread(()->{if(isDestroyed()){bitmap.recycle();return;}preview=bitmap;image.setImageBitmap(bitmap);status.setText("mp4".equals(receipt.optString("kind"))?"Short video · a still fallback is included. Playback stays silent.":"Picture ready. Large pictures are resized to a safe TV resolution.");add.setEnabled(true);add.setAlpha(1);add.requestFocus();});}
@@ -75,11 +76,16 @@ public final class MediaReviewActivity extends Activity {
                     if("mp4".equals(receipt.getString("kind"))){zip.putNextEntry(new ZipEntry("video.mp4"));try(InputStream in=new FileInputStream(MediaInbox.file(this,receipt))){byte[] buffer=new byte[65536];for(int count;(count=in.read(buffer))!=-1;){if(Thread.currentThread().isInterrupted())throw new IOException("Import interrupted");zip.write(buffer,0,count);}}zip.closeEntry();}
                 }
                 try(InputStream in=new FileInputStream(archive)){ThemeLibrary.importPack(this,in);}MediaInbox.state(this,id,"imported");
-                runOnUiThread(()->{busy=false;if(isDestroyed())return;discard.setVisibility(android.view.View.GONE);status.setText("Added to the wallpaper library. Your current Home is unchanged.");add.setText("Browse wallpaper library");add.setEnabled(true);add.setOnClickListener(v->WallpaperBrowser.show(this,true));add.requestFocus();});
+                runOnUiThread(()->{busy=false;if(isDestroyed())return;discard.setVisibility(android.view.View.GONE);if(cinemaAdd!=null)cinemaAdd.setVisibility(android.view.View.GONE);status.setText("Added to the wallpaper library. Your current Home is unchanged.");add.setText("Browse wallpaper library");add.setEnabled(true);add.setOnClickListener(v->WallpaperBrowser.show(this,true));add.requestFocus();});
             }catch(Exception failure){try{MediaInbox.state(this,id,"ready");}catch(Exception ignored){}runOnUiThread(()->{busy=false;if(!isDestroyed()){add.setEnabled(true);status.setText("Not imported. Check free storage or export a smaller compatible file, then try again.");}});}
             finally{archive.delete();}
         });
     }
     private void message(Exception failure){new AlertDialog.Builder(this).setTitle("Media not changed").setMessage(failure.getMessage()).setPositiveButton("OK",null).show();}
+    private void importCinema(){
+        if(busy||preview==null||!ProductFeatures.allowEdit(this,this::importCinema))return;
+        try{MediaInbox.bound(this,receipt);if(!"ready".equals(MediaInbox.load(this).optString("state")))throw new IOException("Read the received image again");}catch(Exception failure){message(failure);return;}
+        busy=true;add.setEnabled(false);status.setText("Preparing local Cinema artwork…");worker.execute(()->{try{String asset;try(InputStream in=new FileInputStream(MediaInbox.file(this,receipt))){asset=CinemaAssets.importStream(this,in);}CinemaAssets.named(this,asset,receipt.optString("name","Received artwork"));MediaInbox.bound(this,receipt);MediaInbox.state(this,id,"imported");runOnUiThread(()->{busy=false;if(isDestroyed())return;status.setText("Added to Cinema artwork. Choose it later in Cinema Studio; Home is unchanged.");discard.setVisibility(android.view.View.GONE);if(cinemaAdd!=null)cinemaAdd.setVisibility(android.view.View.GONE);add.setEnabled(true);add.setAlpha(1);add.setText("Open Cinema Studio");add.setOnClickListener(v->CinemaActivity.open(this,"studio"));add.requestFocus();});}catch(Exception failure){runOnUiThread(()->{busy=false;if(!isDestroyed()){add.setEnabled(true);message(failure);}});}});
+    }
     @Override protected void onDestroy(){worker.shutdownNow();if(image!=null)image.setImageDrawable(null);super.onDestroy();}
 }

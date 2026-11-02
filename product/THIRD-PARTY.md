@@ -154,3 +154,9 @@ not bundled or copied into this repository. Pairing prompt
 handling, inventory validation and SDK-specific webOS staging are independent DV implementation.
 LG’s [Application Manager reference](https://webostv.developer.lge.com/develop/references/application-manager)
 defines the webOS 4.0 minimum for `getAppLoadStatus` and the public `launch` permission boundary.
+
+Cinema Studio, its theme emblems, procedural scene effects and Play implementations are original
+DV Freedom code. The public cinematic-TV reference in the source register informed interaction design;
+no third-party launcher source, scripts, APKs, posters, fonts or character media were copied.
+User-imported art remains subject to its owners' rights. Franchise names in optional personal
+collection presets identify films and do not indicate affiliation or bundled streaming availability.

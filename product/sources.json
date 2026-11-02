@@ -285,5 +285,17 @@
       "https://developer.android.com/training/package-visibility/declaring"
     ],
     "scope": "ADW, GO and Nova discovery intents; appfilter ComponentInfo mapping; scoped package queries"
-  }
+  },
+  "cinemaDesignReferences": [
+    {
+      "url": "https://www.instagram.com/p/DfN4dJ5SviY/",
+      "usage": "Interaction inspiration: thematic dock, cinematic collections and focus-responsive scenes. Independent DV implementation; no source or media copied.",
+      "codeCopied": false,
+      "mediaBundled": false
+    },
+    {
+      "url": "https://developer.android.com/design/ui/tv/guides/styles/focus-system",
+      "usage": "Visible D-pad focus and navigation reference"
+    }
+  ]
 }

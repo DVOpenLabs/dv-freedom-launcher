@@ -112,10 +112,12 @@ final class ThemeArchive {
     }
     static IOException fail(String message){return new IOException(message);}
     static void validateJsonObject(String text) throws IOException { new Json(text).object(); }
+    static void validateJsonObject(String text,int maxKeys) throws IOException { if(maxKeys<1||maxKeys>1024)throw fail("Invalid JSON limit");new Json(text,maxKeys).object(); }
     private ThemeArchive(){}
     private static final class Json {
-        final String s; int p;
-        Json(String s) { this.s = s == null ? "" : s; }
+        final String s; final int maxKeys; int p;
+        Json(String s) { this(s,128); }
+        Json(String s,int limit) { this.s = s == null ? "" : s;maxKeys=limit; }
         int depth, keys;
         Map<String, Object> object() throws IOException { Object v = value(); ws(); if (p != s.length() || !(v instanceof Map)) throw fail("malformed manifest JSON"); return (Map<String, Object>) v; }
         Object value() throws IOException {
@@ -128,7 +130,7 @@ final class ThemeArchive {
                 throw fail("malformed JSON");
             } finally { depth--; }
         }
-        Map<String, Object> obj() throws IOException { expect('{'); Map<String,Object> out = new HashMap<>(); ws(); if (eat('}')) return out; while (true) { if (++keys > 128) throw fail("JSON too complex"); ws(); if (p >= s.length() || s.charAt(p) != '"') throw fail("malformed JSON"); String k=string(); ws(); expect(':'); if (out.containsKey(k)) throw fail("duplicate JSON key"); out.put(k,value()); ws(); if (eat('}')) return out; expect(','); } }
+        Map<String, Object> obj() throws IOException { expect('{'); Map<String,Object> out = new HashMap<>(); ws(); if (eat('}')) return out; while (true) { if (++keys > maxKeys) throw fail("JSON too complex"); ws(); if (p >= s.length() || s.charAt(p) != '"') throw fail("malformed JSON"); String k=string(); ws(); expect(':'); if (out.containsKey(k)) throw fail("duplicate JSON key"); out.put(k,value()); ws(); if (eat('}')) return out; expect(','); } }
         Object array() throws IOException { expect('['); ws(); if (eat(']')) return new Object[0]; int n=0; while (true) { value(); if (++n > 1024) throw fail("JSON too complex"); ws(); if (eat(']')) return new Object[0]; expect(','); } }
         String string() throws IOException { expect('"'); StringBuilder b=new StringBuilder(); while (p<s.length()) { char c=s.charAt(p++); if(c=='"') return b.toString(); if(c<' ') throw fail("bad string"); if(c=='\\') { if(p>=s.length()) throw fail("bad escape"); char e=s.charAt(p++); if(e=='u') { if(p+4>s.length()) throw fail("bad escape"); try { b.append((char)Integer.parseInt(s.substring(p,p+4),16)); } catch(NumberFormatException x){ throw fail("bad escape"); } p+=4; } else if("\"\\/bfnrt".indexOf(e)>=0) b.append(e=='b'?'\b':e=='f'?'\f':e=='n'?'\n':e=='r'?'\r':e=='t'?'\t':e); else throw fail("bad escape"); } else b.append(c); } throw fail("unterminated string"); }
         Long number() throws IOException { int start=p; if(s.charAt(p)=='-')p++; if(p>=s.length()||!Character.isDigit(s.charAt(p)))throw fail("bad number"); if(s.charAt(p)=='0' && p + 1 < s.length() && Character.isDigit(s.charAt(p + 1))) throw fail("bad number"); while(p<s.length()&&Character.isDigit(s.charAt(p)))p++; if(p<s.length() && ".eE".indexOf(s.charAt(p))>=0) throw fail("integer required"); try{return Long.parseLong(s.substring(start,p));}catch(NumberFormatException e){throw fail("bad number");} }

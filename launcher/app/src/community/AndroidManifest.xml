@@ -9,6 +9,8 @@
         <intent><action android:name="com.gau.go.launcherex.theme" /></intent>
         <intent><action android:name="android.intent.action.MAIN" /><category android:name="com.teslacoilsw.launcher.THEME" /></intent><package android:name="com.dvopenlabs.freedom.companions" /><package android:name="com.dvopenlabs.freedom.remote" /><package android:name="io.github.sumyabazar1.weather" /><package android:name="com.dvopenlabs.cytv.weatherpreview" /></queries>
     <application android:label="@string/freedom_app_name" android:theme="@style/Theme.Freedom" tools:replace="android:label,android:theme">
+        <activity android:name="com.gathin.tvhome.CinemaActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name="com.gathin.tvhome.FreedomPlayActivity" android:exported="false" android:screenOrientation="landscape" />
         <activity android:name="com.gathin.tvhome.MainActivity" android:directBootAware="true" />
         <meta-data android:name="com.dvopenlabs.weather.CLIENT" android:value="true" />
         <service android:name="com.gathin.tvhome.FamilyGuard" android:label="@string/family_guard_name" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:exported="true">

@@ -83,20 +83,20 @@ def serve(session=None,port=0):
                     self.send(file.read_bytes(),'application/zip')
                 except (SetupError,OSError):self.send({'error':'Build a new package in this session.'},status=400)
                 return
-            assets={'/':(WEB/'index.html','text/html; charset=utf-8'),'/app.css':(WEB/'app.css','text/css; charset=utf-8'),
+            assets={'/studio':(WEB/'studio.html','text/html; charset=utf-8'),'/studio.css':(WEB/'studio.css','text/css; charset=utf-8'),'/studio.js':(WEB/'studio.js','text/javascript; charset=utf-8'),'/':(WEB/'index.html','text/html; charset=utf-8'),'/app.css':(WEB/'app.css','text/css; charset=utf-8'),
                '/app.js':(WEB/'app.js','text/javascript; charset=utf-8'),'/phone-desktop.js':(WEB/'phone-desktop.js','text/javascript; charset=utf-8'),'/essentials.js':(WEB/'essentials.js','text/javascript; charset=utf-8'),'/install.js':(WEB/'install.js','text/javascript; charset=utf-8'),'/native.js':(WEB/'native.js','text/javascript; charset=utf-8'),'/companion.js':(WEB/'companion.js','text/javascript; charset=utf-8'),'/scene.svg':(WEB/'scene.svg','image/svg+xml'),'/outfit.ttf':(FONT,'font/ttf')}
             if self.path not in assets:self.send({'error':'Page not found.'},status=404);return
             file,mime=assets[self.path]
             try:
                 data=file.read_bytes()
-                if self.path=='/':data=data.replace(b'__SETUP_TOKEN__',token.encode())
+                if self.path in ('/','/studio'):data=data.replace(b'__SETUP_TOKEN__',token.encode())
                 self.send(data,mime)
             except OSError:self.send({'error':'A setup asset is missing. Reopen the packaged app.'},status=500)
         def do_POST(self):
             if not self.allowed(True,True):return
             try:
                 length=int(self.headers.get('Content-Length','-1'))
-                if not 0<=length<=8192:
+                if not 0<=length<=(64000 if self.path in ('/api/cinema-stage','/api/cinema-validate') else 8192):
                     self.close_connection=True;self.send({'error':'Request is too large.'},status=413);return
                 if self.headers.get('Content-Type','').split(';')[0]!='application/json':self.send({'error':'JSON required.'},status=415);return
                 value=json.loads(self.rfile.read(length).decode(),object_pairs_hook=unique,parse_constant=lambda _:(_ for _ in ()).throw(SetupError('Invalid number.')))
@@ -128,6 +128,12 @@ def serve(session=None,port=0):
                         action=actions.get(self.path.removeprefix('/api/companion-'))
                         if not action:raise SetupError('This companion action is unavailable.')
                         reply=action(value)
+                    elif self.path in ('/api/cinema-read','/api/cinema-stage'):
+                        from .cinema import call
+                        reply=call(session,'cinema_read' if self.path.endswith('read') else 'cinema_stage',value)
+                    elif self.path=='/api/cinema-validate':
+                        from .cinema import validate
+                        validate(value);reply={'valid':True}
                     elif self.path=='/api/addon-review':reply=session.addons.review(value)
                     elif self.path=='/api/addon-install':reply=session.addons.install(value)
                     elif self.path=='/api/addon-open':reply=session.addons.launch(value)

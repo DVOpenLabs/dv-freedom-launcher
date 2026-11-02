@@ -219,3 +219,10 @@ access and configured network sources remain separate choices. See [Add-ons](../
 A boot/setup/recovery placeholder is not a restorable original Home. Setup rejects it in a new review
 and when reading older recovery records. Select a working Home in TV settings, then review again;
 Setup does not guess another launcher or override a newly selected Home.
+
+## Cinema Studio creator
+
+The **Cinema Studio** link opens the offline four-step creator. Connect through Setup, then read the
+compatible DV Freedom installation, edit the draft and send it for native review/Apply. Download/import JSON is also
+available without a device; it references local artwork and does not include image bytes. No AI account
+is required. See [Cinema Studio](../product/CINEMA-STUDIO.md) for profile guards, limits and prerequisites.

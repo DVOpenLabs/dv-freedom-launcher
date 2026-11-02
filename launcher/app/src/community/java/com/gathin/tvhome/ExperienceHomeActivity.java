@@ -78,7 +78,7 @@ public final class ExperienceHomeActivity extends Activity {
     void shelfReturn(){focusApp(selected);}
     void shelfReady(boolean shown){if(hero!=null&&ExperiencePolicy.CINEMA.equals(look)&&geometry.top<200)hero.setVisibility(shown?View.GONE:View.VISIBLE);}
     private void updateClock(){if(clock!=null)clock.setText(DateFormat.getTimeFormat(this).format(new Date()));if(date!=null)date.setText(new SimpleDateFormat("EEEE, d MMMM",Locale.getDefault()).format(new Date()));}
-    private void updateSelection(){if(!favorites.isEmpty()){selected=Math.max(0,Math.min(favorites.size()-1,selected));selectedPackage=favorites.get(selected).pkg;if(hero!=null)hero.setText(favorites.get(selected).label);}}
+    private void updateSelection(){if(!favorites.isEmpty()){selected=Math.max(0,Math.min(favorites.size()-1,selected));selectedPackage=favorites.get(selected).pkg;if(hero!=null)hero.setText(favorites.get(selected).label);CinemaHome.selected(this,selectedPackage,(selected+.5f)/Math.max(1,favorites.size()));}}
     private void focusApp(int index){if(favorites.isEmpty()){settings.requestFocus();return;}selected=Math.max(0,Math.min(favorites.size()-1,index));updateSelection();if(list.findViewHolderForAdapterPosition(selected)==null)listLayout.scrollToPosition(selected);focusReady(selected,0);}
     private void focusReady(int at,int attempt){if(!resumed)return;RecyclerView.ViewHolder h=list.findViewHolderForAdapterPosition(at);if(h!=null)h.itemView.requestFocus();else if(attempt<16)list.postOnAnimation(()->focusReady(at,attempt+1));}
     private final class Tiles extends RecyclerView.Adapter<Tile> {
@@ -89,7 +89,7 @@ public final class ExperienceHomeActivity extends Activity {
             View ring=new View(ExperienceHomeActivity.this);ring.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);ring.setFocusable(false);ring.setVisibility(View.INVISIBLE);boolean strong=ExperiencePolicy.strongFocus(config.glassStyle);GradientDrawable dark=round(Color.TRANSPARENT,16);dark.setStroke(px(strong?6:5),0xff101820);GradientDrawable light=round(Color.TRANSPARENT,14);light.setStroke(px(strong?3:2),0xfff5f7fa);LayerDrawable outline=new LayerDrawable(new Drawable[]{dark,light});outline.setLayerInset(1,px(2),px(2),px(2),px(2));ring.setBackground(outline);FrameLayout.LayoutParams edge=new FrameLayout.LayoutParams(px(geometry.cardWidth+12),px(geometry.cardHeight+12));edge.leftMargin=-px(6);edge.topMargin=-px(5);cell.addView(ring,edge);
             TextView name=text("",14);name.setTextColor(labelInk);name.setGravity(Gravity.CENTER);name.setShadowLayer(px(1),0,px(1),0xc0000000);FrameLayout.LayoutParams title=new FrameLayout.LayoutParams(px(geometry.cardWidth),px(24));title.topMargin=px(geometry.cardHeight+7);cell.addView(name,title);HomeAppearance.name(name);return new Tile(cell,art,name,ring);
         }
-        @Override public void onBindViewHolder(Tile h,int at){HomeCategories.App app=favorites.get(at);h.app=app;h.itemView.setContentDescription(app.label);h.name.setText(app.label);Drawable art=app.artwork(ExperienceHomeActivity.this,config);h.art.setImageDrawable(art);boolean banner=art!=null&&art.getIntrinsicWidth()>art.getIntrinsicHeight()*1.3f;h.art.setScaleType(banner?ImageView.ScaleType.FIT_CENTER:ImageView.ScaleType.CENTER_INSIDE);h.art.setPadding(banner?0:px(12),banner?0:px(8),banner?0:px(12),banner?0:px(8));h.paint(h.itemView.isFocused());}
+        @Override public void onBindViewHolder(Tile h,int at){HomeCategories.App app=favorites.get(at);h.app=app;h.itemView.setContentDescription(app.label);h.name.setText(app.label);Drawable logo=CinemaAssets.logo(ExperienceHomeActivity.this,app.pkg);Drawable art=logo==null?app.artwork(ExperienceHomeActivity.this,config):logo;h.art.setBackground(logo==null?round(0xff28435f,ExperiencePolicy.CLEAN.equals(look)?9:12):null);h.art.setClipToOutline(logo==null);h.art.setImageDrawable(art);boolean banner=art!=null&&art.getIntrinsicWidth()>art.getIntrinsicHeight()*1.3f;h.art.setScaleType(banner?ImageView.ScaleType.FIT_CENTER:ImageView.ScaleType.CENTER_INSIDE);h.art.setPadding(banner?0:px(12),banner?0:px(8),banner?0:px(12),banner?0:px(8));h.paint(h.itemView.isFocused());}
         @Override public void onViewRecycled(Tile h){h.art.setImageDrawable(null);h.app=null;}
     }
     private final class Tile extends RecyclerView.ViewHolder {
@@ -111,6 +111,7 @@ public final class ExperienceHomeActivity extends Activity {
         }
     }
     void sample(Bitmap bitmap){
+        CinemaSpec cinema=CinemaStore.read(this);if(cinema.sceneBackground){Bitmap scene=CinemaAssets.read(this,cinema.sceneArt);if(scene!=null)bitmap=scene;}
         if(bitmap==null||bitmap.isRecycled()||bitmap.getConfig()==Bitmap.Config.HARDWARE)return;
         int[] head=new int[32],labels=new int[32];float cropScale=Math.max(960f/bitmap.getWidth(),540f/bitmap.getHeight());float cropX=(bitmap.getWidth()-960/cropScale)/2,cropY=(bitmap.getHeight()-540/cropScale)/2;
         for(int i=0;i<32;i++){int x=Math.max(0,Math.min(bitmap.getWidth()-1,(int)(cropX+(i%8+.5f)*960/8/cropScale)));head[i]=bitmap.getPixel(x,Math.min(bitmap.getHeight()-1,(int)(cropY+(30+i/8*23)/cropScale)));labels[i]=bitmap.getPixel(x,Math.min(bitmap.getHeight()-1,(int)(cropY+((geometry==null?480:geometry.labelTop)+i/8*4)/cropScale)));}
@@ -139,7 +140,7 @@ public final class ExperienceHomeActivity extends Activity {
     private void inputs(){InputPicker.show(this,false);}
 
     private void armIdle(){handler.removeCallbacks(idleTimeout);if(resumed&&!quiet&&idleSeconds>0){idle.arm(SystemClock.elapsedRealtime(),idleSeconds);handler.postDelayed(idleTimeout,idleSeconds*1000L);}}
-    private void setQuiet(boolean value){quiet=value;for(View view:quietViews){view.animate().cancel();view.animate().alpha(value?0:1).setDuration(config.animations&&!config.reducedMotion?180:0).start();}}
+    private void setQuiet(boolean value){quiet=value;CinemaHome.quiet(this,value);for(View view:quietViews){view.animate().cancel();view.animate().alpha(value?0:1).setDuration(config.animations&&!config.reducedMotion?180:0).start();}}
     @Override public boolean dispatchKeyEvent(KeyEvent event){
         int code=event.getKeyCode();boolean nav=code==KeyEvent.KEYCODE_DPAD_LEFT||code==KeyEvent.KEYCODE_DPAD_RIGHT||code==KeyEvent.KEYCODE_DPAD_UP||code==KeyEvent.KEYCODE_DPAD_DOWN||code==KeyEvent.KEYCODE_DPAD_CENTER||code==KeyEvent.KEYCODE_ENTER||code==KeyEvent.KEYCODE_BACK;
         boolean was=idle.quiet,consume=idle.key(code,event.getAction()==KeyEvent.ACTION_DOWN,nav);if(was&&!idle.quiet)setQuiet(false);if(event.getAction()==KeyEvent.ACTION_DOWN)armIdle();if(consume)return true;

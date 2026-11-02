@@ -6,11 +6,14 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 23; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 24; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 31 October 2026:** alpha 23 corrects live video's reported-memory threshold to
+**Latest update — 2 November 2026:** alpha 24 adds optional Cinema Studio and its desktop creator.
+Existing preferences, Home routing and wallpaper playlists remain saved.
+
+**Previous update — 31 October 2026:** alpha 23 corrects live video's reported-memory threshold to
 2 GB (decimal), retaining the low-RAM and reduced-motion vetoes and silent still fallback.
 Alpha 22 adds previewed installed icon-pack import and optional
 still-picture pan and zoom. Companions alpha 6 adds four original offline seasonal ambient scenes
@@ -37,6 +40,13 @@ restricted modes start off. See the guides for requirements and testing limits.
 [Report feedback](https://github.com/DVOpenLabs/dv-freedom-launcher/issues/new/choose)
 
 ## New in the Android alpha
+
+**Appearance → Cinema Studio** adds an optional logo dock, coordinated gold/silver/ember emblems,
+user-written taglines, personal poster/book/character collections, a local mood picker and procedural
+scene atmosphere. A four-step desktop creator stages drafts for on-TV review. Separate offline Play
+activities offer chess, Skyhop and a daily collection-art puzzle. Features start unconfigured; upgrades
+keep existing Home, app layout, wallpaper playlists and grants. See the [Cinema Studio guide](product/CINEMA-STUDIO.md)
+for artwork imports, service-link limits, resources and Android-only scope.
 
 **Apps & rows → Installed icon packs** reads supported local ADW/GO/Nova appfilter data and static
 artwork. Review matched apps and preview before Apply; existing custom art is kept unless selected.

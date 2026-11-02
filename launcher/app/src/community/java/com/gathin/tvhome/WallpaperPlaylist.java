@@ -34,7 +34,7 @@ final class WallpaperPlaylist {
         View view=a.findViewById(R.id.root);if(!(view instanceof FrameLayout))return;
         String raw=ProfileStore.preferences(a).getString(WallpaperPlaylistChoice.KEY,"");WallpaperPlaylist prior=homes.get(a);
         if(prior!=null&&(!prior.raw.equals(raw)||!prior.profile.equals(ProfileStore.id())||prior.layer.getParent()!=view)){prior.close();prior=null;}
-        if(!WallpaperPlaylistChoice.enabled(a)){if(prior!=null)prior.close();return;}
+        if(CinemaHome.ownBackground(a)||!WallpaperPlaylistChoice.enabled(a)){if(prior!=null)prior.close();return;}
         if(prior==null){prior=new WallpaperPlaylist(a,(FrameLayout)view,Config.load(a));homes.put(a,prior);}prior.start();
     }
     private WallpaperPlaylist(Activity a,FrameLayout root,Config config){

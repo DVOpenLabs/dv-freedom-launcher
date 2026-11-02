@@ -12,7 +12,7 @@ import org.json.*;
 
 /** Optional full-product features, compiled into the existing APK and data identity. */
 final class ProductFeatures {
-    static void trimArtwork(int level){if(level>=android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW)ArtworkCache.clear();}
+    static void trimArtwork(int level){if(level>=android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW){ArtworkCache.clear();CinemaAssets.trim();}}
     static void stillMotion(android.widget.ImageView image,boolean active,boolean reduced){StillMotion.background(image,active,reduced);}
     static boolean tileLift(boolean effects,boolean animations){return effects&&animations;}
     static boolean redirectConnected(StockHomeRedirectService s){HomeRedirect.connect(s);return true;}
@@ -37,7 +37,7 @@ final class ProductFeatures {
     static boolean upstreamExtras(){return true;}
     static boolean gridRepeat(MainActivity a,KeyEvent e){return GridRepeat.key(a,e);}
     static void gridRepeatStop(Activity a){GridRepeat.stop(a);}
-    static void paused(Activity a){GridRepeat.stop(a);OverlayRecovery.pause(a);StartupLaunch.stop(a);WakeRules.paused(a);}
+    static void paused(Activity a){CinemaHome.close(a);GridRepeat.stop(a);OverlayRecovery.pause(a);StartupLaunch.stop(a);WakeRules.paused(a);}
     static void interaction(Activity a){WakeRules.interaction();}
     static boolean homeAuto(String pkg,Set<String> added,List<String> favorites,Map<String,Integer> ranks,Map<String,Cards.Card> cards,android.content.pm.ResolveInfo info){if(!OptionalToolPolicy.PACKAGES.contains(pkg))return true;return added.contains(pkg)||favorites.contains(pkg)||ranks.containsKey(pkg)||ranks.containsKey(new ComponentName(pkg,info.activityInfo.name).flattenToShortString())||cards.containsKey(pkg);}
     static Intent libraryIntent(Context c,String pkg,Intent fallback){return AppShortcuts.intent(c,pkg,Config.load(c).launchActions.get(pkg),fallback);}
@@ -54,7 +54,7 @@ final class ProductFeatures {
     static boolean profilePicker(Activity a,boolean allowImport){ProfileAvatars.show(a,allowImport);return true;}
     static boolean allowEdit(Activity a,Runnable after){if(!FamilyMode.editing(a)){FamilyMode.authorize(a,after);return false;}return LauncherLock.require(a,after);}
     static boolean layoutEditable(Context c){return FamilyMode.editing(c)&&LauncherLock.open(c);}
-    static Bundle setupOperation(Context c,String method,String arg)throws Exception{Bundle result=InstallerTransfer.call(c,method,arg);return result!=null?result:SetupTransfer.call(c,method,arg);}
+    static Bundle setupOperation(Context c,String method,String arg)throws Exception{Bundle cinema=CinemaTransfer.call(c,method,arg);if(cinema!=null)return cinema;Bundle result=InstallerTransfer.call(c,method,arg);return result!=null?result:SetupTransfer.call(c,method,arg);}
     static void beforeChange(Context c,String reason){HomeHistory.before(c,reason);}
     static boolean routeHome(MainActivity a){return ExperienceChoice.route(a);}
     static boolean homeAction(MainActivity a,Intent intent){
@@ -68,6 +68,7 @@ final class ProductFeatures {
     static void resumed(Activity a){OverlayRecovery.resume(a);
         WakeRules.attach(a);
         WeatherClient.attach(a);
+        CinemaHome.attach(a);
         OptionalPanels.attach(a);
         NowPlaying.attach(a);
         if(a instanceof ExperienceHomeActivity||(a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&(HomeCategories.enabled(a)||ExperienceChoice.enabled(a))))WallpaperPlaylist.attach(a);
@@ -79,12 +80,13 @@ final class ProductFeatures {
             if(a instanceof MainActivity&&!ExperienceChoice.enabled(a)&&PlacementSession.preview()==null&&StyleSession.preview()==null&&HomeCategories.enabled(a)){CategoryHomeActivity.openIfEnabled((MainActivity)a,Config.load(a));return;}
         },240);
     }
-    static boolean playlistEnabled(Context c){return WallpaperPlaylistChoice.enabled(c);}
+    static boolean playlistEnabled(Context c){return c instanceof Activity&&CinemaHome.ownBackground((Activity)c)||WallpaperPlaylistChoice.enabled(c);}
     static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(PhoneSetupProvider.ENABLED);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
     static AutoCloseable dreamWeather(Context c,View root){View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return null;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return weather;}
     static boolean inputs(MainActivity a,boolean all){Config cfg=Config.load(a);if(cfg.coocaaSources||!cfg.sourcePanelService.isEmpty()||!cfg.inputSources.isEmpty()||!cfg.inputAction.isEmpty()||!cfg.inputUriScheme.isEmpty())return false;InputPicker.show(a,all);return true;}
-    static void setupKeys(Set<String> keys){keys.add(PanZoomPolicy.KEY);keys.add(GridRepeatPolicy.KEY);keys.add(FamilyPolicy.KEY);keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
+    static void setupKeys(Set<String> keys){keys.add(CinemaSpec.KEY);keys.add(PanZoomPolicy.KEY);keys.add(GridRepeatPolicy.KEY);keys.add(FamilyPolicy.KEY);keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals(CinemaSpec.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid cinema setup");new CinemaSpec((String)value);return true;}
         if(key.equals(PanZoomPolicy.KEY)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid still motion");return true;}
         if(key.equals(TileSpacing.FOCUS)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid focus outline");return true;}
         if(key.equals(GridRepeatPolicy.KEY)){if(!GridRepeatPolicy.valid(value))throw new IllegalArgumentException("Invalid arrow speed");return true;}
@@ -106,10 +108,11 @@ final class ProductFeatures {
     }
     private static boolean validSizes(String raw){try{HomeAppearance.parse(raw);return true;}catch(RuntimeException invalid){return false;}}
     private static boolean validPlaylist(String raw){try{PlaylistPolicy.parse(raw);return true;}catch(RuntimeException invalid){return false;}}
-    static void validateMedia(Context c,Map<String,Object> values)throws IOException{try{SceneSchedules.validateReplacement(values);}catch(RuntimeException bad){throw new IOException(bad.getMessage(),bad);}if(values.containsKey(NativeTileEditor.KEY))NativeTileEditor.validateAssets(c,(String)values.get(NativeTileEditor.KEY));if(values.containsKey(WallpaperPlaylistChoice.KEY))WallpaperPlaylistChoice.validateMedia(c,(String)values.get(WallpaperPlaylistChoice.KEY));}
+    static void validateMedia(Context c,Map<String,Object> values)throws IOException{if(values.containsKey(CinemaSpec.KEY))CinemaAssets.validate(c,new CinemaSpec((String)values.get(CinemaSpec.KEY)));try{SceneSchedules.validateReplacement(values);}catch(RuntimeException bad){throw new IOException(bad.getMessage(),bad);}if(values.containsKey(NativeTileEditor.KEY))NativeTileEditor.validateAssets(c,(String)values.get(NativeTileEditor.KEY));if(values.containsKey(WallpaperPlaylistChoice.KEY))WallpaperPlaylistChoice.validateMedia(c,(String)values.get(WallpaperPlaylistChoice.KEY));}
     static void clearProfile(Context c,String id){
         HomeHistory.clearProfile(c,id);if(id==null||id.isEmpty()||!LocalProfiles.validId(id))return;
         c.deleteSharedPreferences(LocalProfiles.filename(id,WallpaperPlaylist.PLAYBACK));
+        c.deleteSharedPreferences(LocalProfiles.filename(id,"cinema-play"));
         for(String name:HomeHistoryPolicy.FILES)try{java.io.File f=new java.io.File(c.getFilesDir(),LocalProfiles.filename(id,name));if(f.getCanonicalFile().getParentFile().equals(c.getFilesDir().getCanonicalFile())&&!java.nio.file.Files.isSymbolicLink(f.toPath()))new android.util.AtomicFile(f).delete();}catch(IOException ignored){}
     }
     static boolean themeInUse(Context c,String token){
