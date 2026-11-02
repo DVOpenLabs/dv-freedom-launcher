@@ -5,7 +5,7 @@ import shlex
 from urllib.parse import urlsplit
 from .core import SetupError
 
-KEYS={'schema','logos','glow','mascot','autoOpen','sceneBackground','scene','sceneArt','collectionName','collectionStyle','iconStyle','appLogos','taglines','moods','titles'}
+KEYS={'schema','logos','glow','mascot','autoOpen','sceneBackground','scene','sceneArt','collectionName','collectionStyle','iconStyle','appLogos','taglines','moods','titles','worlds','worldsEnabled'}
 def validate(value):
     if not isinstance(value,dict) or set(value)-KEYS or type(value.get('schema')) is not int or value['schema']!=1:raise SetupError('Unsupported cinema setup.')
     if len(json.dumps(value,ensure_ascii=True))>60000:raise SetupError('Keep this setup below 60 KB.')
@@ -14,7 +14,7 @@ def validate(value):
     def package(v):return isinstance(v,str) and bool(re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+',v))
     def asset(v):
         if not isinstance(v,str) or v and not re.fullmatch('[a-f0-9]{64}',v):raise SetupError('Artwork must reference a local imported file.')
-    for key in ('logos','glow','mascot','autoOpen','sceneBackground'):
+    for key in ('logos','glow','mascot','autoOpen','sceneBackground','worldsEnabled'):
         if key in value and type(value[key]) is not bool:raise SetupError('Use on/off cinema choices.')
     if value.get('scene','off') not in ('off','aurora','fireflies','mist') or value.get('collectionStyle','posters') not in ('posters','books','characters'):raise SetupError('Choose an available scene and collection style.')
     asset(value.get('sceneArt',''));text(value.get('collectionName','My cinema'),48)
@@ -29,6 +29,18 @@ def validate(value):
         for pkg,v in items.items():
             if not package(pkg):raise SetupError('Choose an installed app package.')
             asset(v) if key=='appLogos' else text(v,100)
+    worlds=value.get('worlds',[]);world_ids=set();wallpapers=set()
+    if not isinstance(worlds,list) or len(worlds)>8:raise SetupError('Use up to eight cinematic worlds.')
+    for world in worlds:
+        if not isinstance(world,dict) or set(world)-{'id','wallpaper','libraryArt','galleryArt','idleArt','hopArt','covers'}:raise SetupError('Invalid world fields.')
+        ident=world.get('id');wallpaper=world.get('wallpaper')
+        if not isinstance(ident,str) or ident not in ('hogwarts','hobbit','rivendell','ayodhya','ironman','avengers','infinity','doomsday') or ident in world_ids:raise SetupError('Choose a unique cinematic world.')
+        if not isinstance(wallpaper,str) or not re.fullmatch(r'p-[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}',wallpaper) or wallpaper in wallpapers:raise SetupError('Pair each world with a different imported wallpaper.')
+        world_ids.add(ident);wallpapers.add(wallpaper)
+        for role in ('libraryArt','galleryArt','idleArt','hopArt'):asset(world.get(role,''))
+        covers=world.get('covers',[])
+        if not isinstance(covers,list) or len(covers)>8:raise SetupError('Use up to eight local book covers.')
+        for cover in covers:asset(cover)
     titles=value.get('titles',[]);seen=set()
     if not isinstance(titles,list) or len(titles)>48:raise SetupError('Use up to 48 titles.')
     for t in titles:

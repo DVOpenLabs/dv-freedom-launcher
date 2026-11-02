@@ -5,11 +5,12 @@ import java.util.*;
 /** Shared bounds for three presentations of one Home state. No app, media or device mutations. */
 final class ExperiencePolicy {
     static final String KEY="home_experience_v1";
-    static final String LEGACY="legacy",GLASS="glass",CLEAN="clean",CINEMA="cinema";
-    static final List<String> IDS=Collections.unmodifiableList(Arrays.asList(LEGACY,GLASS,CLEAN,CINEMA));
+    static final String LEGACY="legacy",GLASS="glass",CLEAN="clean",CINEMA="cinema",SHOWCASE="showcase";
+    static final List<String> IDS=Collections.unmodifiableList(Arrays.asList(LEGACY,GLASS,CLEAN,CINEMA,SHOWCASE));
     static boolean valid(String id){return IDS.contains(id);}
-    static String name(String id){if(GLASS.equals(id))return "Freedom Glass";if(CLEAN.equals(id))return "Freedom Clean";if(CINEMA.equals(id))return "Freedom Cinema";return "Classic";}
+    static String name(String id){if(SHOWCASE.equals(id))return "Freedom Showcase";if(GLASS.equals(id))return "Freedom Glass";if(CLEAN.equals(id))return "Freedom Clean";if(CINEMA.equals(id))return "Freedom Cinema";return "Classic";}
     static String description(String id){
+        if(SHOWCASE.equals(id))return "A complete cinematic world, floating app marks and turning books. Select one paired wallpaper first.";
         if(GLASS.equals(id))return "A floating dock, compact controls and soft depth.";
         if(CLEAN.equals(id))return "Your apps clearly arranged, with the space and position you choose.";
         if(CINEMA.equals(id))return "Room for your wallpaper with a quiet, focused app ribbon.";

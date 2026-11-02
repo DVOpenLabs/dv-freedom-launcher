@@ -21,7 +21,8 @@ final class ExperienceChoice {
     static boolean trialValid(String id){return id!=null&&id.equals(preview());}
     static void cancel(){trial=null;}
     static void show(Activity a){
-        Config.load(a);String current=saved(a);String[] ids={ExperiencePolicy.GLASS,ExperiencePolicy.CLEAN,ExperiencePolicy.CINEMA,ExperiencePolicy.LEGACY};String[] labels=new String[ids.length];
+        if(!ProductFeatures.allowEdit(a,()->show(a)))return;
+        Config.load(a);String current=saved(a);String[] ids={ExperiencePolicy.GLASS,ExperiencePolicy.CLEAN,ExperiencePolicy.CINEMA,ExperiencePolicy.SHOWCASE,ExperiencePolicy.LEGACY};String[] labels=new String[ids.length];
         for(int i=0;i<ids.length;i++)labels[i]=ExperiencePolicy.name(ids[i])+(ids[i].equals(current)?" · Selected":"")+"\n"+ExperiencePolicy.description(ids[i]);
         new AlertDialog.Builder(a).setTitle("Home experience").setItems(labels,(d,n)->{
             if(ids[n].equals(current)){Toast.makeText(a,"This experience is already selected",Toast.LENGTH_SHORT).show();return;}
@@ -29,11 +30,13 @@ final class ExperienceChoice {
                 String profile=ProfileStore.id();Map<String,?> before=ProfileStore.preferences(a).getAll();
                 new AlertDialog.Builder(a).setTitle("Use Classic?").setMessage("Return to your saved grid or category layout. Apps, wallpaper and other appearance choices stay saved.").setNegativeButton(android.R.string.cancel,null).setPositiveButton("Use Classic",(x,w)->{if(save(a,profile,before,ExperiencePolicy.LEGACY)){a.finish();home(a);}}).show();return;
             }
-            trial=new Trial(a,ids[n]);a.startActivity(new Intent(a,ExperienceHomeActivity.class).putExtra(EXTRA,ids[n]));
+            if(ExperiencePolicy.SHOWCASE.equals(ids[n])&&!CinemaShowcaseActivity.ready(a)){Toast.makeText(a,"In Cinema Studio pair a world, then select only its wallpaper in the enabled playlist",Toast.LENGTH_LONG).show();return;}
+            trial=new Trial(a,ids[n]);a.startActivity(new Intent(a,ExperiencePolicy.SHOWCASE.equals(ids[n])?CinemaShowcaseActivity.class:ExperienceHomeActivity.class).putExtra(EXTRA,ids[n]));
         }).setNegativeButton(android.R.string.cancel,null).show();
     }
     static void prompt(Activity a,String id){
         Trial expected=trial;if(expected==null||!trialValid(id)){a.finish();return;}
+        if(a instanceof CinemaShowcaseActivity){((CinemaShowcaseActivity)a).trialControls(expected.deadline,()->{boolean kept=trial==expected&&trialValid(id)&&save(a,expected.profile,expected.before,id);cancel();a.finish();if(kept)home(a);},()->{if(trial==expected)cancel();a.finish();});return;}
         if(a instanceof ExperienceHomeActivity){
             ((ExperienceHomeActivity)a).trialControls(expected.deadline,()->{boolean kept=trial==expected&&trialValid(id)&&save(a,expected.profile,expected.before,id);cancel();a.finish();if(kept)home(a);},()->{if(trial==expected)cancel();a.finish();});return;
         }
@@ -47,7 +50,7 @@ final class ExperienceChoice {
         dialog.setOnShowListener(d->{dialog.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus();handler.postDelayed(expire,Math.max(1,expected.deadline-SystemClock.elapsedRealtime()));});dialog.show();
     }
     private static boolean save(Activity a,String profile,Map<String,?> before,String id){
-        if(!ExperiencePolicy.valid(id)||!profile.equals(ProfileStore.id())||!before.equals(ProfileStore.preferences(a).getAll())){Toast.makeText(a,"Home changed. Open Home experience again.",Toast.LENGTH_LONG).show();return false;}
+        if(!ProductFeatures.layoutEditable(a)||!ExperiencePolicy.valid(id)||!profile.equals(ProfileStore.id())||!before.equals(ProfileStore.preferences(a).getAll())){Toast.makeText(a,"Home or editing approval changed. Open Home experience again.",Toast.LENGTH_LONG).show();return false;}
         if(id.equals(saved(a)))return true;
         ProductFeatures.beforeChange(a,"Change Home experience");Map<String,Object> values=new HashMap<>();values.put(ExperiencePolicy.KEY,id);values.put(Config.SETTINGS_REVISION_KEY,ProfileStore.preferences(a).getLong(Config.SETTINGS_REVISION_KEY,0)+1);
         if(SetupValues.commit(ProfileStore.preferences(a),values))return true;
@@ -57,7 +60,9 @@ final class ExperienceChoice {
     static boolean route(MainActivity a){
         Config.load(a);if(!enabled(a)||!a.productRoutingAllowed())return false;
         a.getWindow().getDecorView().setAlpha(0);
-        a.startActivity(new Intent(a,ExperienceHomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP));a.overridePendingTransition(0,0);return true;
+        boolean showcase=ExperiencePolicy.SHOWCASE.equals(saved(a))&&CinemaShowcaseActivity.ready(a);
+        Intent target=new Intent(a,showcase?CinemaShowcaseActivity.class:ExperienceHomeActivity.class);if(showcase)target.putExtra("saved_home",true);
+        a.startActivity(target.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP));a.overridePendingTransition(0,0);return true;
     }
     private ExperienceChoice(){}
 }

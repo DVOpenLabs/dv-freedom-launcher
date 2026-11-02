@@ -10,7 +10,8 @@ final class CinemaSpec {
     static final int MAX_TEXT=60000,MAX_TITLES=48,MAX_MOODS=12;
     static boolean canRestoreDraft(String savedProfile,String savedRevision,String profile,String revision){return savedProfile!=null&&savedRevision!=null&&!savedRevision.isEmpty()&&savedProfile.equals(profile)&&savedRevision.equals(revision);}
     final JSONObject json;
-    final boolean logos,glow,mascot,autoOpen,sceneBackground;
+    final boolean logos,glow,mascot,autoOpen,sceneBackground,worldsEnabled;
+    final List<CinemaWorld> worlds;
     final String scene,sceneArt,collectionStyle,collectionName,iconStyle;
     final List<Title> titles=new ArrayList<>();
     final List<String> moods=new ArrayList<>();
@@ -33,9 +34,10 @@ final class CinemaSpec {
         try{
             if(raw==null||raw.length()>MAX_TEXT)throw new IllegalArgumentException("Cinema setup is too large");
             String safe=raw.isEmpty()?"{\"schema\":1}":raw;ThemeArchive.validateJsonObject(safe,768);json=new JSONObject(safe);
-            fields(json,"schema","logos","glow","mascot","autoOpen","sceneBackground","scene","sceneArt","collectionStyle","collectionName","iconStyle","appLogos","taglines","moods","titles");
+            fields(json,"schema","logos","glow","mascot","autoOpen","sceneBackground","scene","sceneArt","collectionStyle","collectionName","iconStyle","appLogos","taglines","moods","titles","worlds","worldsEnabled");
             for(String key:new String[]{"scene","sceneArt","collectionStyle","collectionName","iconStyle"})if(json.has(key)&&!(json.get(key) instanceof String))throw new IllegalArgumentException("Invalid "+key);
             if(!(json.get("schema") instanceof Integer)||json.getInt("schema")!=1)throw new IllegalArgumentException("Unsupported cinema setup");
+            worldsEnabled=bool(json,"worldsEnabled");worlds=CinemaWorld.parse(json.has("worlds")?json.getJSONArray("worlds"):null);
             logos=bool(json,"logos");glow=bool(json,"glow");mascot=bool(json,"mascot");autoOpen=bool(json,"autoOpen");sceneBackground=bool(json,"sceneBackground");
             scene=json.optString("scene","off");if(!Arrays.asList("off","aurora","fireflies","mist").contains(scene))throw new IllegalArgumentException("Unknown scene");
             sceneArt=asset(json.optString("sceneArt",""));collectionName=text(json.optString("collectionName","My cinema"),48);collectionStyle=json.optString("collectionStyle","posters");if(!Arrays.asList("posters","books","characters").contains(collectionStyle))throw new IllegalArgumentException("Unknown collection style");
@@ -60,5 +62,6 @@ final class CinemaSpec {
     static List<String> strings(JSONArray a,int max,int length)throws Exception{List<String> result=new ArrayList<>();Set<String> seen=new HashSet<>();if(a==null)return result;if(a.length()>max)throw new IllegalArgumentException("Too many choices");for(int i=0;i<a.length();i++){if(!(a.get(i) instanceof String))throw new IllegalArgumentException("Invalid choice");String s=text(a.getString(i),length);if(!seen.add(s.toLowerCase(Locale.ROOT)))throw new IllegalArgumentException("Duplicate choice");result.add(s);}return result;}
     private static void map(JSONObject o,Map<String,String> result,boolean assets)throws Exception{if(o==null)return;if(o.length()>64)throw new IllegalArgumentException("Too many apps");for(Iterator<String> i=o.keys();i.hasNext();){String pkg=i.next();if(!LayoutDraft.packageName(pkg))throw new IllegalArgumentException("Invalid app");if(!(o.get(pkg) instanceof String))throw new IllegalArgumentException("Invalid app customization");String v=o.getString(pkg);result.put(pkg,assets?asset(v):text(v,100));}}
     List<Title> pool(String mood,Set<String> available,String last){List<Title> result=new ArrayList<>();for(Title t:titles)if(available.contains(t.pkg)&&(mood.equals("Anything")||t.moods.contains(mood)))result.add(t);if(result.size()>1&&last!=null)result.removeIf(t->t.id.equals(last));return result;}
-    Set<String> assets(){Set<String> out=new HashSet<>(appLogos.values());out.add(sceneArt);for(Title t:titles){out.add(t.poster);out.add(t.character);out.add(t.backdrop);}out.remove("");return out;}
+    Title worldTarget(CinemaWorld world,int page,int selected,String pkg){String id=world.targetId(page,selected);for(Title t:titles)if(t.id.equals(id)&&t.pkg.equals(pkg)&&!t.url.isEmpty())return t;return null;}
+    Set<String> assets(){Set<String> out=new HashSet<>(appLogos.values());out.add(sceneArt);for(Title t:titles){out.add(t.poster);out.add(t.character);out.add(t.backdrop);}for(CinemaWorld w:worlds)out.addAll(w.assets());out.remove("");return out;}
 }

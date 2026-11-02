@@ -35,7 +35,7 @@ final class NowPlaying {
                 }).show();
     }
     static void attach(Activity a){
-        if(!(a instanceof MainActivity||a instanceof ExperienceHomeActivity||a instanceof CategoryHomeActivity))return;
+        if(!(a instanceof MainActivity||a instanceof ExperienceHomeActivity||a instanceof CinemaShowcaseActivity||a instanceof CategoryHomeActivity))return;
         Lease old=ACTIVE.remove(a);if(old!=null)old.close();
         if(!enabled(a))return;View root=a.findViewById(R.id.root);if(!(root instanceof FrameLayout))return;
         float scale=a.getResources().getDisplayMetrics().widthPixels/960f;TextView chip=new TextView(a);chip.setTextSize(14);chip.setTypeface(SettingsTypography.regular(a));chip.setTextColor(a.getColor(R.color.freedom_text));chip.setSingleLine(true);chip.setEllipsize(android.text.TextUtils.TruncateAt.END);chip.setPadding(Math.round(12*scale),0,Math.round(12*scale),0);chip.setGravity(Gravity.CENTER_VERTICAL);chip.setBackgroundResource(R.drawable.settings_choice_bg);chip.setFocusable(true);chip.setClickable(true);chip.setVisibility(View.GONE);

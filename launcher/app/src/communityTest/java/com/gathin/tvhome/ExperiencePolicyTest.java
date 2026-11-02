@@ -5,6 +5,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 public class ExperiencePolicyTest {
+    @Test public void showcaseHasAnExplicitSavedIdentity(){assertTrue(ExperiencePolicy.valid("showcase"));assertEquals("Freedom Showcase",ExperiencePolicy.name("showcase"));assertEquals(5,ExperiencePolicy.IDS.size());}
     @Test public void focusStyleUsesTheNamedSetting(){assertTrue(ExperiencePolicy.strongFocus("double"));assertFalse(ExperiencePolicy.strongFocus("rim"));assertFalse(ExperiencePolicy.strongFocus("glass"));assertFalse(ExperiencePolicy.strongFocus(null));}
     @Test public void missingOrUnknownLookCannotSelectAnotherRenderer(){assertFalse(ExperiencePolicy.valid(null));assertFalse(ExperiencePolicy.valid("https://theme"));assertTrue(ExperiencePolicy.valid("legacy"));assertEquals("Classic",ExperiencePolicy.name("legacy"));}
     @Test public void eightCardsAndTheirFocusRingsFitInsideEveryPosition(){

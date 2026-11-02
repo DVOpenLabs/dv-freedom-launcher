@@ -2,6 +2,14 @@ import unittest
 from setup_app.cinema import validate,call
 from setup_app.core import SetupError
 class CinemaTests(unittest.TestCase):
+    def test_world_bindings_round_trip_without_changing_other_fields(self):
+        value={'schema':1,'worldsEnabled':True,'worlds':[{'id':'hogwarts','wallpaper':'p-00000000-0000-0000-0000-000000000000','idleArt':'a'*64,'covers':['b'*64]}]}
+        self.assertEqual(validate(value),value)
+        self.assertNotIn('wallpaper_playlist_v1',value)
+    def test_worlds_reject_shared_backgrounds_executable_fields_and_paths(self):
+        world={'id':'hogwarts','wallpaper':'p-00000000-0000-0000-0000-000000000000'}
+        for worlds in ([world,dict(world,id='hobbit')],[dict(world,script='run')],[dict(world,id='unknown')],[dict(world,hopArt='../file')],[dict(world,covers=['https://example.org'])]):
+            with self.assertRaises(SetupError):validate({'schema':1,'worlds':worlds})
     def test_empty_setup_keeps_features_optional(self):self.assertEqual(validate({'schema':1}),{'schema':1})
     def test_reject_executable_fields(self):
         for draft in ({'schema':1,'script':'run'},{'schema':True},{'schema':1,'logos':'on'},{'schema':1,'scene':'https://example.org'}):

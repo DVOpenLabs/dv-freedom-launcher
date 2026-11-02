@@ -157,6 +157,10 @@ defines the webOS 4.0 minimum for `getAppLoadStatus` and the public `launch` per
 
 Cinema Studio, its theme emblems, procedural scene effects and Play implementations are original
 DV Freedom code. The public cinematic-TV reference in the source register informed interaction design;
-no third-party launcher source, scripts, APKs, posters, fonts or character media were copied.
+the separately supplied Castle Home guide informed the world/dock/library/gallery interaction.
+The native world renderer and symbolic ornaments are independent DV implementations. Castle Home
+source, owl animation, movie covers and scene images are not bundled or redistributed in this repo.
+Users importing private assets remain responsible for their separate rights and attribution.
+No third-party launcher source, scripts, APKs, posters, fonts or character media are bundled.
 User-imported art remains subject to its owners' rights. Franchise names in optional personal
 collection presets identify films and do not indicate affiliation or bundled streaming availability.

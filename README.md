@@ -6,11 +6,23 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 25; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 27; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 2 November 2026:** alpha 25 expands the Android wallpaper library and playlist to 24
+**Latest update — 2 November 2026:** alpha 27 adds eight coordinated cinematic world styles: matching
+transparent app marks, typography, focus-following companions, film libraries and galleries that
+follow their paired wallpapers. Configure them in [Cinema Studio](product/CINEMA-STUDIO.md), with
+optional personal art, a temporary native preview and desktop wallpaper pairing. **Freedom Showcase** is now a saved Home experience with a timed Keep/Revert preview, compact controls,
+a focus-following companion, hinged illustrated book covers and softly moving focus lights. Select one
+paired wallpaper before choosing it in Home experience. Original media is
+imported separately; app order, rotation timing, system Home and permissions stay saved.
+Harry Potter and Hobbit libraries now share their compact turning-book layout from regular Home
+and the preview. Movie options distinguish opening an app from opening a saved, app-specific movie
+link. YouTube can search the selected movie without configuration; exact title links remain optional
+for direct shortcuts. Account rights and playback are handled by the destination app.
+
+Alpha 25 expands the Android wallpaper library and playlist to 24
 entries under the existing 128 MiB storage quota, and adds **Move to start** in playlist arrangement.
 Consecutive phone-media reviews now open the newly received file instead of reusing an older review.
 Long playlist lists scroll within the dialog so their confirmation buttons remain visible.

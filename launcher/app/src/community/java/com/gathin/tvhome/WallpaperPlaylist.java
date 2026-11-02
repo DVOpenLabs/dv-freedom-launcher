@@ -21,7 +21,7 @@ final class WallpaperPlaylist {
     private LiveVideo video;private Bitmap bitmap;private int index,displayIndex,generation;private String scene="";private boolean active,closed,loaded;
     private final Runnable deadline=this::onDeadline;
     private final Runnable scenePulse=new Runnable(){public void run(){if(!active||closed)return;updateScene();schedule();handler.postDelayed(this,60000-System.currentTimeMillis()%60000);}};
-    private void updateScene(){String wanted=SceneSchedules.current(activity);int target=index;for(int i=0;i<entries.size();i++)if(entries.get(i).token.equals(wanted))target=i;if(!wanted.isEmpty()&&target==index&&!entries.get(target).token.equals(wanted))wanted="";boolean was=!scene.isEmpty();scene=wanted;if(scene.isEmpty()){if(was)clock.start(SystemClock.elapsedRealtime());target=index;}else clock.stop(SystemClock.elapsedRealtime());if(displayIndex!=target){displayIndex=target;loaded=false;}if(!loaded)load();}
+    private void updateScene(){String wanted=CinemaWorldPreview.token();if(wanted.isEmpty())wanted=SceneSchedules.current(activity);int target=index;for(int i=0;i<entries.size();i++)if(entries.get(i).token.equals(wanted))target=i;if(!wanted.isEmpty()&&target==index&&!entries.get(target).token.equals(wanted))wanted="";boolean was=!scene.isEmpty();scene=wanted;if(scene.isEmpty()){if(was)clock.start(SystemClock.elapsedRealtime());target=index;}else clock.stop(SystemClock.elapsedRealtime());if(displayIndex!=target){displayIndex=target;loaded=false;}if(!loaded)load();}
 
     private void onDeadline(){if(active&&!closed&&clock.due(SystemClock.elapsedRealtime()))next();}
     private final Application.ActivityLifecycleCallbacks lifecycle=new Application.ActivityLifecycleCallbacks(){
@@ -30,6 +30,7 @@ final class WallpaperPlaylist {
         public void onActivityPaused(Activity a){if(a==activity)stop();}
         public void onActivityDestroyed(Activity a){if(a==activity)close();}
     };
+    static void refreshAll(){for(WallpaperPlaylist p:new ArrayList<>(homes.values()))if(p.active&&!p.closed){p.updateScene();p.schedule();}}
     static void attach(Activity a){
         View view=a.findViewById(R.id.root);if(!(view instanceof FrameLayout))return;
         String raw=ProfileStore.preferences(a).getString(WallpaperPlaylistChoice.KEY,"");WallpaperPlaylist prior=homes.get(a);
@@ -62,7 +63,7 @@ final class WallpaperPlaylist {
         int token=++generation;ThemeLibrary.Entry entry=entries.get(displayIndex);if(video!=null){video.close();layer.removeView(video.view());video=null;}
         decoder.execute(()->{Bitmap decoded=decode(new File(entry.directory,Config.WALLPAPER_NAME));handler.post(()->{
             if(closed||!active||generation!=token){if(decoded!=null)decoded.recycle();return;}
-            loaded=true;if(decoded!=null){Bitmap old=bitmap;bitmap=decoded;poster.setImageBitmap(decoded);ProductFeatures.wallpaperSample(activity,decoded);if(old!=null&&old!=decoded)poster.postDelayed(old::recycle,500);}
+            loaded=true;if(activity instanceof ExperienceHomeActivity)((ExperienceHomeActivity)activity).world(entry.token);if(decoded!=null){Bitmap old=bitmap;bitmap=decoded;poster.setImageBitmap(decoded);ProductFeatures.wallpaperSample(activity,decoded);if(old!=null&&old!=decoded)poster.postDelayed(old::recycle,500);}
             File file=new File(entry.directory,"video.mp4");
             if(ThemeLibrary.liveAllowed()&&ProfileStore.preferences(activity).getBoolean(ThemeLibrary.LIVE,false)&&file.isFile()&&LiveVideo.supported(activity,config.reducedMotion)){
                 video=new LiveVideo(activity,file,0);layer.addView(video.view(),1,new FrameLayout.LayoutParams(-1,-1));video.start();

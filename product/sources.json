@@ -296,6 +296,12 @@
     {
       "url": "https://developer.android.com/design/ui/tv/guides/styles/focus-system",
       "usage": "Visible D-pad focus and navigation reference"
+    },
+    {
+      "title": "Castle Home full prompt and guide, supplied separately by the user",
+      "usage": "Interaction reference for a coordinated dock, focus-following companion, book library and gallery. Independent native implementation. Supplied personal assets are not distributed.",
+      "codeCopied": false,
+      "mediaBundled": false
     }
   ]
 }

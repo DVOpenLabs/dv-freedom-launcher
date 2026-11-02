@@ -250,6 +250,8 @@ Settings → Appearance → Home experience previews three native presentations 
 - **Freedom Glass:** compact header and a floating dock.
 - **Freedom Clean:** an open app row with solid, readable names.
 - **Freedom Cinema:** a quieter app ribbon and a title for the focused app.
+- **Freedom Showcase:** a coordinated world Home with floating marks and turning books. Select one
+  paired wallpaper first, then use its timed Keep/Revert trial. Other appearance settings remain saved.
 
 The existing grid/category layout remains the default. Preview is process-local and returns to Settings
 after 20 seconds unless Keep is chosen. Revert, Back or leaving a preview discards it. The preview bar
@@ -405,3 +407,9 @@ one visible video decoder. Existing playlists retain their order, interval and s
 Use **Arrange wallpapers → [wallpaper] → Move to start** to put a selected entry first; save with Apply.
 A changed playlist starts at its first entry. Importing new media alone still does not select it.
 The inherited reference edition retains its eight-pack limit.
+
+Alpha 26 adds eight coordinated world styles in [Cinema Studio](CINEMA-STUDIO.md#eight-coordinated-worlds).
+Bind a style to an imported wallpaper to coordinate transparent app marks, typography, selection,
+foreground companion and a remote-navigable library/gallery. Unpaired wallpapers retain the ordinary
+Home presentation. Styles start off on upgrade, use the existing profile draft/Apply contract and
+introduce no new Android permission. Personal media remains separate from the public source.

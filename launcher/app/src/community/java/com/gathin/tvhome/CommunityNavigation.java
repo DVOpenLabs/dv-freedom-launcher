@@ -110,7 +110,7 @@ final class SettingsNavigation {
             page("Appearance","Choose a Home style, arrange your apps and make text comfortable to read.","Home styles, layout and readability",
                 item("Cinema Studio","Create a logo dock, personal film collection, mood deck and interactive atmosphere. Preview before Apply.",()->"Themes, collections and Play",()->CinemaActivity.open(a,"studio")),
                 item("Appearance presets","Review Everyday, Big & clear, Movie night or Minimal. Still preview with timed Keep/Revert; apps, media and text color stay saved.",()->"Four starting points",()->PresetGallery.show(a)),
-                item("Home experience","Choose Classic, Glass, Clean or Cinema. Apps and wallpaper stay saved.",()->ExperiencePolicy.name(ExperienceChoice.saved(a)),()->ExperienceChoice.show(a)),
+                item("Home experience","Choose Classic, Glass, Clean, Cinema or Showcase. Apps and wallpaper stay saved.",()->ExperiencePolicy.name(ExperienceChoice.saved(a)),()->ExperienceChoice.show(a)),
                 layout,text,motion,
                 item(a.getString(R.string.freedom_setup_copilot),"Describe an appearance change locally, then inspect its draft. No cloud request or automatic apply.",()->"Describe your Home",()->a.startActivity(new android.content.Intent(a,GuidedSetupActivity.class).putExtra("copilot",true))),
                 item("Setup help","Walk through Home style, apps and readability, or review an AI setup draft before applying it.",()->"Guided setup and AI drafts",()->a.startActivity(new android.content.Intent(a,GuidedSetupActivity.class)))),

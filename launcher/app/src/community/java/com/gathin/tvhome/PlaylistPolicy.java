@@ -10,7 +10,7 @@ final class PlaylistPolicy {
         Spec(boolean enabled,int seconds,boolean shuffle,List<String> tokens){
             if(!seconds(seconds)||tokens==null||tokens.size()>MAX_ITEMS)throw new IllegalArgumentException("Invalid wallpaper playlist");
             Set<String> seen=new HashSet<>();for(String token:tokens)if(!ThemeLibrary.validToken(token)||!seen.add(token))throw new IllegalArgumentException("Invalid or duplicate wallpaper");
-            if(enabled&&tokens.size()<2)throw new IllegalArgumentException("Choose at least two wallpapers");
+            if(enabled&&tokens.isEmpty())throw new IllegalArgumentException("Choose at least one wallpaper");
             this.enabled=enabled;this.seconds=seconds;this.shuffle=shuffle;this.tokens=Collections.unmodifiableList(new ArrayList<>(tokens));
         }
         String encode(){return "v1|"+(enabled?"on":"off")+"|"+seconds+"|"+(shuffle?"shuffle":"sequential")+"|"+String.join(",",tokens);}

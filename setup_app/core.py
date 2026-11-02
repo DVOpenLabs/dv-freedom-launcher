@@ -54,7 +54,9 @@ class Device:
             r=subprocess.run([adb,*args],input=code,capture_output=True,text=True,timeout=30,
               creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
         except subprocess.SubprocessError: raise SetupError('Pairing timed out. Keep the pairing dialog open and try the new code and port shown there.')
-        if r.returncode or 'failed' in (r.stdout+r.stderr).lower() or 'cannot' in (r.stdout+r.stderr).lower():
+        connection_reply=bool(args) and args[0] in ('pair','connect')
+        reported_failure=connection_reply and any(word in (r.stdout+r.stderr).lower() for word in ('failed','cannot'))
+        if r.returncode or reported_failure:
             raise SetupError('Could not pair or connect. Check the current port, keep both devices on the same network and approve the TV prompt.')
         return r.stdout
     def pair(self,port,code):

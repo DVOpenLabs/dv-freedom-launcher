@@ -4,6 +4,55 @@ Cinema Studio is an optional Android feature in alpha 24. Open **Launcher settin
 Cinema Studio**. **Control Center** also opens the saved collection, mood picker and Play screens.
 Opening the editor does not change Home. Review the draft and choose **Apply** or **Cancel**.
 
+## Eight coordinated worlds
+
+Alpha 26 adds **Cinematic worlds** for the Clean, Glass and Cinema Home experiences. Pair each style
+with a different imported wallpaper in **Configure eight cinematic worlds**, turn **Follow matching
+wallpapers** on, then Apply the Cinema draft. The computer creator offers the same pairings under
+**Find your feel → Cinematic worlds** after reading the connected TV.
+
+| World | Home treatment | Library and gallery |
+| --- | --- | --- |
+| Harry Potter | Candle gold, serif clock, winged companion | Eight film books and a moonlit greenhouse |
+| The Hobbit | Leaf green, warm serif, round-door companion | Three journey books and Shire symbols |
+| Lord of the Rings | Elven silver, serif, winged ornament | Three film books and Middle-earth symbols |
+| Ramayana | Lamp gold, serif, lotus | Story chapters and a symbolic courtyard, without figures |
+| Iron Man | Arc cyan, technical typography, reactor | Armour archive and workshop symbols |
+| Avengers | Beacon blue, technical typography | Film archive and mission-control symbols |
+| Infinity War | Cosmic violet, orbital companion | Film archive and a six-stone gallery |
+| Doomsday | Emerald, technical typography, rune | Film archive and citadel symbols |
+
+These are coordinated interface styles, not bundled film artwork or a catalogue of available streams.
+The default books, symbols and unassigned app emblems are original DV drawings. Each style supplies
+transparent app marks, a matching selection indicator and selected-app name, header typography,
+foreground atmosphere, a focus-following companion, and its library/gallery presentation.
+Existing custom transparent app logos are tinted to the world's accent without changing their shape.
+The header keeps Inputs, Apps, Launcher settings, Controls and configured weather available.
+
+While a paired wallpaper is playing, its complete interface follows automatically; unrelated entries
+keep the ordinary Home presentation. Wallpaper timing, order and the app layout are not rewritten.
+Down from the app row opens the library; Down again opens the gallery. Left/Right select, OK opens
+the selected action, and Up/Back return one level. Home retains the existing system Home route.
+Film actions let you choose an installed service to browse or search; they do not claim direct title
+playback, regional availability, a subscription or access to an upcoming film.
+
+**Preview a saved cinematic world** temporarily selects its background for twenty seconds. Back cancels
+from Home; expiry restores ordinary rotation. Preview never saves a wallpaper, changes the playlist
+or consumes its remaining interval. The normal quiet-Home mode is awakened for an explicit preview.
+
+Optional personal images can replace the library and gallery backgrounds or book covers. A companion
+can use two transparent atlases: idle is **12 columns × 2 rows**, hop is **6 columns × 4 rows**; both use
+24 frames and the existing image-size limits. Attach them through the world's native draft editor.
+Keep your original media separately: exported Cinema JSON contains local image references only.
+The renderer does not include or redistribute the Castle Home artwork, owl sprites or movie covers.
+Those assets require their own rights and provenance when supplied privately by a user.
+
+The animated background continues through the existing one-decoder controller. The small foreground
+companion and atmosphere use a bounded Canvas layer at up to 20 updates per second, with no second
+video decoder. They stop away from Home and use a static state under reduced motion. Libraries and
+galleries use still scenery and selection effects; supplied creatures are not generated moving video.
+Classic/category Home and non-Android editions do not acquire this presentation automatically.
+
 ## A coordinated dock
 
 Clean, Glass and Cinema experiences support floating custom logos. Import a transparent PNG/WebP
@@ -109,3 +158,58 @@ separate from unit tests or injected D-pad checks.
 
 This batch is Android-specific. An LG screen connected to a Google TV device uses the Android edition.
 Native LG, Samsung, hosted and Roku editions do not gain this renderer or feature parity automatically.
+
+To keep one complete world active, select only its wallpaper in **Wallpaper → Wallpaper playlist → Choose wallpapers**, keep the playlist on, and Apply. One selected entry stays pinned; selecting several resumes rotation. The saved interval and order are retained.
+
+## Freedom Showcase Home and preview
+
+In **Appearance → Cinema Studio**, choose **Try Cinematic Showcase · unsaved preview**. It follows
+an already paired and selected world. This preview uses a compact icon header,
+local silent video, the configured weather units, transparent app marks, a moving selection glow and
+app-specific phrases. Existing custom taglines take precedence. The preview never saves a profile,
+changes the selected Home, or changes the wallpaper playlist or app order.
+
+Down from its app dock enters an immersive library: closed leather book spines turn forward to reveal
+the selected local cover. Down again opens the world's gallery. Harry Potter's supplied greenhouse
+uses a soft selection light over its existing creatures; the creatures themselves stay still. Left/Right
+move selection, OK opens the available action, and Up/Back return one level. Home returns to the saved
+launcher. Reopen the unsaved preview from Cinema Studio to try it again.
+
+To make it your daily Home, choose **Appearance → Home experience → Freedom Showcase**. This starts
+a 20-second trial with Keep/Revert; only Keep saves this profile’s Home experience. It requires an
+enabled playlist containing exactly one paired world with its imported wallpaper. Multiple-wallpaper
+rotation stays available in the other Home experiences; Showcase does not silently change that playlist.
+If the selected world or file later becomes unavailable, Home falls back to Freedom Cinema while your
+saved choices remain intact. Change Home experience from Showcase’s header or Launcher settings.
+All eight world palettes are supported, using original local emblems where personal art is absent.
+The dock respects Top/Middle/Bottom placement, icon sizes, spacing and app-name visibility; longer
+app rows scroll horizontally. Input/Settings and configured app/TV buttons keep their existing
+routes; local silent video stops away from Home. Launcher locks and family editing restrictions still
+apply. No helper grant, Home-package migration or new device permission is required.
+
+Personal castle, owl, greenhouse and cover art is imported separately. A Hobbit preview can reuse the
+configured candlelit study from the Harry Potter world; absent artwork uses original DV drawings.
+It does not create Hobbit character illustrations or add actor likenesses to the source distribution.
+One video decoder is used while the preview is visible and released in the library or away from the
+preview. Book animation runs only while a selection settles; reduced motion uses the static path.
+Book fronts use a hinged perspective with binding shade, page edges and a shelf shadow. Dock lighting
+and the gallery lantern ease toward the new selection, including when movement is interrupted by
+another arrow press. These transitions stop when the screen is left. Covers must be imported and
+assigned to each world separately; selecting a world does not download movie artwork.
+
+Harry Potter and Hobbit also use this compact shelf when entered from regular Home, so returning
+from a streaming app does not switch to a second, spread-out book layout. The selected book is
+retained when the activity is recreated.
+
+**OK** opens a saved exact movie link directly. Hold **OK** on a book for Movie options,
+where **Open app · find movie in app** is distinguished from **Open saved movie link**.
+Without a saved link, pressing OK opens these options.
+To target an owned edition, choose **Add or change this movie's link**, choose its installed app,
+paste that movie's HTTPS Share link, and explicitly save. Links belong to the current profile and
+world/book, and can also be edited in Cinema Studio's Collections. Without a saved link the launcher
+opens the app only. If an app rejects a saved link, an explicit fallback offers to open the app.
+For the official YouTube TV app, a book without a saved link offers **Find this movie on YouTube**
+and passes its full title to YouTube search. Select your purchased edition there; the launcher never
+automatically chooses the first result or a Buy/Rent offer. A saved exact movie link takes precedence.
+The destination app controls sign-in, purchase rights and playback; a working shortcut does not
+establish ownership or guarantee automatic playback. The launcher does not inspect account libraries.
