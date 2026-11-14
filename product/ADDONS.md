@@ -87,3 +87,21 @@ photo/audio mirroring from your own Apple device. Check Stop and discovery after
 clients on a network you trust; no public router exposure. FairPlay-protected streaming is unsupported,
 and native LG/Samsung AirPlay is a different vendor feature. AirPlay Status only diagnoses discovery.
 Existing Chromecast and HDMI routes remain available; no casting fix or OEM shim is enabled by Setup.
+
+## Additional offline options
+
+The directory has 52 entries and 23 signed package definitions. Availability still requires a verified
+artifact in the local bundle; a directory listing does not download or install a package.
+
+| Optional app | What it does | Access and limits |
+| --- | --- | --- |
+| Files | Opens an installed supported file manager | No storage/network permission of its own; destination app access is separate |
+| Tatami | Procedural floor-plan/room scenes | Separate app; no permissions or network; screensaver selection stays manual |
+| Koi Pond | Local pond and breathing guide | No permissions/network; animation stops on leaving; manual screensaver selection |
+| Neon Dream | Procedural neon scenes, palettes and clock | No permissions/network; no automatic screensaver change |
+| Sleep Timer | One-shot timer plus weekly wake/sleep events and wake-date exclusions | Schedule starts off; optional exact alarms, overlays and standby Accessibility; boot/time receivers and bounded wake locks only support configured schedules |
+
+Sleep Timer’s updated manifest includes wake-lock and boot-receiver permissions. Review installation
+separately on an existing TV; a launcher update does not install it or grant special access. Physical
+wake/standby, HDMI-CEC and OEM power policy require device acceptance. Weather adds German, Spanish and
+Russian resources for matching existing strings, with English fallback; language quality varies.

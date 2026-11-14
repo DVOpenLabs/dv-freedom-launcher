@@ -16,7 +16,7 @@ class DirectoryTests(unittest.TestCase):
         self.catalog=SimpleNamespace(summary=lambda id:{'available':True,'minSdk':26,'versionCode':2})
         self.center=AddonCenter(self.session,self.catalog,lambda *args:self.device)
     def test_directory_has_no_duplicate_or_unreviewed_install_ids(self):
-        rows=items();self.assertEqual(len(rows),48);self.assertEqual(len({x['id'] for x in rows}),48)
+        rows=items();self.assertEqual(len(rows),52);self.assertEqual(len({x['id'] for x in rows}),52)
         self.assertEqual({x['id'] for x in rows if x['distribution']=='signed'},set(PACKAGES))
         for x in rows:self.assertTrue(x['source'].startswith('https://github.com/'));self.assertTrue(x['access']);self.assertTrue(x['recovery'])
     def test_guide_cannot_be_installed_even_with_confirmation(self):

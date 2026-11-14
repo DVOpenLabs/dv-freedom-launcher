@@ -50,3 +50,12 @@ The portable tests do not exercise Linux evdev/ioctl, the compiled relay on an L
 UID/GID checks, held physical keys, standby/wake, Developer Mode expiry or the window manager. Review
 and build the remaining no-root helper/package and platform launcher source before deployment. Inventory
 both LG models/firmware first. Keep the recovery shortcut independent of profiles and themes.
+
+## Recovery preflight
+
+Guided Setup now reports read-only capability/recovery advice from the reported platform version and
+inventory. Unknown firmware, unverified recovery shortcuts and missing manual acceptance keep helper
+eligibility off. Developer-session expiry is never fixed by toggling Developer Mode off. This check
+does not install a helper, intercept Home or change standby/input settings. The pinned LG recovery
+source slice remains separate from a deployable helper; Samsung Home interception remains unsupported.
+Native manual tests and version-specific recovery review are still required before any helper work.

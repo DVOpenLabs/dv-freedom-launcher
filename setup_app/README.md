@@ -11,7 +11,7 @@ reviewed hosted Home listener binds one selected LAN address for its paired TV. 
 
 1. Explains all setup paths, external Streamers, server requirements and limits in one device chooser.
 2. Offers a clearly labelled example journey, or a real authorized ADB connection and inventory.
-3. Previews four Home styles, app order, top/middle/bottom rows, three sizes and spacing levels.
+3. Previews the four general Home styles (Showcase additionally requires a locally paired world), app order, top/middle/bottom rows, three sizes and spacing levels.
 4. Verifies the signed offline catalog, APK hash, package, version and installed signer. It rejects
    incompatible updates and saves a private recovery point before installation.
 5. Installs only after explicit review, then previews the choices in a **new separate profile**.
@@ -212,7 +212,7 @@ python -m setup_app.build_addons --key-dir <same-private-directory>
 python -m setup_app.build_phone --key-dir <same-private-directory>
 ```
 
-The Add-on Centre contains 48 curated package/source/guide entries and 19 supported signed package
+The Add-on Centre contains 52 curated package/source/guide entries and 23 supported signed package
 definitions. Only verified artifacts included in the bundle can be installed. New runtime/special
 access and configured network sources remain separate choices. See [Add-ons](../product/ADDONS.md).
 

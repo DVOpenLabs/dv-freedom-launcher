@@ -164,3 +164,11 @@ Users importing private assets remain responsible for their separate rights and 
 No third-party launcher source, scripts, APKs, posters, fonts or character media are bundled.
 User-imported art remains subject to its owners' rights. Franchise names in optional personal
 collection presets identify films and do not indicate affiliation or bundled streaming availability.
+
+Files, Tatami, Koi Pond, Neon Dream, Sleep Timer schedules and matching Weather translations adapt MIT
+source from CleanYourTV commit `d11bd68c9ac45b2fb38480941586d17930137e9d`. Their source directories retain
+upstream licences; Tatami also retains its own MIT notice. Files adds a launch-race fallback; Koi adds
+detachment cleanup. TextClock standby refresh and strict shrinking adapt the same MIT upstream work.
+Portable-world tooling, starter procedural artwork, capability advice, the draft drawer and offline
+troubleshooting are independent DVOpenLabs implementations. Projectivy/Sofadrop inform interaction and
+file-provider boundaries only; no proprietary launcher code or plug-in runtime is bundled.

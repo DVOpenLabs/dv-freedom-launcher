@@ -2,6 +2,7 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('../../shared-web/core.js'));else root.FreedomTizen=factory(root.FreedomShared);}(this,function(Shared){
  'use strict';var C=Shared.create({label:'Samsung',key:'dv-freedom.tizen.v1',extended:true,favoriteLimit:8});
  function check(value,message){if(!value)throw new Error(message);}
+ C.capabilities=function(platform){var app=platform&&platform.application;return {inventoryApi:!!(app&&typeof app.getAppsInfo==='function'),launchApi:!!(app&&typeof app.launch==='function'),exitApi:!!(app&&typeof app.getCurrentApplication==='function'),inputSelection:false,homeInterception:false};};
  function plan(current,settings,favorites,available){
   C.validate(current);var next=C.copy(current),s=C.settings(settings),seen=Object.create(null);check(Array.isArray(favorites)&&favorites.length<=8,'Choose up to eight favorite apps');
   var known=C.catalog(available.map(function(a){return {id:a.id,label:a.label};})),p=next.profiles.filter(function(x){return x.id===next.active;})[0];

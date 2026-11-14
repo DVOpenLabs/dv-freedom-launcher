@@ -80,6 +80,11 @@ class NativeTest(unittest.TestCase):
     def review(self,platform='lg'):
         self.connect(platform);self.n.prepare({'profile':'Owner Certificate' if platform=='tizen' else ''});self.done();return copy.deepcopy(self.n.reviewed)
     def install(self,r):return self.n.install({'id':r['id'],'reviewToken':r['reviewToken'],'confirmed':True})
+    def test_public_recovery_preflight_never_authorizes_a_home_helper(self):
+        for platform in ('lg','tizen'):
+            self.connect(platform);health=self.n.public()['device']['health']
+            self.assertTrue(health['inventory']);self.assertFalse(health['homeTakeover'])
+            self.assertFalse(health['helperEligible']);self.assertFalse(health['manualReady'])
     def test_lg_pairing_is_isolated_and_code_not_in_argv_records_or_public_state(self):
         self.connect();calls=self.vendor.calls;key=next(x for x in calls if 'ares-novacom.js' in ' '.join(x[0]));self.assertEqual(key[1]['stdin'],'Ab12Cd\n');self.assertEqual(key[1]['stdin_prompt'],'input passphrase:');self.assertNotIn('Ab12Cd',str(key[0]));self.assertTrue(key[1]['env']['APPDATA'].startswith(str(self.n.root)));self.assertNotIn('Ab12Cd',json.dumps(self.n.public()));self.assertFalse((self.n.root/'records').exists())
     def test_corrupt_tool_settings_are_kept_and_block_operations(self):

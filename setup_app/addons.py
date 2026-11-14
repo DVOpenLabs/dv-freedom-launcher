@@ -32,6 +32,10 @@ PACKAGES={
  'jewish-calendar':'com.lionlev.tv.jewishcalendar',
  'nepali-calendar':'com.oneyuv.tv.nepalicalendar',
  'prayer-times':'com.majnioui.tv.prayer',
+ 'files-card':'io.github.maxhayim.filescard',
+ 'tatami':'io.github.pbanddev.tatami',
+ 'koi-pond':'io.github.nottoobright.koipond',
+ 'neon-dream':'io.github.smartgenius2.neondream',
 }
 
 class AddonCatalog:

@@ -122,3 +122,12 @@ browsing does not save a choice. Favourite-only family view simplifies this prof
 It does not provide Android’s parent PIN or Accessibility guard: profile switching, vendor Home and
 system settings remain available. These are native-runtime source/browser features; physical TV
 rendering, remote navigation and decoding require separate acceptance.
+
+## Recovery preflight
+
+Guided Setup now reports read-only capability/recovery advice from the reported platform version and
+inventory. Unknown firmware, unverified recovery shortcuts and missing manual acceptance keep helper
+eligibility off. Developer-session expiry is never fixed by toggling Developer Mode off. This check
+does not install a helper, intercept Home or change standby/input settings. The pinned LG recovery
+source slice remains separate from a deployable helper; Samsung Home interception remains unsupported.
+Native manual tests and version-specific recovery review are still required before any helper work.

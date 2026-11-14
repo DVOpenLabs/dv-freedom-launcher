@@ -9,8 +9,12 @@ def entry(id, name, category, summary, access, *, source=None, mode='source', ne
                 background=background, recovery=recovery, platforms=['android','streamer'])
 
 _ITEMS = [
+ entry('files-card','Files','Everyday','Open an installed, supported file manager without a new storage grant.','No permissions; the destination file manager has its own access.',mode='signed'),
+ entry('tatami','Tatami','Ambient','Offline procedural floor plans and room scenes.','No permissions or network. Select screensaver separately.',mode='signed'),
+ entry('koi-pond','Koi Pond','Ambient','Local animated pond and optional breathing guide.','No permissions or network. Select screensaver separately.',mode='signed'),
+ entry('neon-dream','Neon Dream','Ambient','Procedural neon scenes, palettes and clock.','No permissions or network. Select screensaver separately.',mode='signed'),
  entry('weather','Weather','Everyday','Forecast and optional Home/screensaver weather sharing.','Internet; approve sharing separately in Weather.',mode='signed'),
- entry('sleep-timer','Sleep timer','Everyday','A timer you can set with your remote.','Optional exact alarms, overlays and standby Accessibility.',mode='signed',background='An explicitly started timer'),
+ entry('sleep-timer','Sleep timer','Everyday','Remote timer plus optional weekly wake/sleep events and date exclusions.','Optional exact alarms, overlays and standby Accessibility; wake lock and boot/time receivers for enabled schedules.',mode='signed',background='An explicitly started timer'),
  entry('world-clock','World clock','Everyday','Local time zones and a clock screensaver.','No Android permissions.',mode='signed'),
  entry('quiet-hours','Quiet hours','Everyday','A scheduled volume cap that never raises quieter audio.','Foreground service and boot receiver; configure a schedule first.',mode='signed',background='An enabled schedule can resume after restart'),
  entry('companions','DV Freedom Companions','Home & media','Discover, watchlist, photos, Home Assistant, family calendars and reviewed AI setup drafts.','Internet; no connections or provider calls until configured.',source='https://github.com/DVOpenLabs/dv-freedom-launcher/tree/main/launcher/companions',mode='signed'),

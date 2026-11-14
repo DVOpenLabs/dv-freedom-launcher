@@ -1,6 +1,7 @@
 """Reviewed, fresh-install-only webOS/Tizen setup. No shell endpoint or Home takeover."""
 from __future__ import annotations
 import copy
+from platforms.platform_health import assess as platform_health
 import hashlib
 import importlib
 import io
@@ -196,7 +197,7 @@ class NativeInstaller:
                 try:
                     item=json.loads(path.read_text(encoding='utf-8'));records.append({k:item[k] for k in ('id','platform','model','firmware','status','created')})
                 except (OSError,ValueError,KeyError,TypeError):pass
-        return {'job':copy.deepcopy(self.job),'device':copy.deepcopy(self.connection and {k:self.connection[k] for k in ('platform','host','model','firmware','reported','catalog')}),'review':copy.deepcopy(self.reviewed),'operation':copy.deepcopy(self.operation),'records':records}
+        return {'job':copy.deepcopy(self.job),'device':copy.deepcopy(self.connection and {k:self.connection.get(k) for k in ('platform','host','model','firmware','reported','catalog','health')}),'review':copy.deepcopy(self.reviewed),'operation':copy.deepcopy(self.operation),'records':records}
     def configure(self,value):
         fields(value,('node','lgRoot','samsungRoot'))
         for key,val in value.items():
@@ -245,7 +246,9 @@ class NativeInstaller:
             ids=re.findall(r'pkgid\[([A-Za-z0-9_.-]+)\]',raw)
             if not ids and not re.search(r'total\s*\[?0\]?|no packages',raw,re.I):raise SetupError('Samsung did not expose a recognizable installed-package list. This firmware needs a separate compatibility check; no install was attempted.')
         if not identity or len(identity)>65536:raise SetupError('The TV identity response is invalid. Reconnect before proceeding.')
-        return {'identity':hashlib.sha256(identity.encode()).hexdigest(),'apps':ids,'reported':identity[:1200] if c['platform']=='lg' else '\n'.join(x for x in identity.splitlines() if re.match(r'(platform_version|model_name|device_name)\s*[:=]',x))[:1200],'catalog':catalog if c['platform']=='lg' else [],'inputs':inputs if c['platform']=='lg' else []}
+        probe_version=lg_sdk(identity) if c['platform']=='lg' else version[1]
+        health=platform_health('webos' if c['platform']=='lg' else 'tizen',version=probe_version,capabilities={'inventory':True,'inputs':bool(inputs) if c['platform']=='lg' else False})
+        return {'health':health,'identity':hashlib.sha256(identity.encode()).hexdigest(),'apps':ids,'reported':identity[:1200] if c['platform']=='lg' else '\n'.join(x for x in identity.splitlines() if re.match(r'(platform_version|model_name|device_name)\s*[:=]',x))[:1200],'catalog':catalog if c['platform']=='lg' else [],'inputs':inputs if c['platform']=='lg' else []}
     def connect(self,value):
         fields(value,('platform','host','model','firmware','code','prepared','pairConsent'))
         platform=value['platform'];port=9922 if platform=='lg' else 26101

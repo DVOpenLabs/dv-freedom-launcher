@@ -303,5 +303,21 @@
       "codeCopied": false,
       "mediaBundled": false
     }
-  ]
+  ],
+  "novemberReliabilityAndOptionalApps": {
+    "repository": "https://github.com/Gathin23/cleanyourtv",
+    "commit": "d11bd68c9ac45b2fb38480941586d17930137e9d",
+    "license": "MIT",
+    "adapted": [
+      "pre-Android-12 TextClock recovery (PR #3044)",
+      "strict resource shrinking (PR #3444)",
+      "addons/files-card",
+      "addons/tatami app and plan libraries",
+      "addons/koi-pond",
+      "addons/neon-dream",
+      "addons/sleep-timer schedules",
+      "matching weather translation resources"
+    ],
+    "boundaries": "Reviewed source/vector resources only. No third-party film art, binaries, installer grant scripts or workflows copied. Optional packages are independent of the core APK."
+  }
 }

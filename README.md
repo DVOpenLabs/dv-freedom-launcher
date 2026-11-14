@@ -6,21 +6,30 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 27; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 28; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 2 November 2026:** alpha 27 adds eight coordinated cinematic world styles: matching
-transparent app marks, typography, focus-following companions, film libraries and galleries that
-follow their paired wallpapers. Configure them in [Cinema Studio](product/CINEMA-STUDIO.md), with
-optional personal art, a temporary native preview and desktop wallpaper pairing. **Freedom Showcase** is now a saved Home experience with a timed Keep/Revert preview, compact controls,
-a focus-following companion, hinged illustrated book covers and softly moving focus lights. Select one
-paired wallpaper before choosing it in Home experience. Original media is
-imported separately; app order, rotation timing, system Home and permissions stay saved.
-Harry Potter and Hobbit libraries now share their compact turning-book layout from regular Home
-and the preview. Movie options distinguish opening an app from opening a saved, app-specific movie
-link. YouTube can search the selected movie without configuration; exact title links remain optional
-for direct shortcuts. Account rights and playback are handled by the destination app.
+**Latest update — 14 November 2026:** alpha 28 improves checked recovery batches, remote-key handling,
+clock refresh after standby and resource cleanup. **Quick appearance** combines app position, icon size,
+spacing, names, animations and dimming in a draft drawer with a still illustration and Apply/Cancel.
+Open **Control Center** from the clock for Inputs, Now Playing, shared titles, settings and offline help.
+Showcase reuses its current scene on repeated Home presses when the profile/settings are unchanged.
+
+Content shelves have **Continue / Popular** tabs and remaining minutes when apps publish valid progress.
+An optional soft poster backdrop is confined to the shared-title browser. The **Lite** preset uses still
+fallbacks and disables motion without replacing the saved wallpaper or playlist. A linked local/USB
+wallpaper folder refreshes only on request, with each file reviewed before import.
+
+[Portable world packs](product/WORLD-PACKS.md) carry bounded offline artwork, credits and a paired scene;
+they exclude private movie links and app order. Import and native review are separate from choosing Home
+or wallpaper. Files, Tatami, Koi Pond and Neon Dream are separate optional apps; Sleep Timer adds weekly
+events and date exclusions. New optional apps/schedules are not enabled during a launcher upgrade.
+See the [feature guide](product/ANDROID-COMMUNITY.md) and [Add-on Centre](product/ADDONS.md).
+
+The eight cinematic world styles and Freedom Showcase remain available in [Cinema Studio](product/CINEMA-STUDIO.md).
+Personal movie artwork/video is imported separately. Streaming account rights and playback remain with
+the destination app; opening an app does not guarantee direct playback of a purchased title.
 
 Alpha 25 expands the Android wallpaper library and playlist to 24
 entries under the existing 128 MiB storage quota, and adds **Move to start** in playlist arrangement.
@@ -110,7 +119,7 @@ compatibility. Read the [complete setup comparison](setup_app/ALL-PLATFORMS.md) 
 
 ## Make Android Home your own
 
-- **Four experiences:** Classic, Clean, Glass and Cinema, with timed preview and Keep/Revert.
+- **Five experiences:** Classic, Clean, Glass, Cinema and Showcase, with timed preview and Keep/Revert.
 - **Flexible apps:** top, middle or bottom placement; Small/Medium/Large icons; spacing, ordering,
   category rows, carousel options and app-name/artwork controls.
 - **Readable settings:** Simple/All settings views over the same saved choices, seven sections, search,
@@ -161,7 +170,7 @@ compatibility. Read the [complete setup comparison](setup_app/ALL-PLATFORMS.md) 
 - **Phone-assisted setup:** explicitly start a temporary paired phone session from Setup. Send a draft
   or a picture/short MP4 to the computer; review before any TV change. Wallpaper import adds a library
   item and never selects it automatically. The trusted-network HTTP session expires after 15 minutes.
-- **Add-on Center:** search 48 curated apps and references, with 19 signed package definitions,
+- **Add-on Center:** search 52 curated apps and references, with 23 signed package definitions,
   clear requirements and explicit connected-TV status checks. [See the package guide](product/ADDONS.md)
   for included tools and separate-project limits. Review each signed offline package before installing. Signer/downgrade checks and private recovery
   records protect updates; optional grants and connections are separate.
