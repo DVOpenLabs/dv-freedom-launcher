@@ -69,6 +69,11 @@ class RestoreVenvHintTest(unittest.TestCase):
         # The real interpreter behind the path the scripts look for.
         client = self.tools.joinpath("venv", *parts)
         client.parent.mkdir(parents=True, exist_ok=True)
+        if os.name == "nt" and parts[-1] == "python.exe":
+            # A shebang text file named .exe is not a Windows executable. Exercise a real venv.
+            subprocess.run([sys.executable,"-m","venv","--without-pip",str(client.parent.parent)],
+                           check=True,capture_output=True,timeout=60)
+            return
         client.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
         client.chmod(0o755)
 

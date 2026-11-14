@@ -44,6 +44,8 @@ class RecordPerLanAddressTest(unittest.TestCase):
     sent = harness.RecoveryRecordTest.sent
 
     def run_script(self, script, host, port=None):
+        if os.name != "posix":
+            raise unittest.SkipTest("The recovery shell fixture needs POSIX Python and Bash")
         env = dict(os.environ, TV_HOST=host, HOME=str(self.home), FAKE_TV_STATE=str(self.state_path))
         env.pop("TV_PORT", None)
         if port:

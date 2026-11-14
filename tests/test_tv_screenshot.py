@@ -126,7 +126,7 @@ class ScreenshotTest(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertIn("0 bytes", err)
             self.assertIn("Live TV and HDMI", err)
-            self.assertTrue(local.exists(), "the empty file stays for the user to look at")
+            self.assertFalse(local.exists(), "a failed capture must not publish an empty output file")
 
     def test_netflix_style_capture_exit_1_with_no_bytes_is_the_empty_case(self):
         with tempfile.TemporaryDirectory() as tmp:

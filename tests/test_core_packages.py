@@ -21,7 +21,7 @@ import recovery  # noqa: E402
 
 # The packages named in #884, plus the rest of the block.
 CORE = [
-    "com.android.sdksandbox", "android.ext.services", "android.ext.shared",
+    "com.android.sdksandbox", "com.google.android.sdksandbox", "android.ext.services", "android.ext.shared",
     "com.android.location.fused", "com.cltv.mal", "com.mediatek.tis",
     "com.mediatek.tv.service", "com.mediatek.tv.agent",
     "com.google.android.permissioncontroller", "com.android.permissioncontroller",
@@ -37,7 +37,7 @@ CORE = [
 ]
 # Look alike but are fine: what tested lists disable, and names that only share a prefix.
 NOT_CORE = [
-    "com.android.sdksandbox.extra", "com.example.sdksandbox", "com.mediatek.tv.service.extra",
+    "com.android.sdksandbox.extra", "com.google.android.sdksandbox.extra", "com.example.sdksandbox", "com.mediatek.tv.service.extra",
     "com.android.location.fused.extra", "android.ext.services.extra",
     "com.android.providers.calendar", "com.android.providers.contacts",
     "com.android.providers.userdictionary", "com.android.providers.blockednumber",

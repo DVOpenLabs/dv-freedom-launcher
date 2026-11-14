@@ -21,6 +21,19 @@ import re
 import sys
 
 CHUNK = 48 * 1024  # raw bytes per shell command (base64 grows it by 4/3); capped per TV in main()
+SHELL_COMMAND_LIMIT = 32 * 1024
+
+
+def chunk_size(payload, remote):
+    """Bound both shell command bytes and ADB payload, including quoted paths."""
+    budget = min(payload - 8, SHELL_COMMAND_LIMIT)
+    overhead = len(("echo '' >> " + q(remote + ".b64.part") + " && echo ok999999999999").encode("utf-8"))
+    raw = min(CHUNK, (budget - overhead) * 3 // 4)
+    raw -= raw % 3
+    verify = "base64 -d < " + q(remote + ".b64.part") + " > " + q(remote + ".part") + " && md5sum " + q(remote + ".part") + "; rm -f " + q(remote + ".b64.part")
+    if raw < 3 or len(verify.encode("utf-8")) > budget:
+        raise ValueError("remote path leaves no room for a bounded transfer command")
+    return raw
 # adbd before Android 7 aborts the connection on an ADB "open" payload over 4096 bytes, which
 # Android 5.x TVs announce as their max data size. Newer adbd takes the full 48 KB.
 
@@ -78,8 +91,11 @@ def main():
     b64 = remote + ".b64.part"
     part = remote + ".part"
     try:
-        chunk = min(CHUNK, dev.max_chunk_size * 3 // 4 - 64)   # base64 of the chunk plus the echo must fit one payload
-        chunk -= chunk % 3   # a multiple of 3, or each chunk ends in '=' padding mid-stream and base64 -d corrupts it
+        try:
+            chunk = chunk_size(dev.max_chunk_size, remote)
+        except ValueError as error:
+            print(f"{error}. Nothing was sent to the TV.", file=sys.stderr)
+            return 2
         # Only our own temporary names are cleared; the target stays until the copy is verified.
         # `: >` creates the base64 file even for an empty upload, so `base64 -d` has an input.
         dev.shell(f"rm -f {q(b64)} {q(part)} && : > {q(b64)}")

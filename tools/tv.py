@@ -12,7 +12,7 @@ Set TV_HOST to the TV's IP (or IP:port). Usage:
     tv.py --reboot                     return once the reboot request is accepted; the TV may still be restarting
     tv.py --help                       this text; needs neither the venv nor a TV
 
-Exit status: 0 the command ran (the TV's own answer is in its output), 1 the screenshot came back
+Exit status: 0 the command ran (the TV's own answer is in its output), 1 a batch command failed/lost its completion receipt, or the screenshot came back
 empty or failed, 2 it was refused before anything ran on the TV - a flag it does not have, a local
 path that cannot be used, a port it could not open.
 
@@ -25,6 +25,58 @@ import re
 import subprocess
 import sys
 import time
+import secrets
+import tempfile
+
+def atomic_pull(dev, remote, local, *, png=False):
+    """Only publish a completed file; a failed transfer cannot destroy an existing backup."""
+    folder = os.path.dirname(os.path.abspath(local))
+    fd, stage = tempfile.mkstemp(prefix='.dv-pull-', dir=folder)
+    os.close(fd)
+    try:
+        dev.pull(remote, stage, transport_timeout_s=300.0, read_timeout_s=300.0)
+        if png:
+            with open(stage, 'rb') as received:
+                if received.read(len(PNG)) != PNG:
+                    if os.path.getsize(stage)==0:
+                        raise ValueError('captured 0 bytes: Live TV and HDMI inputs and protected apps such as Netflix can return empty captures; destination retained')
+                    raise ValueError('Capture is not a PNG; destination retained')
+        os.replace(stage, local)
+    finally:
+        if os.path.exists(stage):
+            os.unlink(stage)
+
+MAX_BATCH_BYTES = 8 * 1024 * 1024
+
+
+def batch_commands(raw):
+    """Validate the complete input before any connection or command; no partial decode."""
+    if len(raw) > MAX_BATCH_BYTES:
+        raise ValueError("batch exceeds 8 MiB")
+    text = raw.decode("utf-8-sig")
+    if "\x00" in text:
+        raise ValueError("batch contains a NUL byte; save it as UTF-8")
+    return [line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
+
+
+def run_batch(dev, commands):
+    """Check remote shell status, not just whether the transport returned text."""
+    for position, command in enumerate(commands, 1):
+        marker = "DVF_RC_" + secrets.token_hex(12) + "="
+        wrapped = "(\n" + command + "\n)\n_dvf_rc=$?\nprintf '\\n" + marker + "%s\\n' \"$_dvf_rc\""
+        try:
+            result = dev.shell(wrapped, read_timeout_s=120.0)
+        except Exception as error:
+            print(f"batch command {position}: connection failed ({type(error).__name__}); later commands were not sent. Verify the TV before retrying.", file=sys.stderr)
+            return 1
+        match = re.search(r"\n" + re.escape(marker) + r"([0-9]+)\r?\n?\Z", result)
+        output = result[:match.start()] if match else result
+        sys.stdout.write(output + ("\n" if output and not output.endswith("\n") else ""))
+        if match is None or int(match.group(1)) != 0:
+            status = match.group(1) if match else "unknown (no completion receipt)"
+            print(f"batch command {position} failed: remote exit {status}; later commands were not sent. Earlier commands may have applied; verify the TV before retrying.", file=sys.stderr)
+            return 1
+    return 0
 
 # -h/--help before the adb_shell imports and before TV_HOST is read: the usage is the first thing a
 # reader types at a script they do not know, and it needs neither the venv nor a TV. The TV_HOST check
@@ -502,8 +554,13 @@ def screenshot(dev, local, keys=(), wait=0.0):
         dev.shell(f"rm -f {SHOT_REMOTE}", read_timeout_s=60.0)
         print(f"screencap failed on the TV (exit status {rc}): {other or 'no output'}", file=sys.stderr)
         return 1
-    dev.pull(SHOT_REMOTE, local, transport_timeout_s=300.0, read_timeout_s=300.0)
-    dev.shell(f"rm -f {SHOT_REMOTE}", read_timeout_s=60.0)   # leave nothing behind on the TV
+    try:
+        atomic_pull(dev, SHOT_REMOTE, local, png=True)
+    except (ValueError, OSError) as error:
+        print(str(error), file=sys.stderr)
+        return 1
+    finally:
+        dev.shell(f"rm -f {SHOT_REMOTE}", read_timeout_s=60.0)
     size = os.path.getsize(local) if os.path.exists(local) else 0
     if size == 0:
         # 0 bytes means the input, not the connection: Live TV and HDMI captures come back empty on
@@ -523,6 +580,17 @@ def screenshot(dev, local, keys=(), wait=0.0):
 def main():
     args = sys.argv[1:]
     check_arity(args)
+    commands = None
+    if args == ["--batch"]:
+        try:
+            stream = getattr(sys.stdin, "buffer", sys.stdin)
+            raw = stream.read(MAX_BATCH_BYTES + 1)
+            commands = batch_commands(raw.encode("utf-8") if isinstance(raw, str) else raw)
+        except (ValueError, UnicodeError, OSError) as error:
+            print(f"invalid batch: {error}. Nothing was sent to the TV.", file=sys.stderr)
+            return 2
+        if not commands:
+            return 0
     try:
         dev = connect()
     except Exception as e:
@@ -552,21 +620,14 @@ def main():
         dev.push(args[1], args[2], transport_timeout_s=300.0, read_timeout_s=300.0)
         print(f"pushed {args[1]} -> {args[2]}")
     elif args[0] == "--pull" and len(args) == 3:
-        dev.pull(args[1], args[2], transport_timeout_s=300.0, read_timeout_s=300.0)
+        atomic_pull(dev, args[1], args[2])
         print(f"pulled {args[1]} -> {args[2]}")
     elif args[0] == "--batch":
-        # one shell command per stdin line, each run separately on the same connection.
-        # utf-8-sig drops the BOM Windows PowerShell may prepend to piped stdin.
-        sys.stdin.reconfigure(encoding="utf-8-sig")
-        for line in sys.stdin:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            out = dev.shell(line, read_timeout_s=120.0)
-            sys.stdout.write(f"$ {line}\n{out}")
-            if out and not out.endswith("\n"):
-                sys.stdout.write("\n")
-            sys.stdout.flush()
+        try:
+            status = run_batch(dev, commands)
+        finally:
+            dev.close()
+        return status
     else:
         out = dev.shell(" ".join(args), read_timeout_s=120.0)
         sys.stdout.write(out)

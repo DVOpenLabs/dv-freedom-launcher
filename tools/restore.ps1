@@ -13,7 +13,7 @@ $ErrorActionPreference = 'Stop'
 # Pipe plain UTF-8 to native commands; the default here prepends a BOM that corrupts the first command.
 $OutputEncoding = New-Object System.Text.UTF8Encoding $false
 $repo = Split-Path -Parent $PSScriptRoot
-$List = (Resolve-Path $List).Path
+$List = (Resolve-Path -LiteralPath $List).Path
 $py = Join-Path $repo 'tools\venv\Scripts\python.exe'
 if (-not (Test-Path -LiteralPath $py)) { throw 'run: python -m venv tools\venv; tools\venv\Scripts\python.exe -m pip install -r tools\requirements.txt' }
 if (-not $TvHost) { throw 'pass -TvHost <tv ip> or set $env:TV_HOST' }
@@ -26,3 +26,7 @@ $cmds = & $py -I (Join-Path $repo 'tools\recovery.py') --commands $List $Stock
 if ($LASTEXITCODE -ne 0) { throw 'no restore plan was built, the TV was not changed' }
 $cmds | & $py -I (Join-Path $repo 'tools\tv.py') --batch
 if ($LASTEXITCODE -ne 0) { throw "tv.py --batch failed (exit code $LASTEXITCODE): the restore may be only partly applied; run it again once the TV answers" }
+$checks = & $py -I (Join-Path $repo 'tools\recovery.py') --verify $List $Stock
+if ($LASTEXITCODE -ne 0) { throw 'restore readback plan could not be built' }
+$checks | & $py -I (Join-Path $repo 'tools\tv.py') --batch
+if ($LASTEXITCODE -ne 0) { throw 'restore was sent but its saved states could not be verified; retain the recovery record' }

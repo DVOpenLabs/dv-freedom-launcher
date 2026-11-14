@@ -75,7 +75,11 @@ def main():
         for line in sys.stdin:
             line = line.strip()
             if line and not line.startswith("#"):
-                state["commands"].append(line)
+                # Keep mutation-plan assertions separate from the new read-only verification pass.
+                if line.startswith(("pm list packages -e --user 0 ", "_dvf_home=", "[ ")):
+                    state.setdefault("verification", []).append(line)
+                else:
+                    state["commands"].append(line)
         save()
     return 0
 

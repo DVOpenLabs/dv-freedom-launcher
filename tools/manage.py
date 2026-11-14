@@ -401,7 +401,7 @@ def install_theme(folder, extra=()):
         if not shell:
             print("PowerShell is required for Windows theme commands. Nothing was pushed.", file=sys.stderr)
             return 2
-        return run([shell, "-NoProfile", "-NonInteractive", "-File", str(TOOLS / "theme.ps1"), str(folder)] + list(extra), ROOT)
+        return run([shell, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(TOOLS / "theme.ps1"), str(folder)] + list(extra), ROOT)
     return run(["bash", str(TOOLS / "theme.sh"), str(folder)] + list(extra), ROOT)
 
 

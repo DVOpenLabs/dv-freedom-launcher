@@ -1406,3 +1406,23 @@ tools/tv.py 'settings put global private_dns_mode opportunistic'
 
 or keep Private DNS and accept that the router's domain rules no longer cover the TV. Write down which one
 you chose, so the next "this one service is slow on the TV" does not start from scratch.
+
+## A maintenance batch or restore stopped
+
+`tools/tv.py --batch` validates all input as UTF-8 before connecting, then checks a completion receipt
+for each command. Exit 1 means a remote command failed or its receipt was lost; later commands were
+not sent. Earlier commands may have applied. Inspect the TV and retain the recovery record before
+retrying. Exit 2 means input/connection validation failed. This is not an automatic rollback.
+
+Restore scripts now read back the package, Home and animation states they requested. A failed
+readback is reported rather than labelled success. `recovery.py --verify <list> [stock launcher]`
+prints these read-only checks; it does not restore or change anything by itself.
+
+File pulls publish through a temporary file in the destination directory. An interrupted pull or an
+empty/damaged screenshot preserves the previous destination. Live TV, HDMI and protected streaming
+apps can legitimately refuse capture; use the physical screen to assess them.
+
+On Windows, theme management invokes PowerShell with an execution-policy override for that process
+only. It does not call `Set-ExecutionPolicy` or change the saved machine/user policy. List paths with
+brackets are resolved literally by the maintenance scripts. Google and Android SDK Sandbox package
+variants remain protected from disabling.

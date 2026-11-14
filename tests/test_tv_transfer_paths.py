@@ -225,7 +225,11 @@ class TransferPathsTest(unittest.TestCase):
         status, out, err, opened, sent = self.run_tv(["--pull", "/sdcard/s.png", str(target)])
         self.assertEqual(0, status, err)
         self.assertEqual("192.0.2.1:5555", opened)
-        self.assertEqual([f"pull /sdcard/s.png -> {target}"], sent)
+        self.assertEqual(1,len(sent))
+        staged=Path(sent[0].split(' -> ',1)[1])
+        self.assertEqual(target.parent,staged.parent)
+        self.assertTrue(staged.name.startswith('.dv-pull-'))
+        self.assertFalse(staged.exists(), "the completed temporary file was published and cleaned")
         self.assertTrue(target.exists(), "the stub wrote the file where the run was told to")
 
     def test_the_judgement_runs_before_the_connection_is_made(self):

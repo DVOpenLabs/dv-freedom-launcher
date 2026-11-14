@@ -14,9 +14,9 @@ class ManageThemeTests(unittest.TestCase):
         with patch.object(manage.os,'name','nt'),patch.object(manage.shutil,'which',return_value='pwsh.exe'),patch.object(manage,'run',return_value=0) as run:
             self.assertEqual(0,manage.install_theme(folder))
         argv,working=run.call_args.args
-        self.assertEqual(['pwsh.exe','-NoProfile','-NonInteractive','-File',str(manage.TOOLS/'theme.ps1'),str(folder)],argv)
+        self.assertEqual(['pwsh.exe','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',str(manage.TOOLS/'theme.ps1'),str(folder)],argv)
         self.assertEqual(ROOT,working)
-        self.assertNotIn('-ExecutionPolicy',argv)
+        self.assertNotIn('Set-ExecutionPolicy',argv)  # Invocation only; no persistent machine/user policy change.
     def test_windows_refuses_missing_shell_without_transfer(self):
         with patch.object(manage.os,'name','nt'),patch.object(manage.shutil,'which',return_value=None),patch.object(manage,'run') as run:
             self.assertEqual(2,manage.install_theme(ROOT/'themes'))

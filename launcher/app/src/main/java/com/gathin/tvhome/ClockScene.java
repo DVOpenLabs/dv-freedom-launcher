@@ -42,6 +42,7 @@ final class ClockScene {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Random random = new Random();
     private final View content;
+    private final ClockRefresh refresh;
     private final ImageView ambient;
     private final GradientDrawable glow;
     private int colorIndex;
@@ -74,6 +75,7 @@ final class ClockScene {
 
     /** root is the inflated dream_clock layout. */
     ClockScene(View root) {
+        refresh = new ClockRefresh(root);
         content = root.findViewById(R.id.dreamContent);
         ambient = root.findViewById(R.id.dreamAmbient);
         glow = new GradientDrawable();
@@ -86,6 +88,7 @@ final class ClockScene {
     }
 
     void start() {
+        refresh.start();
         content.setAlpha(0f);
         content.post(() -> {
             placeClock();
@@ -97,6 +100,7 @@ final class ClockScene {
     }
 
     void stop() {
+        refresh.stop();
         handler.removeCallbacksAndMessages(null);   // the tick and any glow steps still queued
         content.animate().cancel();
         wallpaperGeneration++;   // a decode still running must not attach its picture to a stopped scene

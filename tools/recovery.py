@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The state a debloat list is about to change, so that undo means undo (#239).
 
+    recovery.py --verify <list> [stock launcher]     print read-only exact-state checks after restore
     recovery.py --save <debloat list>                read the TV and write the record
     recovery.py --commands <list> [stock launcher]   print a batch for tools/tv.py --batch that puts
                                                      the recorded states back
@@ -50,7 +51,7 @@ VERSION = 1
 # module metadata and mainline overlays never came back). The content providers in CORE_OK are the
 # exception, since tested lists turn them off and no TV feature uses them. disable.sh and disable.ps1
 # carry the same two patterns (tests/test_core_packages.py keeps the three in step).
-CORE_RE = re.compile(r"^(android|android\.ext\.(services|shared)|com\.android\.sdksandbox|com\.android\.location\.fused|com\.cltv\.mal|com\.mediatek\.(tis|tv\.service|tv\.agent)|com\.android\.systemui|com\.android\.shell|com\.android\.phone|com\.android\.settings|com\.android\.tv\.settings|com\.(google\.)?android\.(permissioncontroller|packageinstaller|ext\.services|ext\.shared|modulemetadata)|com\.google\.android\.overlay\.modules.*|com\.android\.providers\..*)$")
+CORE_RE = re.compile(r"^(android|android\.ext\.(services|shared)|com\.(google\.)?android\.sdksandbox|com\.android\.location\.fused|com\.cltv\.mal|com\.mediatek\.(tis|tv\.service|tv\.agent)|com\.android\.systemui|com\.android\.shell|com\.android\.phone|com\.android\.settings|com\.android\.tv\.settings|com\.(google\.)?android\.(permissioncontroller|packageinstaller|ext\.services|ext\.shared|modulemetadata)|com\.google\.android\.overlay\.modules.*|com\.android\.providers\..*)$")
 CORE_OK = re.compile(r"^com\.android\.providers\.(calendar|contacts|userdictionary|blockednumber)$")
 
 
@@ -559,16 +560,40 @@ def restore_commands(list_path, stock, host):
     return commands
 
 
+def restore_checks(list_path, stock, host):
+    """Read back the explicit states from the same validated plan; never apply a change."""
+    checks = []
+    for command in restore_commands(list_path, stock, host):
+        match = re.fullmatch(r"pm enable ([A-Za-z_][A-Za-z0-9_.]*)", command)
+        if match:
+            name = match.group(1)
+            checks.append(f"pm list packages -e --user 0 {name} | grep -Fx 'package:{name}'")
+        elif command.startswith("cmd package set-home-activity --user 0 "):
+            expected = command.split("--user 0 ", 1)[1]
+            # expected is either a validated component or the fixed resolver built above.
+            value = expected if expected.startswith("$(") else "'" + expected + "'"
+            checks.append(f"_dvf_home={value}; [ -n \"$_dvf_home\" ] && [ \"$(cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME | tail -n 1)\" = \"$_dvf_home\" ]")
+        else:
+            match = re.fullmatch(r"settings (put|delete) global ([a-z_]+)(?: (-?\d+(?:\.\d+)?))?", command)
+            if match:
+                verb, key, value = match.groups()
+                if key not in SETTINGS:
+                    raise ValueError("Unknown restore setting")
+                checks.append(f"[ \"$(settings get global {key})\" = '{value if verb == 'put' else 'null'}' ]")
+    return checks
+
+
 def main():
     args = sys.argv[1:]
     host = os.environ.get("TV_HOST", "")
     if len(args) == 2 and args[0] == "--save":
         return save(args[1], host)
-    if len(args) in (2, 3) and args[0] == "--commands":
+    if len(args) in (2, 3) and args[0] in ("--commands", "--verify"):
         if not host:
             sys.stderr.write("Set TV_HOST to your TV's IP address, e.g. TV_HOST=192.168.1.50\n")
         stock = args[2] if len(args) == 3 else "com.google.android.tvlauncher"
-        for command in restore_commands(args[1], stock, host):
+        plan = restore_checks if args[0] == "--verify" else restore_commands
+        for command in plan(args[1], stock, host):
             print(command)
         return 0
     sys.stderr.write("usage: recovery.py --save <debloat list>\n"

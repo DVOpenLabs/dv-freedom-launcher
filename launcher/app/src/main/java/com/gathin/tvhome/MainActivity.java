@@ -881,10 +881,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (festive) applyFestiveSkin((TextView) btnInputs, (TextView) btnSettings);
 
         // Hide the glass when focus leaves the tiles.
-        getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener((oldF, newF) -> {
-            boolean onTile = newF != null && newF.getId() == R.id.card;
-            if (!onTile) hideGlass();
-        });
+        getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener(glassFocusListener);
+        clockRefresh = new ClockRefresh(root);
 
         packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
         packageFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
@@ -899,7 +897,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             registerReceiver(packageReceiver, packageFilter);
         }
 
-        ConnectivityManager cm = getSystemService(ConnectivityManager.class);
+        ConnectivityManager cm = getApplicationContext().getSystemService(ConnectivityManager.class);
         TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
         if (tim != null) tim.registerCallback(inputCallback, handler);
         if (cm != null) {
@@ -1077,6 +1075,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (showStats) startStats();
         sky.update();
+        if(clockRefresh!=null)clockRefresh.start();
         wallpaperPlayer.start();
         if (liveVideo != null) liveVideo.start();
         handler.postDelayed(minuteTick, MINUTE_MS);
@@ -1096,6 +1095,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private boolean productRouted,productUtilityPending;
+    private ClockRefresh clockRefresh;
     boolean productRoutingAllowed(){return appLibrary==null&&openPopup==null&&cardPrompt==null&&!reordering&&!getIntent().getBooleanExtra(LauncherSettingsActivity.EXTRA_REORDER,false);}
 
     @Override
@@ -1265,6 +1265,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onPause();
         if (ProductFeatures.awaitingUnlock(this)) return;
         resumed = false;
+        if(clockRefresh!=null)clockRefresh.stop();
         ProductFeatures.paused(this);
         HomePreview.detach(this);
         if(companionControls!=null)companionControls.stop();
@@ -1341,15 +1342,22 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
+    private final android.view.ViewTreeObserver.OnGlobalFocusChangeListener glassFocusListener = (oldF,newF) -> {
+        if(newF == null || newF.getId() != R.id.card) hideGlass();
+    };
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (ProductFeatures.awaitingUnlock(this)) { ProductFeatures.closeStartup(this); return; }
+        if(clockRefresh!=null)clockRefresh.stop();
+        android.view.ViewTreeObserver tree=getWindow().getDecorView().getViewTreeObserver();
+        if(tree.isAlive())tree.removeOnGlobalFocusChangeListener(glassFocusListener);
         if(companionControls!=null)companionControls.close();
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
         if (liveVideo != null) liveVideo.close();
-        ConnectivityManager cm = getSystemService(ConnectivityManager.class);
+        ConnectivityManager cm = getApplicationContext().getSystemService(ConnectivityManager.class);
         TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
         if (tim != null) tim.unregisterCallback(inputCallback);
         if (cm != null) {
@@ -2779,7 +2787,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         int flame = 0;
         boolean steady = false;
         try {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            ConnectivityManager cm = getApplicationContext().getSystemService(ConnectivityManager.class);
             boolean wifi = false, ethernet = false;
             // All networks, not just the active one: with a VPN up the active network is the VPN itself.
             for (Network net : cm != null ? cm.getAllNetworks() : new Network[0]) {

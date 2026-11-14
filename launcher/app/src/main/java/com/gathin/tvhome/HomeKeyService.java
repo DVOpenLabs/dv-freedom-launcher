@@ -267,6 +267,9 @@ public class HomeKeyService extends AccessibilityService {
         // A scancode entry is more specific than any keycode, so it goes first.
         if (RemoteKeys.handle(this, event, inFront(appScancodes, frontAppScancodes, event.getScanCode()),
                 holdAppScancodes.get(event.getScanCode()))) return true;
+        // Explicit tap mappings win over generic Settings; scancodes remain more specific.
+        String tap = inFront(appKeys, frontAppKeys, event.getKeyCode());
+        if (tap != null && RemoteKeys.handle(this, event, tap, holdAppKeys.get(event.getKeyCode()))) return true;
         // The stock launcher handled the remote's Settings button; with it disabled the button does nothing.
         if (isSettingsKey(event)) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {

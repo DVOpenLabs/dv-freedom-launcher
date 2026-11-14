@@ -24,3 +24,4 @@ export MSYS_NO_PATHCONV=1
 # plan never reaches the TV because recovery.py prints nothing until the whole plan is built, so
 # tv.py reads an empty batch; pipefail only makes this script exit non-zero afterwards.
 "$PY" -I tools/recovery.py --commands "$LIST" "$STOCK" | "$PY" -I tools/tv.py --batch
+"$PY" -I tools/recovery.py --verify "$LIST" "$STOCK" | "$PY" -I tools/tv.py --batch
