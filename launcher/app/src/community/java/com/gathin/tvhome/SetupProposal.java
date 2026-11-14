@@ -12,7 +12,7 @@ final class SetupProposal {
         if(!Integer.valueOf(1).equals(root.get("schema")))throw new IllegalArgumentException("Unsupported setup format");
         Object title=root.get("name");name=SetupValues.name(title==null?"My Home":string(title));
         if(!(root.get("settings") instanceof Map))throw new IllegalArgumentException("Setup settings required");
-        Map<?,?> s=(Map<?,?>)root.get("settings");fields(s,"experience","position","columns","text","textSize","names","strongFocus","idleSeconds","iconSize","spacing");Map<String,Object> next=new LinkedHashMap<>();
+        Map<?,?> s=(Map<?,?>)root.get("settings");fields(s,"experience","position","columns","text","textSize","names","strongFocus","idleSeconds","iconSize","spacing","animations","reducedMotion","stillMotion","posterBackdrop");Map<String,Object> next=new LinkedHashMap<>();
         if(s.containsKey("iconSize")){String size=string(s.get("iconSize"));if(!IconSizePolicy.valid(size))throw new IllegalArgumentException("Invalid icon size");next.put(IconSizePolicy.KEY,size);}
         if(s.containsKey("spacing"))next.put(TileSpacing.CHOICE,number(s.get("spacing"),0,32));
         if(s.containsKey("experience")){String v=string(s.get("experience"));if(!ExperiencePolicy.valid(v))throw new IllegalArgumentException("Unknown Home experience");next.put(ExperiencePolicy.KEY,v);}
@@ -23,6 +23,7 @@ final class SetupProposal {
         if(s.containsKey("names")){int n=Arrays.asList("theme","all","selected","hidden").indexOf(string(s.get("names")));if(n<0)throw new IllegalArgumentException("Unknown app-name option");next.put(HomePolish.NAMES,n);}
         if(s.containsKey("strongFocus")){Object v=s.get("strongFocus");if(!(v instanceof Boolean))throw new IllegalArgumentException("Invalid focus option");next.put(TileSpacing.FOCUS,v);}
         if(s.containsKey("idleSeconds")){int n=number(s.get("idleSeconds"),0,120);if(!PolishPolicy.validSeconds(n))throw new IllegalArgumentException("Unsupported idle time");next.put(HomePolish.IDLE,n);}
+        String[] options={"animations","reducedMotion","stillMotion","posterBackdrop"};String[] keys={"animations","reduced_motion_choice",PanZoomPolicy.KEY,ShelfBackdrop.KEY};for(int i=0;i<options.length;i++)if(s.containsKey(options[i])){Object v=s.get(options[i]);if(!(v instanceof Boolean))throw new IllegalArgumentException("Invalid motion option");next.put(keys[i],v);}
         values=Collections.unmodifiableMap(next);
         if(root.containsKey("favorites")){
             if(!(root.get("favorites") instanceof List))throw new IllegalArgumentException("Favorite list required");List<String> apps=new ArrayList<>();

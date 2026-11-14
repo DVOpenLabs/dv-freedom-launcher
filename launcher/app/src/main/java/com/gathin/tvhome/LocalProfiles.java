@@ -14,7 +14,7 @@ final class LocalProfiles {
     static final int MAX_BYTES = 64 * 1024;
     static final Set<String> SCOPED;
     static {Set<String> keys=new HashSet<>(Arrays.asList(
-            "columns", "rows_below_dock", "dock_opacity", "animations", "advanced_effects",
+            "columns", "rows_below_dock", "dock_opacity", "animations", "reduced_motion_choice", "advanced_effects",
             "wallpaper_choice", "home_style_choice", "home_style_undo", "theme_signature", "theme_pack_id", "live_wallpaper",
             "focus_outline_choice", "tile_gap_choice", "desktop_layout", "desktop_layout_undo",
             "desktop_layout_undo_guard", "show_audio_indicator", "app_position", "desktop_position_undo", "remember_recent_apps", "wallpaper_dim_choice", "cinematic_idle_seconds", "adaptive_header", "refined_motion", "saved_home_setups", "text_ink_choice", "app_names_choice"));ProductFeatures.profileKeys(keys);SCOPED=Collections.unmodifiableSet(keys);}

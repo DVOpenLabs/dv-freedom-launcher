@@ -20,4 +20,5 @@ final class ContentShelfPolicy {
         if(type!=0||position<0||duration<=0||position>duration)return -1;
         return (int)Math.round(100.0*position/duration);
     }
+    static long minutesLeft(long position,long duration){return position<0||duration<=0||position>duration?-1:(duration-position+59999)/60000;}
 }

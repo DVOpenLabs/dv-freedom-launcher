@@ -23,9 +23,10 @@ final class HomePreview {
             result.put("capturedAt",System.currentTimeMillis()).put("clock",(text(activity,R.id.clock)+" "+text(activity,R.id.ampm)).trim())
                 .put("date",text(activity,R.id.date)).put("greeting",text(activity,R.id.greeting))
                 .put("weather",weatherView!=null&&weatherView.isShown()?weatherView.getText().toString():"")
-                .put("inputs",activity.findViewById(R.id.btnInputs).isShown()).put("settings",text(activity,R.id.btnSettings));
+                .put("inputs",shown(activity,R.id.btnInputs)).put("settings",text(activity,R.id.btnSettings));
         }
         return result;
     }
+    private static boolean shown(Activity a,int id){View v=a.findViewById(id);return v!=null&&v.isShown();}
     private HomePreview(){}
 }

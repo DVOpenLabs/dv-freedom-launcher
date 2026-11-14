@@ -44,7 +44,7 @@ final class ThemeArchive {
                     if (zip.read() != -1) throw fail("Directory entry contains data");
                     zip.closeEntry(); continue;
                 }
-                long limit = name.endsWith(".json") ? MAX_JSON : "video.mp4".equals(name) ? MAX_VIDEO : MAX_IMAGE;
+                long limit = name.endsWith(".json") || "CREDITS.txt".equals(name) ? MAX_JSON : "video.mp4".equals(name) ? MAX_VIDEO : MAX_IMAGE;
                 if (entry.getSize() > limit) throw fail("File too large");
                 File file = new File(staging, name);
                 if (!file.getCanonicalPath().startsWith(staging.getCanonicalPath()+File.separator)) throw fail("Unsafe path");
@@ -76,6 +76,8 @@ final class ThemeArchive {
                 ||!(version instanceof Long)||((Long)version)<1||((Long)version)>Integer.MAX_VALUE)throw fail("Invalid manifest");
         for(char c:((String)name).toCharArray())if(Character.isISOControl(c))throw fail("Invalid theme name");
         if(!new File(directory,"wallpaper.jpg").isFile())throw fail("A still fallback is required");
+        File cinema=new File(directory,"cinema.json");if(cinema.exists())new Json(readSmall(cinema)).object();
+        File credits=new File(directory,"CREDITS.txt");if(credits.exists())readSmall(credits);
         Map<String,Object> config=new Json(readSmall(new File(directory,"config.json"))).object();
         for(Map.Entry<String,Object> setting:config.entrySet()) {
             String key=setting.getKey();Object value=setting.getValue();
@@ -93,9 +95,9 @@ final class ThemeArchive {
     }
     static boolean allowed(String path, boolean directory) {
         if(path==null||path.contains("..")||path.indexOf('\\')>=0||path.startsWith("/"))return false;
-        if(directory)return "wallpapers/".equals(path);
-        return Arrays.asList("manifest.json","config.json","wallpaper.jpg","preview.jpg","video.mp4").contains(path)
-                ||path.matches("wallpapers/[A-Za-z0-9][A-Za-z0-9_.-]*\\.(?i:jpg|jpeg|png|webp)");
+        if(directory)return "wallpapers/".equals(path)||"art/".equals(path);
+        return Arrays.asList("manifest.json","config.json","wallpaper.jpg","preview.jpg","video.mp4","cinema.json","CREDITS.txt").contains(path)
+                ||path.matches("wallpapers/[A-Za-z0-9][A-Za-z0-9_.-]*\\.(?i:jpg|jpeg|png|webp)")||path.matches("art/[a-f0-9]{64}\\.png");
     }
     static String readSmall(File file) throws IOException {
         if(!file.isFile()||file.length()==0||file.length()>MAX_JSON)throw fail("Missing or oversized JSON");

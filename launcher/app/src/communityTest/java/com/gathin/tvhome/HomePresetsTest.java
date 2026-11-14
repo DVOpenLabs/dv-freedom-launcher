@@ -3,6 +3,13 @@ import org.junit.Test;
 import java.util.*;
 import static org.junit.Assert.*;
 public class HomePresetsTest {
+    @Test public void liteMotionIsProfileOwnedAndKeepsMediaChoices(){
+        String key="reduced_motion_choice";
+        assertTrue(LocalProfiles.SCOPED.contains(key));
+        assertNotEquals(LocalProfiles.key("adult",key),LocalProfiles.key("child",key));
+        Map<String,Object> lite=PresetGallery.values(4);assertEquals(true,lite.get(key));
+        assertFalse(lite.containsKey(ThemeLibrary.LIVE));assertFalse(lite.containsKey(WallpaperPlaylistChoice.KEY));
+    }
     @Test public void focusOutlineRoundTripsAsABoolean(){
         assertEquals(Boolean.TRUE,SetupValues.validate(Collections.singletonMap(TileSpacing.FOCUS,true)).get(TileSpacing.FOCUS));
         assertEquals(Boolean.FALSE,SetupValues.validate(Collections.singletonMap(TileSpacing.FOCUS,false)).get(TileSpacing.FOCUS));

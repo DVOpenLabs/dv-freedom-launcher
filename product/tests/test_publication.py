@@ -42,7 +42,9 @@ class PublicationTests(unittest.TestCase):
                 # Reviewed public installation/permission guide and reproducible contributor checks.
                 'ADDONS.md','CONTRIBUTOR-CHECKS.md',
                 # Reviewed user guide: Cinema setup, local media, controls and platform limits.
-                'CINEMA-STUDIO.md'}
+                'CINEMA-STUDIO.md',
+                # Reviewed user guide: safe offline pack contents, import/review and reproducible examples.
+                'WORLD-PACKS.md'}
         extras={p for p in self.tracked() if p.startswith('product/') and p.count('/')==1 and p.endswith('.md') and Path(p).name not in guides}
         self.assertEqual(set(),extras,'New public product documents require an explicit publication review')
     def test_no_generated_or_key_artifacts_in_publication(self):

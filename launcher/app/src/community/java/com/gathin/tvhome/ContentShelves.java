@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 /** Opt-in searchable Watch Next metadata. At most 96 rows read once per foreground session. */
 final class ContentShelves {
     static final String KEY="private_content_shelf_enabled",PERMISSION="android.permission.READ_TV_LISTINGS";
-    static final class Card {final String pkg,title,kind,poster;String description="";long duration,engagement;boolean watchNext;final Intent intent;final HomeCategories.App app;final int progress;Card(String p,String t,String k,Intent i,HomeCategories.App a,int progress,String poster){this.poster=poster;pkg=p;title=t;kind=k;intent=i;app=a;this.progress=progress;}}
+    static final class Card {final String pkg,title,kind,poster;String description="";long duration,engagement,position=-1;boolean watchNext;final Intent intent;final HomeCategories.App app;final int progress;Card(String p,String t,String k,Intent i,HomeCategories.App a,int progress,String poster){this.poster=poster;pkg=p;title=t;kind=k;intent=i;app=a;this.progress=progress;}}
     static boolean granted(Context c){return c.checkSelfPermission(PERMISSION)==PackageManager.PERMISSION_GRANTED;}
     static boolean enabled(Context c){return granted(c)&&ProfileStore.preferences(c).getBoolean(KEY,false);}
     static String status(Context c){return ProfileStore.preferences(c).getBoolean(KEY,false)?granted(c)?"On":"Permission unavailable":"Off";}
@@ -31,7 +31,7 @@ final class ContentShelves {
                 if(rows.isNull(2)||rows.isNull(3)||rows.getInt(7)!=1||!ContentShelfPolicy.accepted(pkg,title,type,rows.getLong(3),rows.isNull(4)?-1:rows.getLong(4),rows.isNull(5)?-1:rows.getLong(5),now,allowed.keySet()))continue;
                 Intent intent=safeIntent(c,rows.getString(6),pkg);if(intent==null)continue;
                 HomeCategories.App app=allowed.get(pkg);Card card=new Card(pkg,title,ContentShelfPolicy.kind(type)+" · "+app.label,intent,app,ContentShelfPolicy.progress(type,rows.isNull(4)?-1:rows.getLong(4),rows.isNull(5)?-1:rows.getLong(5)),rows.getString(8));
-                card.description=bounded(rows.getString(9));card.duration=rows.getLong(5);card.engagement=rows.getLong(3);card.watchNext=true;result.add(card);
+                card.description=bounded(rows.getString(9));card.duration=rows.getLong(5);card.position=rows.isNull(4)?-1:rows.getLong(4);card.engagement=rows.getLong(3);card.watchNext=true;result.add(card);
             }}
         }catch(RuntimeException missing){unavailable[0]=true;result.clear();seen.clear();}
         result=uniqueNewest(result,seen);return readPreviews(c,cancel,allowed,limited(result,options.count),seen,unavailable);
@@ -94,11 +94,14 @@ final class ContentShelves {
         void pause(){active=false;readGeneration++;cancel.cancel();main.removeCallbacksAndMessages(null);if(registered)try{a.getContentResolver().unregisterContentObserver(observer);}catch(Exception ignored){}registered=false;}
 
         boolean current(){return !closed&&active&&profile.equals(ProfileStore.id())&&enabled(a);}
+        Boolean popular;List<Card> allCards=Collections.emptyList();boolean sourceUnavailable;
         void render(List<Card> cards,boolean unavailable){
-            if(!current())return;StringBuilder fingerprint=new StringBuilder(unavailable?"partial\n":"");for(Card card:cards)fingerprint.append(card.pkg).append("\u0000").append(card.intent.getDataString()).append("\u0000").append(card.title).append("\u0000").append(card.progress).append("\u0000").append(card.engagement).append("\u0000").append(card.description).append("\u0000").append(card.kind).append("\u0000").append(card.duration).append("\u0000").append(card.poster).append("\n");String next=fingerprint.toString();if(next.equals(rendered)&&host.getChildCount()>0)return;
-            boolean hadFocus=host.hasFocus();Object focusTag=lastFocused==null?null:lastFocused.getTag();rendered=next;renderedCards=!cards.isEmpty();paintGeneration++;posters.clear();host.removeAllViews();
-            if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).shelfReady(!cards.isEmpty());
-            if(cards.isEmpty()){
+            allCards=new ArrayList<>(cards);sourceUnavailable=unavailable;if(popular==null)popular=cards.stream().noneMatch(c->c.watchNext);final boolean tab=popular;
+            cards=new ArrayList<>(cards);if(panel)cards.removeIf(c->c.watchNext==tab);
+            if(!current())return;StringBuilder fingerprint=new StringBuilder(unavailable?"partial\n":"");for(Card card:cards)fingerprint.append(card.pkg).append("\u0000").append(card.intent.getDataString()).append("\u0000").append(card.title).append("\u0000").append(card.progress).append("\u0000").append(card.engagement).append("\u0000").append(card.description).append("\u0000").append(card.kind).append("\u0000").append(card.duration).append("\u0000").append(card.position).append("\u0000").append(card.poster).append("\n");String next=fingerprint.toString();if(next.equals(rendered)&&host.getChildCount()>0)return;
+            boolean hadFocus=host.hasFocus();boolean tabFocused=panel&&host.getChildAt(0) instanceof LinearLayout&&host.getChildAt(0).hasFocus();Object focusTag=lastFocused==null?null:lastFocused.getTag();rendered=next;renderedCards=!allCards.isEmpty();paintGeneration++;posters.clear();host.removeAllViews();
+            if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).shelfReady(!allCards.isEmpty());
+            if(cards.isEmpty()&&allCards.isEmpty()){
                 if(hadFocus&&returnFocus!=null)returnFocus.requestFocus();host.setVisibility(View.GONE);
                 if(panel){host.setVisibility(View.VISIBLE);TextView empty=label(unavailable?"The TV’s shared-content source is unavailable. Your streaming apps still work independently. Return to Home and try again later.":"No shared titles match this profile’s sources. Check Shelf sources & limits, then open an app and watch something. Some apps publish no TV listings. Items older than 30 days are omitted.",18);empty.setSingleLine(false);host.addView(empty);}
                 return;
@@ -107,12 +110,13 @@ final class ContentShelves {
             if(!panel&&a.getResources().getConfiguration().fontScale>1.2f){
                 TextView browse=label("Browse shared titles from your apps",20);browse.setPadding(dp(20),dp(18),dp(20),dp(18));browse.setFocusable(true);browse.setClickable(true);browse.setBackgroundResource(R.drawable.settings_choice_bg);browse.setOnClickListener(v->a.startActivity(new Intent(a,ContentShelfActivity.class)));host.addView(browse);return;
             }
-            host.addView(label(unavailable?"From your apps · some sources unavailable":"From your apps",17));
+            if(panel){LinearLayout tabs=new LinearLayout(a);host.addView(tabs);for(int i=0;i<2;i++){final boolean select=i==1;TextView t=label((select?"Popular":"Continue")+(popular==select?" ✓":""),17);t.setPadding(dp(12),dp(8),dp(12),dp(8));t.setFocusable(true);t.setClickable(true);t.setBackgroundResource(R.drawable.settings_choice_bg);tabs.addView(t);t.setOnClickListener(v->{popular=select;rendered="";render(allCards,sourceUnavailable);if(host.getChildAt(0) instanceof LinearLayout)((LinearLayout)host.getChildAt(0)).getChildAt(select?1:0).requestFocus();});}}else host.addView(label("From your apps",17));
+            if(cards.isEmpty())host.addView(label("No titles shared in this tab. Try the other tab.",16));
             if(panel)host.addView(label("Read on this visit · hold OK for source, progress and details. Up to 96 entries per provider are scanned; this is not your complete watch history.",15));
             HorizontalScrollView scroll=new HorizontalScrollView(a);scroll.setHorizontalScrollBarEnabled(false);scroll.setClipToPadding(false);
             LinearLayout line=new LinearLayout(a);line.setPadding(dp(5),dp(4),dp(5),dp(4));scroll.addView(line);host.addView(scroll);
             for(Card card:cards)addCard(line,card);
-            if(hadFocus){View restore=null;for(int i=0;i<line.getChildCount();i++)if(line.getChildAt(i).getTag().equals(focusTag))restore=line.getChildAt(i);if(restore==null&&line.getChildCount()>0)restore=line.getChildAt(0);if(restore!=null)restore.requestFocus();}
+            if(hadFocus&&tabFocused&&host.getChildAt(0) instanceof LinearLayout)((LinearLayout)host.getChildAt(0)).getChildAt(popular?1:0).requestFocus();else if(hadFocus){View restore=null;for(int i=0;i<line.getChildCount();i++)if(line.getChildAt(i).getTag().equals(focusTag))restore=line.getChildAt(i);if(restore==null&&line.getChildCount()>0)restore=line.getChildAt(0);if(restore!=null)restore.requestFocus();}
         }
         void addCard(LinearLayout line,Card card){
             LinearLayout tile=new LinearLayout(a);tile.setOrientation(LinearLayout.VERTICAL);tile.setFocusable(true);tile.setClickable(true);
@@ -122,13 +126,14 @@ final class ContentShelves {
             tile.addView(art,new LinearLayout.LayoutParams(dp(150),dp(panel?84:42)));
             TextView title=label(card.title,15);title.setMaxLines(2);title.setEllipsize(android.text.TextUtils.TruncateAt.END);
             tile.addView(title,new LinearLayout.LayoutParams(dp(150),panel?-2:dp(36)));
-            TextView kind=label(card.kind,11);kind.setTextColor(0xffc5d4e4);kind.setSingleLine(true);kind.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            long left=card.watchNext&&card.progress>=0?ContentShelfPolicy.minutesLeft(card.position,card.duration):-1;
+            TextView kind=label(left>=0?left+" min left · "+card.app.label:card.kind,11);kind.setTextColor(0xffc5d4e4);kind.setSingleLine(true);kind.setEllipsize(android.text.TextUtils.TruncateAt.END);
             tile.addView(kind,new LinearLayout.LayoutParams(dp(150),panel?-2:dp(16)));
             if(card.progress>=0){ProgressBar progress=new ProgressBar(a,null,android.R.attr.progressBarStyleHorizontal);progress.setMax(100);progress.setProgress(card.progress);progress.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);tile.addView(progress,new LinearLayout.LayoutParams(dp(150),dp(4)));}
             tile.setContentDescription(card.title+", "+card.kind+(card.progress>=0?", "+card.progress+" percent watched":""));
             tile.setOnClickListener(v->{try{a.startActivity(card.intent);}catch(Exception missing){offerApp(a,card);}});
             tile.setOnLongClickListener(v->{details(a,card);return true;});
-            tile.setOnFocusChangeListener((v,on)->{if(on)lastFocused=v;});
+            tile.setOnFocusChangeListener((v,on)->{if(on){lastFocused=v;if(panel)ShelfBackdrop.focus(a,card.poster);}});
             tile.setOnKeyListener((v,k,e)->navigate(line,tile,k,e));
             LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(170),panel?-2:dp(118));lp.setMargins(0,dp(3),dp(8),0);line.addView(tile,lp);
             if(card.poster!=null&&card.poster.startsWith("https://"))posters.put(art,card);
@@ -141,7 +146,7 @@ final class ContentShelves {
             if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;
             if(key==KeyEvent.KEYCODE_DPAD_LEFT||key==KeyEvent.KEYCODE_DPAD_RIGHT){int at=line.indexOfChild(tile);return ExperiencePolicy.next(at,key==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1,line.getChildCount(),line.getLayoutDirection()==View.LAYOUT_DIRECTION_RTL)==at;}
             if(returnFocus==null||key!=KeyEvent.KEYCODE_DPAD_UP&&key!=KeyEvent.KEYCODE_DPAD_DOWN)return false;
-            if(panel&&key==KeyEvent.KEYCODE_DPAD_UP){returnFocus.requestFocus();return true;}
+            if(panel&&key==KeyEvent.KEYCODE_DPAD_UP){View tabs=host.getChildAt(0);if(tabs instanceof LinearLayout&&((LinearLayout)tabs).getChildCount()==2)((LinearLayout)tabs).getChildAt(Boolean.TRUE.equals(popular)?1:0).requestFocus();else returnFocus.requestFocus();return true;}
             int[] here=new int[2],back=new int[2];host.getLocationOnScreen(here);returnFocus.getLocationOnScreen(back);boolean below=here[1]>back[1];
             if(key==(below?KeyEvent.KEYCODE_DPAD_UP:KeyEvent.KEYCODE_DPAD_DOWN)){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).shelfReturn();else returnFocus.requestFocus();return true;}
             if(key==KeyEvent.KEYCODE_DPAD_UP){View settings=a.findViewById(R.id.btnSettings);if(settings!=null)settings.requestFocus();}return true;

@@ -98,3 +98,12 @@ in Phone Remote. This reads app names/IDs, profile/revision and selected experie
 HTTP is unencrypted and limited to a trusted LAN. Read/edit rights are separate from Accessibility-based
 remote control. Native **Review phone setup draft** consumes a draft within two minutes; a changed
 profile/revision rejects it. Stop revokes pending drafts. No PC or AI account is required.
+
+## Offline help and motion drafts
+
+Control Center → Explain a problem gives local advice about wallpapers, shelves, Home routing, Inputs,
+readability and portable packs. It does not upload logs, inspect accounts, grant access or run fixes.
+Guided/AI appearance drafts additionally accept boolean `animations`, `reducedMotion`, `stillMotion`
+and `posterBackdrop` values. They stay inside the existing review/Apply contract. The Lite preset is a
+predefined draft; no provider or paid AI call is required. Describe your Home remains an offline,
+limited-vocabulary helper, not a general language model.

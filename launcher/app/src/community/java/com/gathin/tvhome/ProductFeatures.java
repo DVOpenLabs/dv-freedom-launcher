@@ -62,11 +62,12 @@ final class ProductFeatures {
         if(intent==null||!ExperienceChoice.enabled(a))return false;String action=intent.getAction();
         if(MainActivity.ACTION_LAUNCHER_SETTINGS.equals(action)){a.startActivity(new Intent(a,LauncherSettingsActivity.class).putExtra("experience_context",true));return true;}
         if(MainActivity.ACTION_VIEW_INPUTS.equals(action)||MainActivity.ACTION_LIBRARY.equals(action)||MainActivity.ACTION_IDLE_PREVIEW.equals(action)){
-            a.startActivity(new Intent(a,ExperienceHomeActivity.class).putExtra("home_action",action).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP));return true;
+            Intent target=new Intent(a,ExperiencePolicy.SHOWCASE.equals(ExperienceChoice.saved(a))&&CinemaShowcaseActivity.ready(a)?CinemaShowcaseActivity.class:ExperienceHomeActivity.class).putExtra("home_action",action).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP);if(ExperiencePolicy.SHOWCASE.equals(ExperienceChoice.saved(a)))target.putExtra("saved_home",true);a.startActivity(target);return true;
         }return false;
     }
     static void wallpaperSample(Activity a,android.graphics.Bitmap bitmap){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).sample(bitmap);}
     static void resumed(Activity a){OverlayRecovery.resume(a);
+        HomeControlCenter.attach(a);
         WakeRules.attach(a);
         WeatherClient.attach(a);
         CinemaHome.attach(a);
@@ -82,11 +83,12 @@ final class ProductFeatures {
         },240);
     }
     static boolean playlistEnabled(Context c){return c instanceof Activity&&CinemaHome.ownBackground((Activity)c)||WallpaperPlaylistChoice.enabled(c);}
-    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(PhoneSetupProvider.ENABLED);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
+    static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(PhoneSetupProvider.ENABLED);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(ShelfBackdrop.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
     static AutoCloseable dreamWeather(Context c,View root){View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return null;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return weather;}
     static boolean inputs(MainActivity a,boolean all){Config cfg=Config.load(a);if(cfg.coocaaSources||!cfg.sourcePanelService.isEmpty()||!cfg.inputSources.isEmpty()||!cfg.inputAction.isEmpty()||!cfg.inputUriScheme.isEmpty())return false;InputPicker.show(a,all);return true;}
-    static void setupKeys(Set<String> keys){keys.add(CinemaSpec.KEY);keys.add(PanZoomPolicy.KEY);keys.add(GridRepeatPolicy.KEY);keys.add(FamilyPolicy.KEY);keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
+    static void setupKeys(Set<String> keys){keys.add(CinemaSpec.KEY);keys.add(PanZoomPolicy.KEY);keys.add(GridRepeatPolicy.KEY);keys.add(FamilyPolicy.KEY);keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(ShelfBackdrop.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals(ShelfBackdrop.KEY)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid shelf backdrop");return true;}
         if(key.equals(CinemaSpec.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid cinema setup");new CinemaSpec((String)value);return true;}
         if(key.equals(PanZoomPolicy.KEY)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid still motion");return true;}
         if(key.equals(TileSpacing.FOCUS)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid focus outline");return true;}

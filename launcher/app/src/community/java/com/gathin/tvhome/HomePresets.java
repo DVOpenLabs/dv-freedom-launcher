@@ -5,7 +5,7 @@ import java.util.Map;
 
 /** Draft-only starting points. Never change media, apps, permissions or the active profile. */
 final class HomePresets {
-    static final String[] NAMES = {"Everyday", "Big & clear", "Movie night", "Minimal"};
+    static final String[] NAMES = {"Everyday", "Big & clear", "Movie night", "Minimal", "Lite · still & quiet"};
     static Map<String,Object> settings(int index) {
         if (index < 0 || index >= NAMES.length) throw new IllegalArgumentException("Unknown preset");
         Map<String,Object> values = new LinkedHashMap<>();
@@ -16,6 +16,7 @@ final class HomePresets {
         values.put("spacing", index == 1 ? 16 : 8);
         values.put("names", index >= 2 ? "selected" : "all");
         values.put("strongFocus", true); values.put("idleSeconds", index == 2 ? 30 : 0);
+        if(index==4){values.put("animations",false);values.put("reducedMotion",true);values.put("stillMotion",false);values.put("posterBackdrop",false);}
         return values;
     }
     private HomePresets() {}

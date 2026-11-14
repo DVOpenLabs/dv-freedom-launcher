@@ -22,12 +22,12 @@ A streaming box’s input list cannot enumerate the connected television’s HDM
 
 ## Appearance starting points
 
-**Appearance → Appearance presets** offers Everyday, Big & clear, Movie night and Minimal. Each has
+**Appearance → Appearance presets** offers Everyday, Big & clear, Movie night, Minimal and Lite. Each has
 a still illustration and a summary, followed by a 20-second Keep/Revert confirmation. Back, leaving
 the screen or timeout saves nothing. Keep changes only the listed appearance choices in the active
 profile; apps, wallpaper/live video, playlists, explicit text color, accounts and TV settings stay saved.
 The illustration uses schematic app tiles and does not run video or reproduce every moving frame.
-The Guided Setup wizard also offers these four starting points as editable drafts.
+The Guided Setup wizard also offers these five starting points as editable drafts.
 
 **Appearance → Focus & motion → Held arrow speed** offers System (default), Gentle (180 ms) and Slow
 (280 ms). It filters existing held-arrow repeat events in Classic’s multi-row app grid. The first press
@@ -413,3 +413,39 @@ Bind a style to an imported wallpaper to coordinate transparent app marks, typog
 foreground companion and a remote-navigable library/gallery. Unpaired wallpapers retain the ordinary
 Home presentation. Styles start off on upgrade, use the existing profile draft/Apply contract and
 introduce no new Android permission. Personal media remains separate from the public source.
+
+## Quick appearance and Control Center
+
+Appearance → Quick appearance opens one draft drawer. Up/Down moves between controls; Left/Right
+steps values. The illustration uses a still from the current local wallpaper, with sample app tiles;
+it is not the live Home renderer. Apply saves only changed controls to the current profile. Cancel/Back
+discards the draft. Opening the drawer preserves custom spacing and dimming values.
+
+Focus the clock and press OK for Control Center: Quick settings, Inputs/HDMI, Now Playing, Shared titles,
+Launcher settings, Home capabilities and Explain a problem. The help runs offline and neither reads
+private logs nor performs commands. Some streaming boxes cannot select their television’s HDMI inputs;
+use that TV’s Input/Source remote button. Native platform support differs.
+
+Glass/Clean/Cinema support inline shared shelves; Classic and Showcase open the shared-title browser.
+Showcase keeps one pinned world and offers long-press app/folder editing. Repeated Home retains its
+renderer only while the saved profile and settings match. This does not intercept vendor buttons.
+
+## Shared titles and quiet visuals
+
+The shared-title browser’s Continue tab shows Watch Next data; Popular shows suggestions published by apps, rather than a cloud
+popularity ranking. Inline Home rows retain their compact combined list. Remaining minutes appear only with valid app-published position and duration.
+Source filters and limits still apply. No account history is scraped. Apps may publish no items.
+
+Apps & rows → Content shelves → Shelf sources & limits offers a soft poster backdrop for the full-screen
+browser, off by default. HTTPS posters still require the separate Companions opt-in. The small backdrop
+is prepared off the UI thread, stale focus requests are ignored, and work stops on leaving the browser.
+
+The Lite appearance preset enables reduced motion and turns off animations, still-picture motion and
+shelf backdrops. Your saved live-video choice/media is retained; reduced motion displays its still
+fallback. Quick appearance → Reduced motion turns this override on or off explicitly. Choosing Lite still requires review/Keep; upgrades do not apply it automatically.
+
+Wallpaper Studio can link a folder selected through Android’s picker. Refresh linked wallpaper folder
+rescans up to 128 directory entries and queues at most eight supported files for individual review.
+There is no background watcher or automatic wallpaper selection. Forget revokes the saved folder grant
+without removing imported media. A companion such as Sofadrop can supply files to that folder; DV Freedom
+does not execute Projectivy plug-ins or claim its provider API is binary compatible.

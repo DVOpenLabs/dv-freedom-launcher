@@ -8,6 +8,7 @@ for current features, screenshots, platform limits and source setup.
 | [Android feature build](ANDROID-COMMUNITY.md) | Settings, Home experiences, rows, wallpaper playlists, profiles and shelves |
 | [Add-on Centre](ADDONS.md) · [Native phone Setup](../mobile/README.md) | Optional packages, requirements and separate phone installation |
 | [Cinema Studio](CINEMA-STUDIO.md) | Theme emblems, collections, moods, scene atmosphere, desktop creator and optional Play |
+| [Offline world packs](WORLD-PACKS.md) | Portable artwork, native review, credits and reproducible original examples |
 | [Profiles](ANDROID-PROFILES.md) | Local format, import/export and account boundaries |
 | [Companions](ANDROID-COMPANION.md) · [AI drafts](AI-SETUP.md) | Explicit optional providers/permissions and local draft validation |
 | [Streamer helper](STREAMER-HOME.md) | Optional Home-only redirect and recovery boundaries |

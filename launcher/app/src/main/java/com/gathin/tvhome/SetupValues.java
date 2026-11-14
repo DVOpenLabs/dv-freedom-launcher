@@ -7,11 +7,11 @@ import java.util.*;
 final class SetupValues {
     static final Set<String> KEYS;
     static {Set<String> keys=new HashSet<>(Arrays.asList(
-        "columns","rows_below_dock","dock_opacity","animations","advanced_effects","wallpaper_choice",
+        "columns","rows_below_dock","dock_opacity","animations","reduced_motion_choice","advanced_effects","wallpaper_choice",
         "home_style_choice","theme_pack_id","live_wallpaper","focus_outline_choice","tile_gap_choice",
         "desktop_layout","show_audio_indicator","app_position","wallpaper_dim_choice","cinematic_idle_seconds",
         "adaptive_header","refined_motion","text_ink_choice","app_names_choice"));ProductFeatures.setupKeys(keys);KEYS=Collections.unmodifiableSet(keys);}
-    private static final Set<String> FLAGS=new HashSet<>(Arrays.asList("animations","advanced_effects","live_wallpaper","show_audio_indicator","adaptive_header","refined_motion"));
+    private static final Set<String> FLAGS=new HashSet<>(Arrays.asList("animations","reduced_motion_choice","advanced_effects","live_wallpaper","show_audio_indicator","adaptive_header","refined_motion"));
     static String name(String text){
         if(text==null)throw new IllegalArgumentException("Name required");String value=text.trim();
         if(value.isEmpty()||value.length()>40)throw new IllegalArgumentException("Use 1–40 characters");

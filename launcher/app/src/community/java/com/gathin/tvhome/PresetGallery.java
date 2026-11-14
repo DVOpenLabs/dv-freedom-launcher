@@ -7,8 +7,8 @@ import java.util.*;
 
 /** Still illustrations and a bounded confirmation; browsing never writes preferences. */
 final class PresetGallery {
-    private static final String[] DETAILS={"Glass · bottom row · medium icons · all names","Clean · middle row · large icons · larger text","Cinema · bottom row · selected name · quiet idle","Clean · bottom row · small icons · selected name"};
-    private static final String[] REVIEW={"Glass; bottom row; medium icons; 8 dp spacing; all app names.","Clean; middle row; large icons; 16 dp spacing; all app names; 120% clock, header and app-name sizes.","Cinema; bottom row; medium icons; 8 dp spacing; selected app name; quiet idle after 30 seconds.","Clean; bottom row; small icons; 8 dp spacing; selected app name."};
+    private static final String[] DETAILS={"Glass · bottom row · medium icons · all names","Clean · middle row · large icons · larger text","Cinema · bottom row · selected name · quiet idle","Clean · bottom row · small icons · selected name","Clean · bottom row · still fallback · motion off"};
+    private static final String[] REVIEW={"Glass; bottom row; medium icons; 8 dp spacing; all app names.","Clean; middle row; large icons; 16 dp spacing; all app names; 120% clock, header and app-name sizes.","Cinema; bottom row; medium icons; 8 dp spacing; selected app name; quiet idle after 30 seconds.","Clean; bottom row; small icons; 8 dp spacing; selected app name.","Clean; bottom row; medium icons; selected name; reduced motion; animations, still pan/zoom and shelf backdrops off. The saved live-video choice is retained, but reduced motion uses its still fallback."};
     static void show(Activity a){
         Config.load(a);LinearLayout b=FreedomUi.body(a);
         b.addView(FreedomUi.text(a,"Choose a starting point, then review its illustration. Your apps, wallpaper, text color and TV settings stay saved. Nothing changes while browsing.",17));
