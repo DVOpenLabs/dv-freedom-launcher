@@ -91,7 +91,7 @@ final class ProductFeatures {
         if(key.equals(ShelfBackdrop.KEY)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid shelf backdrop");return true;}
         if(key.equals(CinemaSpec.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid cinema setup");new CinemaSpec((String)value);return true;}
         if(key.equals(PanZoomPolicy.KEY)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid still motion");return true;}
-        if(key.equals(TileSpacing.FOCUS)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid focus outline");return true;}
+        if(key.equals(TileSpacing.FOCUS)){if(!(value instanceof Boolean)&&!(value instanceof String&&FocusOutline.valid((String)value)))throw new IllegalArgumentException("Invalid focus outline");return true;}
         if(key.equals(GridRepeatPolicy.KEY)){if(!GridRepeatPolicy.valid(value))throw new IllegalArgumentException("Invalid arrow speed");return true;}
         if(key.equals(FamilyPolicy.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid family Home");new FamilyPolicy((String)value);return true;}
         if(key.equals(LibraryVisibility.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid app exclusions");LibraryVisibility.parse((String)value);return true;}

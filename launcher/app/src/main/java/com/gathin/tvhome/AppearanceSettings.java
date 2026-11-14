@@ -16,7 +16,7 @@ final class AppearanceSettings {
         SharedPreferences prefs = ProfileStore.preferences(activity);
         focus.setText(activity.getString(R.string.focus_outline_state,
                 !prefs.contains(TileSpacing.FOCUS) ? activity.getString(R.string.appearance_follow)
-                : activity.getString(Config.GLASS_DOUBLE.equals(prefs.getString(TileSpacing.FOCUS, ""))
+                : activity.getString(Config.GLASS_DOUBLE.equals(FocusOutline.read(prefs.getAll().get(TileSpacing.FOCUS)))
                 ? R.string.focus_outline_strong : R.string.focus_outline_standard)));
         spacing.setText(activity.getString(R.string.tile_spacing_state,
                 !prefs.contains(TileSpacing.CHOICE) ? activity.getString(R.string.appearance_follow)
@@ -24,7 +24,7 @@ final class AppearanceSettings {
         focus.setOnClickListener(v -> {
             String[] labels = {activity.getString(R.string.appearance_follow), activity.getString(R.string.focus_outline_standard), activity.getString(R.string.focus_outline_strong)};
             String[] values = {"", Config.GLASS_RIM, Config.GLASS_DOUBLE};
-            String current = prefs.getString(TileSpacing.FOCUS, "");
+            String current = FocusOutline.read(prefs.getAll().get(TileSpacing.FOCUS));
             int selected = Config.GLASS_DOUBLE.equals(current) ? 2 : Config.GLASS_RIM.equals(current) ? 1 : 0;
             choose(activity, R.string.focus_outline, labels, selected, which -> {
                 SharedPreferences.Editor edit = prefs.edit();

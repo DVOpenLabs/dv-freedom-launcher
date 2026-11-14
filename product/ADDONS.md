@@ -105,3 +105,12 @@ Sleep Timer’s updated manifest includes wake-lock and boot-receiver permission
 separately on an existing TV; a launcher update does not install it or grant special access. Physical
 wake/standby, HDMI-CEC and OEM power policy require device acceptance. Weather adds German, Spanish and
 Russian resources for matching existing strings, with English fallback; language quality varies.
+
+
+### Discover watchlist bridge
+
+Companions alpha 7 can explicitly share TV-local watchlist title names and catalogue IDs with the
+matching signed launcher’s **Watch tonight** screen. Discover → Your watchlist → Launcher sharing
+shows the disclosure before saving. It defaults off, needs no new Android permission, exports no
+credentials or viewing history, and makes no network call to serve this snapshot. Turning it off
+removes access on the next foreground read. Child-friendly Homes do not display the household list.

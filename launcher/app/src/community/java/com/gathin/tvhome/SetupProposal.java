@@ -21,7 +21,7 @@ final class SetupProposal {
         if(s.containsKey("text")){String v=string(s.get("text"));int at=Arrays.asList("auto","light","dark").indexOf(v);if(at<0)throw new IllegalArgumentException("Unknown text color");next.put(HomePolish.HEADER,true);next.put(HomePolish.INK,at);}
         if(s.containsKey("textSize")){int n=number(s.get("textSize"),85,120);if(!Arrays.asList(85,100,110,120).contains(n))throw new IllegalArgumentException("Unsupported text size");next.put(HomeAppearance.KEY,"v1,"+n+","+n+","+n);}
         if(s.containsKey("names")){int n=Arrays.asList("theme","all","selected","hidden").indexOf(string(s.get("names")));if(n<0)throw new IllegalArgumentException("Unknown app-name option");next.put(HomePolish.NAMES,n);}
-        if(s.containsKey("strongFocus")){Object v=s.get("strongFocus");if(!(v instanceof Boolean))throw new IllegalArgumentException("Invalid focus option");next.put(TileSpacing.FOCUS,v);}
+        if(s.containsKey("strongFocus")){Object v=s.get("strongFocus");if(!(v instanceof Boolean))throw new IllegalArgumentException("Invalid focus option");next.put(TileSpacing.FOCUS,(Boolean)v?"double":"rim");}
         if(s.containsKey("idleSeconds")){int n=number(s.get("idleSeconds"),0,120);if(!PolishPolicy.validSeconds(n))throw new IllegalArgumentException("Unsupported idle time");next.put(HomePolish.IDLE,n);}
         String[] options={"animations","reducedMotion","stillMotion","posterBackdrop"};String[] keys={"animations","reduced_motion_choice",PanZoomPolicy.KEY,ShelfBackdrop.KEY};for(int i=0;i<options.length;i++)if(s.containsKey(options[i])){Object v=s.get(options[i]);if(!(v instanceof Boolean))throw new IllegalArgumentException("Invalid motion option");next.put(keys[i],v);}
         values=Collections.unmodifiableMap(next);

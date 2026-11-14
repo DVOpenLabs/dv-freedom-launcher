@@ -6,15 +6,23 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 28; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 29; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 14 November 2026:** alpha 28 improves checked recovery batches, remote-key handling,
-clock refresh after standby and resource cleanup. **Quick appearance** combines app position, icon size,
-spacing, names, animations and dimming in a draft drawer with a still illustration and Apply/Cancel.
-Open **Control Center** from the clock for Inputs, Now Playing, shared titles, settings and offline help.
-Showcase reuses its current scene on repeated Home presses when the profile/settings are unchanged.
+**Latest update — 14 November 2026:** alpha 29 adds **Personalisation Studio** under Appearance:
+preview your installed app icons, layout, text and imported backgrounds in one draft. Review only the
+changed choices before Apply; Undo restores draft steps, with guarded session undo after applying.
+
+**Watch tonight** gathers app-published Continue links, an optionally shared TV-local Discover watchlist
+and installed apps. Actions say Continue, Details & services or Open app; they do not promise playback.
+Companions alpha 7 keeps watchlist sharing off until you enable it. The core launcher still has no Internet permission.
+
+Modern Home docks remember the focused app by identity during the session and share long-press actions.
+Library selection lighting and new page headings follow the current cinema world. Guided Setup has
+four visible steps, all five presets, and a still review preview before Keep. Upgrades preserve saved
+Home, media, app order, profiles, permissions and TV settings; they do not start the setup wizard. Focus outlines accept both older setup switches and native choices,
+preventing a type mismatch from crashing Home.
 
 Content shelves have **Continue / Popular** tabs and remaining minutes when apps publish valid progress.
 An optional soft poster backdrop is confined to the shared-title browser. The **Lite** preset uses still

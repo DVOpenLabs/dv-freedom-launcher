@@ -12,6 +12,10 @@ public final class HubProvider extends ContentProvider {
         Bundle b=new Bundle();if("calendar".equals(method)){
             boolean on=HubStore.prefs(getContext()).getBoolean("calendar",false);if(on)HubStore.refresh(getContext());
             b.putString("events",on?HubStore.events(getContext()).toString():"[]");b.putLong("updated",HubStore.prefs(getContext()).getLong("updated",0));b.putBoolean("failed",HubStore.prefs(getContext()).getBoolean("failed",false));
+        }else if("watchlist".equals(method)){
+            boolean shared=DiscoverStore.prefs(getContext()).getBoolean("share-watchlist",false);org.json.JSONArray items=new org.json.JSONArray();
+            if(shared)items=WatchlistSnapshot.read(DiscoverStore.prefs(getContext()).getString("watchlist","{}"));
+            b.putBoolean("shared",shared);b.putString("items",items.toString());
         }else if("poster".equals(method)&&arg!=null&&arg.length()<=4096)b.putString("key",HubStore.poster(getContext(),arg));else throw new IllegalArgumentException();return b;
     }
     @Override public ParcelFileDescriptor openFile(Uri uri,String mode)throws FileNotFoundException{

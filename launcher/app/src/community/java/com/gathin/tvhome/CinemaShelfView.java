@@ -28,6 +28,7 @@ final class CinemaShelfView extends View {
         float x=(960-total)/2,base=345,height=145;int[] leather={0xff713a31,0xff244b44,0xff35456c,0xff66517a,0xff4b6244,0xff574b70,0xff725b3b,0xff384c57};
         for(int i=0;i<opened.length;i++){
             float width=24+80*opened[i],f=opened[i],top=base-height-3*f;
+            if(i==selected){int accent=world.accent();p.setShader(new RadialGradient(x+width/2,top+height/2,height*.8f,new int[]{(accent&0xffffff)|0x30000000,accent&0xffffff},null,Shader.TileMode.CLAMP));canvas.drawRect(x-30,top-24,x+width+30,base+24,p);p.setShader(null);}
             p.setColor(0x80000000);canvas.drawOval(x-4,base-2,x+width+8+8*f,base+7+2*f,p);
             p.setShader(new LinearGradient(x,0,x+width,0,new int[]{0xff101417,leather[i%leather.length],0xff171c1b},null,Shader.TileMode.CLAMP));canvas.drawRoundRect(x,top,x+width-2,base,2,2,p);p.setShader(null);
             if(f>.02f){

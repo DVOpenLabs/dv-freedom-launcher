@@ -414,21 +414,49 @@ foreground companion and a remote-navigable library/gallery. Unpaired wallpapers
 Home presentation. Styles start off on upgrade, use the existing profile draft/Apply contract and
 introduce no new Android permission. Personal media remains separate from the public source.
 
-## Quick appearance and Control Center
+## Personalisation Studio and Control Center
 
-Appearance → Quick appearance opens one draft drawer. Up/Down moves between controls; Left/Right
-steps values. The illustration uses a still from the current local wallpaper, with sample app tiles;
-it is not the live Home renderer. Apply saves only changed controls to the current profile. Cancel/Back
-discards the draft. Opening the drawer preserves custom spacing and dimming values.
+Open **Appearance → Personalisation Studio**. Layout, Text and Background groups combine Home style,
+Top/Middle/Bottom placement, icon size, spacing, app names, independent text sizes, text colour, focus,
+dimming and motion. Up/Down chooses a control; Left/Right steps values. The still illustration uses your
+current wallpaper and installed favourite icons; it approximates Home and does not decode live video.
+Choosing a different background explicitly replaces rotation with that one imported item only after
+Apply. Existing live-video preference stays saved. Showcase needs a background paired in Cinema Studio.
 
-Focus the clock and press OK for Control Center: Quick settings, Inputs/HDMI, Now Playing, Shared titles,
-Launcher settings, Home capabilities and Explain a problem. The help runs offline and neither reads
-private logs nor performs commands. Some streaming boxes cannot select their television’s HDMI inputs;
-use that TV’s Input/Source remote button. Native platform support differs.
+**Undo** steps back within the draft; Reset draft is also undoable. **Review** lists only changed choices.
+Apply guards against a different profile or concurrent settings changes; Cancel, Back or leaving the
+Activity discards the draft. Custom spacing/dimming values are preserved until explicitly changed.
+**Undo last studio apply** is available in the same process/profile while settings still match; for
+persistent recovery use **Recent changes & restore**. Neither action changes system settings or grants.
 
-Glass/Clean/Cinema support inline shared shelves; Classic and Showcase open the shared-title browser.
-Showcase keeps one pinned world and offers long-press app/folder editing. Repeated Home retains its
-renderer only while the saved profile and settings match. This does not intercept vendor buttons.
+Focus the clock and press OK for Control Center: Quick settings, Inputs/HDMI, Now Playing, Watch tonight,
+Launcher settings, Home capabilities and offline problem help. A streaming box cannot enumerate its
+television’s HDMI ports; use the TV remote’s Input/Source control.
+
+Glass, Clean, Cinema and Showcase remember app selection by identity during the process session,
+isolated per profile. Reordered or missing apps use a safe fallback; no usage history is stored on disk.
+Their long-press menu consistently offers Edit app/Create folder, or existing folder options. Library
+selection is remembered per world/chapter; selection light remains static with reduced motion.
+
+### Watch tonight
+
+Open **Apps & rows → Watch tonight**, or Control Center. Continue reads bounded local Watch Next data
+only when both Android TV-listings access and this profile’s content shelves are already enabled.
+Services lists visible installed apps. Empty/unavailable sources explain the next step without silently
+granting access. Continue opens the provider’s validated app link; actual playback belongs to that app.
+
+Watchlist needs matching-signer **Companions alpha 7**. In Discover → Your watchlist, explicitly review
+**Launcher sharing** to share title names and catalogue IDs on this TV. Sharing defaults off, uploads
+nothing, and excludes credentials, source records and viewing history. Shared household watchlists are
+unavailable in child-friendly Homes. Watchlist buttons open **Details & services**, not automatic Play.
+Core Home makes no online calls. Leaving Watch tonight cancels queued work and discards stale results.
+
+### Guided first setup
+
+Appearance → Setup help shows four steps: look, favourite apps, comfort, review. Five editable presets
+include Lite. A still preview precedes **Keep this setup**; the existing new-profile option is recommended.
+Nothing applies while browsing. AI help remains optional and separately configured; no paid calls are
+started by the wizard. Existing installations never open it automatically during an upgrade.
 
 ## Shared titles and quiet visuals
 
@@ -442,7 +470,7 @@ is prepared off the UI thread, stale focus requests are ignored, and work stops 
 
 The Lite appearance preset enables reduced motion and turns off animations, still-picture motion and
 shelf backdrops. Your saved live-video choice/media is retained; reduced motion displays its still
-fallback. Quick appearance → Reduced motion turns this override on or off explicitly. Choosing Lite still requires review/Keep; upgrades do not apply it automatically.
+fallback. Personalisation Studio → Background → Reduced motion turns this override on or off explicitly. Choosing Lite still requires review/Keep; upgrades do not apply it automatically.
 
 Wallpaper Studio can link a folder selected through Android’s picker. Refresh linked wallpaper folder
 rescans up to 128 directory entries and queues at most eight supported files for individual review.

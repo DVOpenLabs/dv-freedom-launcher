@@ -33,7 +33,8 @@ public class HomePresetsTest {
             SetupProposal proposal=new SetupProposal(draft,Collections.emptySet());
             assertNull(proposal.favorites);
             assertFalse(proposal.values.containsKey(ThemeLibrary.CHOICE));
-            assertEquals(true,proposal.values.get(TileSpacing.FOCUS));
+            assertEquals("double",proposal.values.get(TileSpacing.FOCUS));
+            assertEquals(FocusOutline.read(true),FocusOutline.read(proposal.values.get(TileSpacing.FOCUS)));
         }
     }
     @Test public void presetDraftsDoNotShareMutableState() {

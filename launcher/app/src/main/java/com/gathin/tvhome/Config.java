@@ -731,7 +731,7 @@ final class Config {
         // Keep an explicitly requested dual-contrast frame across style presets. Manual appearance is scoped.
         if (GLASS_DOUBLE.equals(glassStyle(themedGlassStyle))) glassStyle = GLASS_DOUBLE;
         if (appearanceControls) {
-            String focus = choices.getString(TileSpacing.FOCUS, "");
+            String focus = FocusOutline.read(choices.getAll().get(TileSpacing.FOCUS));
             if (GLASS_DOUBLE.equals(focus) || GLASS_RIM.equals(focus)) glassStyle = focus;
             int gap = choices.getInt(TileSpacing.CHOICE, tileGap);
             if (TileSpacing.valid(gap)) tileGap = gap;

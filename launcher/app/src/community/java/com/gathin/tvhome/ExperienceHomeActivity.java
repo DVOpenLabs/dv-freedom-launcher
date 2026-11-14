@@ -27,7 +27,7 @@ public final class ExperienceHomeActivity extends Activity {
     private CinemaWorld world;private CinemaWorldMotion worldMotion;private TextView worldLink;private String worldToken="";
     private ContentShelves.Row shelf;private WallpaperPlayer wallpaper;private LiveVideo video;private Config config;private Typeface font;
     private List<HomeCategories.App> catalog=Collections.emptyList(),favorites=Collections.emptyList();
-    private String look,signature,preview,selectedPackage="";private float unit=1;private int selected,ink=0xfff5f7fa,labelInk=0xfff5f7fa;private boolean resumed,quiet;
+    private String focusProfile;private String look,signature,preview,selectedPackage="";private float unit=1;private int selected,ink=0xfff5f7fa,labelInk=0xfff5f7fa;private boolean resumed,quiet;
     private TvButtonController tvButton;private Map<Integer,String> appKeys=Collections.emptyMap();
     private ExperiencePolicy.Geometry geometry;private final List<View> quietViews=new ArrayList<>();
     private final PolishPolicy.Idle idle=new PolishPolicy.Idle();private boolean touchWake;private int idleSeconds;
@@ -45,7 +45,7 @@ public final class ExperienceHomeActivity extends Activity {
     private String currentSignature(){return ProfileStore.id()+"|"+ProfileStore.preferences(this).getAll().hashCode()+"|"+getResources().getDisplayMetrics().widthPixels+"|"+catalogSignature();}
     private void release(){if(worldMotion!=null){worldMotion.stop();worldMotion=null;}if(wallpaper!=null){wallpaper.close();wallpaper=null;}if(video!=null){video.close();video=null;}}
     private void render(){
-        config=Config.load(this);look=preview==null?ExperienceChoice.saved(this):preview;
+        config=Config.load(this);String active=ProfileStore.id();if(focusProfile!=null&&!focusProfile.equals(active))selectedPackage="";focusProfile=active;look=preview==null?ExperienceChoice.saved(this):preview;
         if(ExperiencePolicy.SHOWCASE.equals(look))look=ExperiencePolicy.CINEMA;
         if(ExperiencePolicy.LEGACY.equals(look)||preview!=null&&!ExperienceChoice.trialValid(preview)){finish();return;}
         if(shelf!=null){shelf.close();shelf=null;}unit=getResources().getDisplayMetrics().widthPixels/960f;release();handler.removeCallbacks(idleTimeout);idle.stop();quiet=false;quietViews.clear();root.removeAllViews();root.setBackgroundColor(config.backgroundColor);
@@ -73,7 +73,7 @@ public final class ExperienceHomeActivity extends Activity {
         put(list,geometry.left-7,geometry.top-7,960-2*geometry.left+14,geometry.cardHeight+44);quietViews.add(list);quietViews.add(controls);
         hero=text("",32);hero.setShadowLayer(px(2),0,px(1),0xcc081020);if(ExperiencePolicy.CINEMA.equals(look)){float y="middle".equals(position)?150:"top".equals(position)?365:geometry.top-72;put(hero,46,y,820,50);quietViews.add(hero);}
         if(preview==null&&ContentShelves.enabled(this)){LinearLayout shelfHost=new LinearLayout(this);shelfHost.setOrientation(LinearLayout.VERTICAL);shelfHost.setPadding(px(12),px(8),px(12),px(6));shelfHost.setBackground(round(0xde111b2a,14));put(shelfHost,46,geometry.top<260?geometry.top+geometry.cardHeight+60:142,868,154);quietViews.add(shelfHost);shelf=new ContentShelves.Row(this,shelfHost,list,false);}
-        selected=0;for(int i=0;i<favorites.size();i++)if(favorites.get(i).pkg.equals(selectedPackage))selected=i;updateSelection();
+        selected=FocusMemory.index(ProfileStore.id(),"home",favorites.stream().map(app->app.pkg).collect(java.util.stream.Collectors.toList()),0);for(int i=0;i<favorites.size();i++)if(favorites.get(i).pkg.equals(selectedPackage))selected=i;updateSelection();
         idleSeconds=ProfileStore.preferences(this).getInt(HomePolish.IDLE,0);tvButton=config.tvButtonPicker?new TvButtonController(this,config):null;appKeys=RemoteKeys.parseAppKeys(config.appKeys);signature=currentSignature();
         applyInk(new int[]{config.backgroundColor},new int[]{config.backgroundColor});if(wallpaper!=null){wallpaper.headerSample(this::sample);wallpaper.start();}if(video!=null)video.start();ProductFeatures.resumed(this);handler.removeCallbacks(tick);handler.post(tick);list.post(()->focusApp(selected));if(!WallpaperPlaylistChoice.enabled(this)&&theme!=null)world(theme.token);armIdle();
     }
@@ -98,7 +98,7 @@ public final class ExperienceHomeActivity extends Activity {
     void shelfReturn(){focusApp(selected);}
     void shelfReady(boolean shown){if(hero!=null&&ExperiencePolicy.CINEMA.equals(look)&&geometry.top<200)hero.setVisibility(shown?View.GONE:View.VISIBLE);}
     private void updateClock(){if(clock!=null)clock.setText(DateFormat.getTimeFormat(this).format(new Date()));if(date!=null)date.setText(new SimpleDateFormat("EEEE, d MMMM",Locale.getDefault()).format(new Date()));}
-    private void updateSelection(){if(!favorites.isEmpty()){selected=Math.max(0,Math.min(favorites.size()-1,selected));selectedPackage=favorites.get(selected).pkg;if(hero!=null)hero.setText(favorites.get(selected).label);CinemaHome.selected(this,selectedPackage,(selected+.5f)/Math.max(1,favorites.size()));if(worldMotion!=null){int visible=Math.max(0,Math.min(geometry.count-1,selected-Math.max(0,listLayout.findFirstVisibleItemPosition())));worldMotion.focus((geometry.x(visible)+geometry.cardWidth/2)/960f,geometry.top/540f);}}}
+    private void updateSelection(){if(!favorites.isEmpty()){selected=Math.max(0,Math.min(favorites.size()-1,selected));selectedPackage=favorites.get(selected).pkg;FocusMemory.remember(ProfileStore.id(),"home",selectedPackage);if(hero!=null)hero.setText(favorites.get(selected).label);CinemaHome.selected(this,selectedPackage,(selected+.5f)/Math.max(1,favorites.size()));if(worldMotion!=null){int visible=Math.max(0,Math.min(geometry.count-1,selected-Math.max(0,listLayout.findFirstVisibleItemPosition())));worldMotion.focus((geometry.x(visible)+geometry.cardWidth/2)/960f,geometry.top/540f);}}}
     private void focusApp(int index){if(favorites.isEmpty()){settings.requestFocus();return;}selected=Math.max(0,Math.min(favorites.size()-1,index));updateSelection();if(list.findViewHolderForAdapterPosition(selected)==null)listLayout.scrollToPosition(selected);focusReady(selected,0);}
     private void focusReady(int at,int attempt){if(!resumed)return;RecyclerView.ViewHolder h=list.findViewHolderForAdapterPosition(at);if(h!=null)h.itemView.requestFocus();else if(attempt<16)list.postOnAnimation(()->focusReady(at,attempt+1));}
     private final class Tiles extends RecyclerView.Adapter<Tile> {
@@ -117,7 +117,7 @@ public final class ExperienceHomeActivity extends Activity {
         Tile(FrameLayout cell,ImageView art,TextView name,View ring){super(cell);this.art=art;this.name=name;this.ring=ring;
             cell.setOnFocusChangeListener((v,on)->{paint(on);int at=getBindingAdapterPosition();if(on&&at>=0){selected=at;updateSelection();}});
             cell.setOnClickListener(v->{if(app!=null){if(preview!=null){ExperienceChoice.cancel();finish();}app.launch(ExperienceHomeActivity.this,config);}});
-            cell.setOnLongClickListener(v->{if(app!=null&&canEdit()){if(app instanceof Folders.FolderApp)Folders.options(ExperienceHomeActivity.this,((Folders.FolderApp)app).folder);else new AlertDialog.Builder(ExperienceHomeActivity.this).setTitle(app.label).setItems(new String[]{"Edit app","Create folder"},(d,n)->{if(n==0)NativeTileEditor.show(ExperienceHomeActivity.this,app.pkg);else Folders.edit(ExperienceHomeActivity.this,null);}).show();}return true;});
+            cell.setOnLongClickListener(v->{if(app!=null&&canEdit()){AppActions.show(ExperienceHomeActivity.this,app);}return true;});
             cell.setOnKeyListener((v,key,event)->{if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;int at=getBindingAdapterPosition();if(at<0)return false;
                 if(key==KeyEvent.KEYCODE_DPAD_LEFT||key==KeyEvent.KEYCODE_DPAD_RIGHT){focusApp(ExperiencePolicy.next(at,key==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1,favorites.size(),list.getLayoutDirection()==View.LAYOUT_DIRECTION_RTL));return true;}
                 if(key==KeyEvent.KEYCODE_DPAD_DOWN&&world!=null){CinemaWorldActivity.open(ExperienceHomeActivity.this,world);return true;}
