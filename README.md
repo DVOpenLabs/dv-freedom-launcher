@@ -6,11 +6,20 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 29; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
+**Development status:** Android alpha 30; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
 editions; Roku ambient app. These have different capabilities and testing limits. There is no public
 Windows installer or general production binary release yet.
 
-**Latest update — 14 November 2026:** alpha 29 adds **Personalisation Studio** under Appearance:
+**Latest update — 25 November 2026:** alpha 30 improves Home/input reliability, still-image colour
+handling and OLED clock fallback. Wallpaper captions reserve room below controls and fade as the Classic
+grid scrolls; editing a dock slot keeps the app grid bright. TCL Settings and Coocaa/Skyworth input
+discovery have additional fallbacks. Upgrades preserve existing Home, wallpapers, profiles and grants.
+
+Legacy theme tools reject configurations over 64 KiB and conflicting reset/import arguments before
+transfer. Local edits are validated before writing; recovery refuses ambiguous records for the same list.
+Release builds enforce the core's exact permission contract, including the absence of Internet access.
+
+**Previous update — 14 November 2026:** alpha 29 adds **Personalisation Studio** under Appearance:
 preview your installed app icons, layout, text and imported backgrounds in one draft. Review only the
 changed choices before Apply; Undo restores draft steps, with guarded session undo after applying.
 

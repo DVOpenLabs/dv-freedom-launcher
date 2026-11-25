@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Full-product vendor coverage; retain all reference fallbacks when adding one. -->
+    <string-array name="settings_fallback_components" translatable="false">
+        <item>com.xiaomi.mitv.settings/com.xiaomi.mitv.settings.entry.MainActivity</item>
+        <item>com.tcl.settings/com.tcl.settings.ui.MainActivity</item>
+        <item>com.tcl.settings/com.tcl.settings.MainActivity</item>
+        <item>com.amazon.tv.launcher/com.amazon.tv.launcher.ui.MainSettingsActivity</item>
+    </string-array>
+</resources>

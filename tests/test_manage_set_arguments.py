@@ -30,11 +30,11 @@ class SetArgumentsTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.theme = Path(self.tmp.name) / "my-theme"
+        self.theme = Path(self.tmp.name).resolve() / "my-theme"
         self.theme.mkdir()
         self.config = self.theme / "config.json"
         # cmd_set ends by pushing the theme with tools/theme.sh; the tests stop at that call.
-        patcher = mock.patch.object(manage, "run")
+        patcher = mock.patch.object(manage, "install_theme")
         self.push = patcher.start()
         self.push.return_value = 0
         self.addCleanup(patcher.stop)
@@ -95,8 +95,7 @@ class SetArgumentsTest(unittest.TestCase):
         status, err = self.run_set("hidden_apps", '["a", "b"]', "--theme", str(self.theme))
         self.assertEqual(status, 0, err)
         self.assertEqual(self.written(), {"hidden_apps": ["a", "b"]})
-        self.push.assert_called_once_with(
-            ["bash", str(manage.TOOLS / "theme.sh"), str(self.theme.resolve())], manage.ROOT)
+        self.push.assert_called_once_with(self.theme.resolve())
 
     def test_theme_first_is_still_accepted(self):
         # --theme is lifted out wherever it sits, as it always was.

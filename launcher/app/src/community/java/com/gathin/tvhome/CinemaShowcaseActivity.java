@@ -60,7 +60,7 @@ public final class CinemaShowcaseActivity extends Activity {
     private int px(float n){return Math.round(n*unit);}
     private TextView text(String value,int size){TextView t=new TextView(this);t.setText(value);t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,px(size));t.setTextColor(0xfff7f0df);t.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));t.setShadowLayer(px(2),0,px(1),0xff081016);return t;}
     private void put(View view,float x,float y,float w,float h){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(px(w),px(h));p.leftMargin=px(x);p.topMargin=px(y);root.addView(view,p);}
-    private Bitmap poster(){try{BitmapFactory.Options o=new BitmapFactory.Options();o.inSampleSize=2;o.inPreferredConfig=Bitmap.Config.ARGB_8888;return BitmapFactory.decodeFile(new File(entry.directory,Config.WALLPAPER_NAME).getPath(),o);}catch(RuntimeException|OutOfMemoryError absent){return null;}}
+    private Bitmap poster(){try{BitmapFactory.Options o=new BitmapFactory.Options();o.inSampleSize=2;o.inPreferredConfig=Bitmap.Config.ARGB_8888;o.inPreferredColorSpace=android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.SRGB);return BitmapFactory.decodeFile(new File(entry.directory,Config.WALLPAPER_NAME).getPath(),o);}catch(RuntimeException|OutOfMemoryError absent){return null;}}
     private void render(){
         root=new FrameLayout(this);root.setId(R.id.root);root.setClipChildren(false);root.setBackgroundColor(0xff071018);setContentView(root);
         ImageView image=new ImageView(this);image.setImageBitmap(backdrop);image.setScaleType(ImageView.ScaleType.CENTER_CROP);root.addView(image,new FrameLayout.LayoutParams(-1,-1));
@@ -119,6 +119,7 @@ public final class CinemaShowcaseActivity extends Activity {
     protected void onPause(){HomePreview.detach(this);if(savedHome)ProductFeatures.paused(this);if(weather!=null){weather.close();weather=null;}clockTimer.removeCallbacks(clockTick);if(light!=null)light.stop();if(video!=null)video.stop();if(companion!=null)companion.stop();super.onPause();}
     protected void onDestroy(){trialTimer.removeCallbacksAndMessages(null);if(video!=null){video.close();video=null;}if(companion!=null)companion.stop();super.onDestroy();}
     public boolean dispatchKeyEvent(KeyEvent event){
+        if(event.getAction()==KeyEvent.ACTION_DOWN) HomeKeyService.keyOnHome();
         int code=event.getKeyCode();if(tvButton!=null&&tvButton.handle(event))return true;if(code>=1000&&RemoteKeys.handle(this,event,appKeys.get(code),null))return true;
         if(code==KeyEvent.KEYCODE_TV_INPUT){if(event.getAction()==KeyEvent.ACTION_DOWN&&event.getRepeatCount()==0)InputPicker.show(this,false);return true;}
         if(config!=null)for(int settingsCode:config.settingsKeycodes)if(code==settingsCode){if(event.getAction()==KeyEvent.ACTION_UP&&!event.isCanceled())try{startActivity(config.settingsKeyPanel?new Intent(this,QuickSettingsActivity.class):SystemSettings.intent(this,android.provider.Settings.ACTION_SETTINGS));}catch(Exception ignored){}return true;}

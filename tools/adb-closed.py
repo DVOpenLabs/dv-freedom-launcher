@@ -15,10 +15,74 @@ the TV, so a refusal there is not the TV's.
 import ipaddress
 import os
 import socket
+import struct
 import sys
 
 TIMEOUT_S = 3.0
 RELAY_PORT = 15555   # relay.py's default --port, the TV_PORT it tells the tools to use
+
+
+HANDSHAKE_S = 3.0
+A_CNXN, A_AUTH, A_STLS = 0x4E584E43, 0x48545541, 0x534C5453
+ADB_ANSWERS = {A_CNXN: "CNXN", A_AUTH: "AUTH", A_STLS: "STLS"}
+
+
+def greeting():
+    """The CNXN a host sends first: protocol version 1.0.0.1, 256 KiB max payload, banner host::."""
+    payload = b"host::\0"
+    return struct.pack("<6I", A_CNXN, 0x01000001, 256 * 1024, len(payload), sum(payload) & 0xFFFFFFFF,
+                       A_CNXN ^ 0xFFFFFFFF) + payload
+
+
+def adb_answer(header):
+    """The ADB command a 24-byte header carries (CNXN, AUTH or STLS), or None when it is not ADB's."""
+    if len(header) != 24:
+        return None
+    command, _, _, _, _, magic = struct.unpack("<6I", header)
+    if command in ADB_ANSWERS and magic == command ^ 0xFFFFFFFF:
+        return ADB_ANSWERS[command]
+    return None
+
+
+def short_reply(header):
+    """A partial protocol header never establishes whether the service is ADB."""
+    for command, name in ADB_ANSWERS.items():
+        if 0 < len(header) < 24 and header[:min(4, len(header))] == struct.pack("<I", command)[:min(4, len(header))]:
+            return "unknown", f"it began an ADB answer ({name}) and stopped after {len(header)} of 24 bytes"
+    return "unknown", f"it returned an incomplete or unrecognized header ({len(header)} bytes)"
+
+
+def ask_adb(sock):
+    """Greet an open port: ("adb", command), ("not adb", why) or ("unknown", why).
+
+    Silence is "unknown", not "not adb": a port that waits for more than this greeting could still be
+    anything, and a stand-in or a half-open socket that cannot send says nothing about the TV either.
+    """
+    header = b""
+    try:
+        sock.getpeername()   # a socket with no peer (a test's stand-in) has nothing to greet
+    except OSError as e:
+        return "unknown", f"the greeting could not be sent ({e})"
+    try:
+        sock.settimeout(HANDSHAKE_S)
+        sock.sendall(greeting())
+        while len(header) < 24:
+            chunk = sock.recv(24 - len(header))
+            if not chunk:
+                break
+            header += chunk
+    except socket.timeout:
+        return short_reply(header) if header else ("unknown", f"it said nothing within {HANDSHAKE_S:.0f} s")
+    except OSError as e:
+        return "unknown", f"the greeting could not be sent ({e})"
+    command = adb_answer(header)
+    if command:
+        return "adb", command
+    if not header:
+        return "unknown", "it hung up before returning a protocol header"
+    if len(header) == 24:
+        return "not adb", "it returned a complete header that is not ADB"
+    return short_reply(header)
 
 
 def this_computer(host):
@@ -112,8 +176,7 @@ def main():
     except (OSError, ValueError):
         pass
     try:
-        with socket.create_connection((connection_host, port), timeout=TIMEOUT_S):
-            pass
+        sock = socket.create_connection((connection_host, port), timeout=TIMEOUT_S)
     except ConnectionRefusedError:
         if local:
             sys.stderr.write(f"could not check {host}:{port}: nothing listens there, which says nothing about "
@@ -142,13 +205,18 @@ def main():
     except OSError as e:
         sys.stderr.write(f"could not check {host}:{port} ({e}). Is the TV on and on this network?\n")
         return 2
-    # Wireless debugging has a port of its own and stays open when USB debugging goes off, so the advice
-    # names it too. The second check comes before the reboot: if this is the Wireless debugging port, a
-    # reboot leaves Wireless debugging off or starts it on a new port, and this number reads closed
-    # afterwards either way. Port 5555 is the one worth checking again after the reboot.
-    sys.stderr.write(f"{host}:{port} is still open: network ADB is on. On the TV, turn USB debugging,\n"
-                     "Network/ADB debugging and Wireless debugging off and check again, then reboot it\n"
-                     "and check once more.\n" + relay)
+    try:
+        verdict, detail = ("unknown", "local relay is not the TV") if local else ask_adb(sock)
+    finally:
+        sock.close()
+    if verdict == "adb":
+        sys.stderr.write(f"{host}:{port} is still open: network ADB answered {detail}.\n" + relay)
+    elif verdict == "not adb":
+        sys.stderr.write(f"{host}:{port} is still open, but did not answer as ADB: {detail}.\n"
+                         "This does not establish whether ADB is open on another port.\n" + relay)
+    else:
+        sys.stderr.write(f"{host}:{port} is still open; its protocol is unknown ({detail}).\n"
+                         "An open TCP port alone does not prove network ADB is on.\n" + relay)
     return 1
 
 

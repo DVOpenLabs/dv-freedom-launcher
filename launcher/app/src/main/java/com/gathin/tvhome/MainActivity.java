@@ -723,6 +723,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                ProductFeatures.captionScrolled(wallpaperPlayer, rv, density);
                 if (!glassShown) return;
                 glassTargetY -= dy;
                 glassScrollShift -= dy;
@@ -1400,6 +1401,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) HomeKeyService.keyOnHome();
         if (ProductFeatures.awaitingUnlock(this)) return super.dispatchKeyEvent(event);
         if(homePolish!=null&&homePolish.key(event))return true;
         if (tvButton != null && tvButton.handle(event)) return true;
@@ -1629,8 +1631,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (movingKey != null) {
             return pos != RecyclerView.NO_POSITION && movingKey.equals(adapter.keyAt(pos)) ? 1f : 0.45f;
         }
-        if (dockEditSlot >= 0 && pos >= 0 && pos < COLUMNS && pos != dockEditSlot) return 0.45f;
-        return 1f;
+        return GridNavigation.idleAlpha(pos, COLUMNS, dockEditing, dockEditSlot, reordering);
     }
 
     /** Ends the mode and saves the order if it changed since the mode started. */

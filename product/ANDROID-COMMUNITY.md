@@ -7,6 +7,22 @@ See the [alpha limitations](../README.md#alpha-limitations) before trying it on 
 
 ## Reliability and recovery
 
+Alpha 30 preserves key filtering when the optional Home helper also watches windows. Explicit
+remote input on Home cancels pending power-on redirection, so a deliberate HDMI selection is not
+pulled back afterward. These fixes do not enable a helper or change its saved options.
+
+Still Home, clock and review artwork requests sRGB decoding within existing size limits. With clock
+glow disabled, a missing wallpaper keeps the plain fallback. Classic wallpaper captions reserve
+space below the top controls, hide where the grid leaves insufficient room and fade while scrolling.
+Dock editing dims other dock slots while keeping the app grid readable.
+
+TCL Settings tries both known activity paths. Coocaa/Skyworth input discovery tries the SDK provider
+when its primary provider is unavailable or empty, with a bounded result count. Vendor hardware
+acceptance is separate from Sony/Streamer testing. Advanced `app_keys` mappings support only these
+`action:` targets: `android.settings.SETTINGS`, `android.settings.WIFI_SETTINGS`,
+`android.settings.DISPLAY_SETTINGS` and `android.settings.MANAGE_APPLICATIONS_SETTINGS`.
+They carry no URI or extras and do not grant permissions.
+
 The full product uses a last-known-good configuration copy while early-boot theme storage is
 unreadable. Recovery retries run only while Home is visible, for a bounded early-boot interval;
 malformed JSON never triggers a recreate loop. Explicit theme reset also invalidates the private

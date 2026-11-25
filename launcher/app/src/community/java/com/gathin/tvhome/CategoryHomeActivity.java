@@ -144,6 +144,7 @@ public final class CategoryHomeActivity extends Activity {
     private void restoreChrome(boolean animate){for(Map.Entry<View,Float> item:faded.entrySet()){View view=item.getKey();view.animate().cancel();if(animate)view.animate().alpha(item.getValue()).setDuration(config!=null&&config.animations&&!config.reducedMotion?180:0).start();else view.setAlpha(item.getValue());}faded.clear();}
     private boolean navigation(int code){return code==KeyEvent.KEYCODE_DPAD_LEFT||code==KeyEvent.KEYCODE_DPAD_RIGHT||code==KeyEvent.KEYCODE_DPAD_UP||code==KeyEvent.KEYCODE_DPAD_DOWN||code==KeyEvent.KEYCODE_DPAD_CENTER||code==KeyEvent.KEYCODE_ENTER||code==KeyEvent.KEYCODE_BACK||code==KeyEvent.KEYCODE_BUTTON_A;}
     @Override public boolean dispatchKeyEvent(KeyEvent event){
+        if(event.getAction()==KeyEvent.ACTION_DOWN) HomeKeyService.keyOnHome();
         if(event.getAction()==KeyEvent.ACTION_DOWN||event.getAction()==KeyEvent.ACTION_UP){boolean was=idle.quiet;boolean consume=idle.key(event.getKeyCode(),event.getAction()==KeyEvent.ACTION_DOWN,navigation(event.getKeyCode()));if(was&&!idle.quiet)restoreChrome(true);if(event.getAction()==KeyEvent.ACTION_DOWN)armIdle();if(consume)return true;}
         if(tvButton!=null&&tvButton.handle(event))return true;
         if(event.getKeyCode()>=1000&&RemoteKeys.handle(this,event,appKeys.get(event.getKeyCode()),null))return true;

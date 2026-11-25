@@ -172,3 +172,9 @@ detachment cleanup. TextClock standby refresh and strict shrinking adapt the sam
 Portable-world tooling, starter procedural artwork, capability advice, the draft drawer and offline
 troubleshooting are independent DVOpenLabs implementations. Projectivy/Sofadrop inform interaction and
 file-provider boundaries only; no proprietary launcher code or plug-in runtime is bundled.
+
+Alpha 30 adapts MIT CleanYourTV work through `7b7666ad05a3a62ba25768c51fbf06e9c4e67da5` for recovery
+record identity, theme-size preflight, unauthenticated ADB detection, Home/input handling, sRGB still
+decoding, clock glow, caption/edit-mode presentation and TCL/Coocaa fallbacks. DV Freedom constrains
+settings-action targets, bounds input rows and retains its permission/preview contracts. No upstream
+installer grants, stock-Home disabling, workflows or media are imported. See the source register.

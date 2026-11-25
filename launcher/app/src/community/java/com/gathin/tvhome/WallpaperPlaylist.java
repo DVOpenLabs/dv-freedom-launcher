@@ -72,7 +72,7 @@ final class WallpaperPlaylist {
     }
     private Bitmap decode(File file){
         try{if(!file.isFile()||file.length()>ThemeArchive.MAX_IMAGE)return null;BitmapFactory.Options o=new BitmapFactory.Options();o.inJustDecodeBounds=true;BitmapFactory.decodeFile(file.getPath(),o);if(!WallpaperSize.accepted(o.outWidth,o.outHeight))return null;
-            int width=Math.max(1,root.getResources().getDisplayMetrics().widthPixels),height=Math.max(1,root.getResources().getDisplayMetrics().heightPixels);o.inSampleSize=WallpaperSize.sampleSize(o.outWidth,o.outHeight,width,height);o.inJustDecodeBounds=false;o.inPreferredConfig=Bitmap.Config.RGB_565;return BitmapFactory.decodeFile(file.getPath(),o);
+            int width=Math.max(1,root.getResources().getDisplayMetrics().widthPixels),height=Math.max(1,root.getResources().getDisplayMetrics().heightPixels);o.inSampleSize=WallpaperSize.sampleSize(o.outWidth,o.outHeight,width,height);o.inJustDecodeBounds=false;o.inPreferredConfig=Bitmap.Config.RGB_565;o.inPreferredColorSpace=android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.SRGB);return BitmapFactory.decodeFile(file.getPath(),o);
         }catch(RuntimeException|OutOfMemoryError unavailable){return null;}
     }
     private void close(){if(closed)return;stop();closed=true;generation++;handler.removeCallbacksAndMessages(null);decoder.shutdownNow();if(video!=null){video.close();video=null;}poster.setImageDrawable(null);bitmap=null;root.removeView(layer);activity.getApplication().unregisterActivityLifecycleCallbacks(lifecycle);homes.remove(activity);}

@@ -26,8 +26,8 @@ android {
         applicationId selectedId
         minSdk 26
         targetSdk 34
-        versionCode communityFeatures ? 30 : 13
-        versionName communityFeatures ? '3.2-freedom-alpha29' : '3.0-community-alpha5'
+        versionCode communityFeatures ? 31 : 13
+        versionName communityFeatures ? '3.2-freedom-alpha30' : '3.0-community-alpha5'
     }
 
     signingConfigs {
@@ -73,6 +73,28 @@ dependencies {
     // Test only (never in the APK): plain JVM tests for the module card validators, src/test.
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20231013'
+}
+
+// Check the merged manifest, including library contributions, before packaging a release.
+// Companion permissions are separate; an opt-in product build has only these three additions.
+def verifyReleasePermissions = tasks.register('verifyReleasePermissions') {
+    dependsOn 'processReleaseManifest'
+    doLast {
+        def manifest = new File(layout.buildDirectory.get().asFile,
+                'intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml')
+        def parsed = new XmlParser(false, true).parse(manifest)
+        def actual = parsed.children().findAll { it.name().toString().startsWith('uses-permission') }
+                .collect { it.attributes().find { key, value -> key.toString() == '{http://schemas.android.com/apk/res/android}name' }?.value }.toSet()
+        def expected = ['android.permission.ACCESS_NETWORK_STATE', 'android.permission.ACCESS_WIFI_STATE',
+                'android.permission.ACCESS_FINE_LOCATION', 'android.permission.WRITE_SECURE_SETTINGS',
+                'yandex.tv.permission.ACCESS_TV_SOURCE'].toSet()
+        if (communityFeatures) expected += ['android.permission.READ_TV_LISTINGS',
+                'com.dvopenlabs.cytv.weatherpreview.READ_WEATHER', 'com.dvopenlabs.freedom.companions.READ']
+        if (actual != expected) throw new GradleException("Launcher permission contract changed: added=${actual - expected}, removed=${expected - actual}")
+    }
+}
+tasks.configureEach { task ->
+    if (task.name in ['assembleRelease', 'packageRelease', 'lintRelease']) task.dependsOn verifyReleasePermissions
 }
 // Compact resource names while keeping runtime banners and named view IDs.
 // Runs before APK packaging/signing with the SDK tool pinned by this project, not a downloaded plugin.

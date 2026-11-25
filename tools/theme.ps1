@@ -6,8 +6,13 @@
 param(
     [Parameter(Position = 0)][string]$Theme,
     [switch]$Reset,
-    [string]$TvHost = $env:TV_HOST
+    [string]$TvHost = $env:TV_HOST,
+    [Parameter(ValueFromRemainingArguments = $true)][string[]]$Rest
 )
+if (($Theme -and $Reset) -or $Rest -or (-not $Theme -and -not $Reset)) {
+    [Console]::Error.WriteLine('usage: theme.ps1 <theme folder> | -Reset. Choose exactly one; nothing was sent to the TV.')
+    exit 2
+}
 $ErrorActionPreference = 'Stop'
 $OutputEncoding = New-Object System.Text.UTF8Encoding $false
 if (-not $TvHost) { throw 'pass -TvHost <tv ip> or set $env:TV_HOST' }
@@ -65,6 +70,10 @@ if ($Reset) {
 if (-not $Theme) { throw 'usage: theme.ps1 <theme folder> | -Reset' }
 $config = Join-Path $Theme 'config.json'
 if (-not (Test-Path $config)) { throw "no config.json in $Theme" }
+if ((Get-Item -LiteralPath $config).Length -gt 65536) {
+    [Console]::Error.WriteLine('config.json exceeds the launcher limit of 65536 bytes. Nothing was sent to the TV.')
+    exit 2
+}
 try { $themeJson = Get-Content $config -Raw | ConvertFrom-Json } catch { throw "$config is not valid JSON" }
 # Config.read() answers "no overlay" for anything that is not a JSON object, so an array, a number or a
 # string is a theme the launcher drops - and it replaces the theme the set had with the built-in config.

@@ -175,6 +175,7 @@ public final class ExperienceHomeActivity extends Activity {
     private void armIdle(){handler.removeCallbacks(idleTimeout);if(resumed&&!quiet&&idleSeconds>0){idle.arm(SystemClock.elapsedRealtime(),idleSeconds);handler.postDelayed(idleTimeout,idleSeconds*1000L);}}
     private void setQuiet(boolean value){quiet=value;if(worldMotion!=null)worldMotion.setVisibility(value?View.INVISIBLE:View.VISIBLE);if(worldLink!=null)worldLink.setVisibility(value?View.INVISIBLE:View.VISIBLE);CinemaHome.quiet(this,value);for(View view:quietViews){view.animate().cancel();view.animate().alpha(value?0:1).setDuration(config.animations&&!config.reducedMotion?180:0).start();}}
     @Override public boolean dispatchKeyEvent(KeyEvent event){
+        if(event.getAction()==KeyEvent.ACTION_DOWN) HomeKeyService.keyOnHome();
         int code=event.getKeyCode();boolean nav=code==KeyEvent.KEYCODE_DPAD_LEFT||code==KeyEvent.KEYCODE_DPAD_RIGHT||code==KeyEvent.KEYCODE_DPAD_UP||code==KeyEvent.KEYCODE_DPAD_DOWN||code==KeyEvent.KEYCODE_DPAD_CENTER||code==KeyEvent.KEYCODE_ENTER||code==KeyEvent.KEYCODE_BACK;
         boolean was=idle.quiet,consume=idle.key(code,event.getAction()==KeyEvent.ACTION_DOWN,nav);if(was&&!idle.quiet)setQuiet(false);if(event.getAction()==KeyEvent.ACTION_DOWN)armIdle();if(consume)return true;
         if(tvButton!=null&&tvButton.handle(event))return true;if(code>=1000&&RemoteKeys.handle(this,event,appKeys.get(code),null))return true;

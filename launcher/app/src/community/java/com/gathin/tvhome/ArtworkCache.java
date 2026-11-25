@@ -19,7 +19,7 @@ final class ArtworkCache {
         try{
             BitmapFactory.Options o=new BitmapFactory.Options();o.inJustDecodeBounds=true;BitmapFactory.decodeFile(file.getPath(),o);
             if(o.outWidth<1||o.outHeight<1||o.outWidth>960||o.outHeight>540)return null;
-            o.inJustDecodeBounds=false;o.inSampleSize=2;o.inPreferredConfig=Bitmap.Config.RGB_565;
+            o.inJustDecodeBounds=false;o.inSampleSize=2;o.inPreferredConfig=Bitmap.Config.RGB_565;o.inPreferredColorSpace=android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.SRGB);
             Bitmap bitmap=BitmapFactory.decodeFile(file.getPath(),o);
             if(bitmap!=null){decodes++;CACHE.put(key,bitmap,bitmap.getAllocationByteCount());}return bitmap;
         }catch(RuntimeException|OutOfMemoryError unavailable){return null;}

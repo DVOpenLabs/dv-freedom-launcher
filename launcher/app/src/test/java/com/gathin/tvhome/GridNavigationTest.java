@@ -10,6 +10,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class GridNavigationTest {
+    @Test public void dockEditDimsOtherDockSlotsButLeavesGridBright() {
+        assertEquals(1f, GridNavigation.idleAlpha(1, 4, true, 1, true), 0f);
+        assertEquals(0.45f, GridNavigation.idleAlpha(2, 4, true, 1, true), 0f);
+        assertEquals(1f, GridNavigation.idleAlpha(4, 4, true, 1, true), 0f);
+        assertEquals(1f, GridNavigation.idleAlpha(2, 4, true, -1, true), 0f);
+        assertEquals(0.45f, GridNavigation.idleAlpha(4, 4, false, -1, true), 0f);
+        assertEquals(1f, GridNavigation.idleAlpha(4, 4, false, -1, false), 0f);
+    }
     @Test public void hebrewDockStartsOnTheRightAndStopsAtTheLeft() {
         assertTrue(GridNavigation.atHorizontalEdge(0, 11, 4, true, false));
         assertFalse(GridNavigation.atHorizontalEdge(0, 11, 4, true, true));

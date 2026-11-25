@@ -34,11 +34,11 @@ class SetValueTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.theme = Path(self.tmp.name) / "my-theme"
+        self.theme = Path(self.tmp.name).resolve() / "my-theme"
         self.theme.mkdir()
         self.config = self.theme / "config.json"
         # cmd_set ends by pushing the theme with tools/theme.sh; the tests stop before the TV.
-        patcher = mock.patch.object(manage, "run")
+        patcher = mock.patch.object(manage, "install_theme")
         self.push = patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -151,8 +151,14 @@ class SetValueTest(unittest.TestCase):
         self.assertIn("wallpaper_moods", refusal)
         self.assertIn("object", refusal)
         self.assertIsNone(self.written())
-        self.assertIsNone(self.set_key("wallpaper_moods", '{"morning": "a.jpg"}'))
-        self.assertEqual({"morning": "a.jpg"}, self.written()["wallpaper_moods"])
+        # Config.moods reads an array, not a bare string. Reject a silently ignored group.
+        self.assertIn("non-empty picture lists", self.set_key("wallpaper_moods", '{"morning": "a.jpg"}'))
+        self.assertIsNone(self.written())
+        pictures = self.config.parent / "wallpapers"
+        pictures.mkdir()
+        (pictures / "a.jpg").write_bytes(b"fixture")
+        self.assertIsNone(self.set_key("wallpaper_moods", '{"morning": ["a.jpg"]}'))
+        self.assertEqual({"morning": ["a.jpg"]}, self.written()["wallpaper_moods"])
 
     def test_a_string_key_takes_a_number_as_its_text(self):
         # string() takes a String only, so a number here would leave the key at its default.
@@ -220,10 +226,10 @@ class SetThemeFolderTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.theme = Path(self.tmp.name) / "my-theme"
+        self.theme = Path(self.tmp.name).resolve() / "my-theme"
         self.theme.mkdir()
         self.config = self.theme / "config.json"
-        patcher = mock.patch.object(manage, "run")
+        patcher = mock.patch.object(manage, "install_theme")
         self.push = patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -255,8 +261,7 @@ class SetThemeFolderTest(unittest.TestCase):
                     updated = json.loads(written.decode("utf-8"))
                     self.assertIs(updated["dock_band"], True)
                     self.assertEqual(updated, dict(original, dock_band=True))
-                    self.push.assert_called_once_with(
-                        ["bash", str(manage.TOOLS / "theme.sh"), str(self.theme.resolve())], manage.ROOT)
+                    self.push.assert_called_once_with(self.theme.resolve())
 
     def test_a_config_json_that_is_not_json_is_named_and_left_alone(self):
         self.config.write_text('{"greeting_name": "Old",}\n', encoding="utf-8")
@@ -290,7 +295,7 @@ class SetThemeFolderTest(unittest.TestCase):
         self.push.assert_not_called()
 
     def test_a_theme_that_is_a_file_is_named(self):
-        afile = Path(self.tmp.name) / "not-a-theme"
+        afile = Path(self.tmp.name).resolve() / "not-a-theme"
         afile.write_text("", encoding="utf-8")
         refusal = self.set_key(folder=afile)
         self.assertIn(f"{afile} is a file, not a folder", refusal)

@@ -16,7 +16,9 @@ import java.util.List;
  */
 final class CoocaaSources {
 
-    private static final Uri LIST = Uri.parse("content://com.skyworth.tv.provider/system/source_list");
+    private static final String LIST = "content://com.skyworth.tv.provider/system/source_list";
+    private static final String LIST_SDK = "content://com.skyworth.tv.sdk.provider/system/source_list";
+    private static final int MAX_ROWS = 96;
     private static final Uri METHOD = Uri.parse("content://com.skyworth.tv.sdk.provider/method");
     private static final String[] COLUMNS = {"sourceName", "sourceIndex", "displayName"};
 
@@ -38,9 +40,18 @@ final class CoocaaSources {
 
     /** HDMI ports in port order, then AV, then the tuner; empty where the provider is missing. */
     static List<Source> list(Context ctx) {
+        List<Source> out = query(ctx, LIST);
+        if (out.isEmpty()) out = query(ctx, LIST_SDK);
+        Collections.sort(out, (a, b) -> a.name.equals(b.name) ? Integer.compare(a.index, b.index)
+                : Integer.compare(rank(a.name), rank(b.name)));
+        return out;
+    }
+
+    private static List<Source> query(Context ctx, String uri) {
         List<Source> out = new ArrayList<>();
-        try (Cursor c = ctx.getContentResolver().query(LIST, COLUMNS, null, null, null)) {
-            while (c != null && c.moveToNext()) {
+        try (Cursor c = ctx.getContentResolver().query(Uri.parse(uri), COLUMNS, null, null, null)) {
+            int rows = 0;
+            while (c != null && rows++ < MAX_ROWS && c.moveToNext()) {
                 String name = c.getString(0);
                 String label = c.getString(2);
                 if (name == null) continue;
@@ -49,8 +60,6 @@ final class CoocaaSources {
         } catch (RuntimeException e) {
             return Collections.emptyList();
         }
-        Collections.sort(out, (a, b) -> a.name.equals(b.name) ? Integer.compare(a.index, b.index)
-                : Integer.compare(rank(a.name), rank(b.name)));
         return out;
     }
 

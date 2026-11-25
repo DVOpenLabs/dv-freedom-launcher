@@ -95,7 +95,7 @@ final class WallpaperBrowser {
             BitmapFactory.Options options=new BitmapFactory.Options();options.inJustDecodeBounds=true;BitmapFactory.decodeFile(file.getPath(),options);
             if(!WallpaperSize.accepted(options.outWidth,options.outHeight))return null;
             int sample=1;while(options.outWidth/sample>1280||options.outHeight/sample>720)sample*=2;
-            options.inJustDecodeBounds=false;options.inSampleSize=sample;options.inPreferredConfig=Bitmap.Config.RGB_565;
+            options.inJustDecodeBounds=false;options.inSampleSize=sample;options.inPreferredConfig=Bitmap.Config.RGB_565;options.inPreferredColorSpace=android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.SRGB);
             Bitmap source=BitmapFactory.decodeFile(file.getPath(),options);if(source==null)return null;
             float scale=Math.min(1f,Math.min(640f/source.getWidth(),360f/source.getHeight()));
             if(scale>=1)return source;Bitmap result=Bitmap.createScaledBitmap(source,Math.max(1,Math.round(source.getWidth()*scale)),Math.max(1,Math.round(source.getHeight()*scale)),true);if(result!=source)source.recycle();return result;

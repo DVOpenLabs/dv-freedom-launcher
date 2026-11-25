@@ -6,6 +6,10 @@
 # Usage: TV_HOST=192.168.1.50 tools/theme.sh themes/aurora
 #        TV_HOST=192.168.1.50 tools/theme.sh --reset        # remove the overlay, back to config.xml
 set -euo pipefail
+if [ "$#" -ne 1 ] || { [[ "$1" == -* ]] && [ "$1" != --reset ]; }; then
+  echo 'usage: theme.sh <theme folder> | --reset. Choose exactly one; nothing was sent to the TV.' >&2
+  exit 2
+fi
 # Resolve the theme folder against the caller's directory before moving into tools/.
 # Git Bash's pwd says /c/Users/..., which the Windows Python cannot open; pwd -W gives C:/Users/... (as in disable.sh).
 # An absolute argument needs the same: /c/Users/... passed through as typed reached the JSON check below, which
@@ -67,6 +71,11 @@ if [ "${1:-}" = --reset ]; then
 fi
 THEME="${THEME_ARG:?usage: theme.sh <theme folder> | --reset}"
 [ -f "$THEME/config.json" ] || { echo "no config.json in $THEME" >&2; exit 1; }
+CONFIG_BYTES=$(wc -c < "$THEME/config.json" | tr -d '[:space:]')
+if [ "$CONFIG_BYTES" -gt 65536 ]; then
+  echo "config.json is $CONFIG_BYTES bytes; the launcher limit is 65536 bytes. Nothing was sent to the TV." >&2
+  exit 2
+fi
 # What the launcher makes of the file: Config.read() answers "no overlay" for anything that is not a JSON
 # object, so an array, a number or a string is a theme the TV drops - and it replaces the theme the set had,
 # which puts the built-in config.xml back. Reading the shape here, before anything is pushed, keeps a run

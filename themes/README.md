@@ -6,6 +6,14 @@ APK: the launcher reads `config.json` as an overlay over its built-in `config.xm
 Choices made in Launcher settings take priority until you choose Follow theme. Pushing a theme or
 using `tools/theme.sh --reset` also clears those on-TV column and motion choices.
 
+These inherited command-line scripts target the reference package `com.gathin.tvhome`. Use DV Freedom
+Setup or native import/review for the standalone product; do not use a theme push to update a launcher.
+Choose exactly one folder or reset: conflicting/extra arguments are refused. `config.json` must be a
+JSON object no larger than **65,536 UTF-8 bytes**. Oversized files are rejected before any transfer.
+`manage.py set` checks edited keycodes, app bindings, input mappings, dates and wallpaper mood groups,
+then replaces the local configuration only after a complete bounded write. A rejected edit keeps the
+existing file and sends nothing to the TV.
+
 ```bash
 TV_HOST=192.168.1.50 tools/theme.sh themes/aurora          # push a theme and restart Home
 TV_HOST=192.168.1.50 tools/theme.sh --reset                # back to the built-in config.xml

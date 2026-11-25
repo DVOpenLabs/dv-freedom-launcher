@@ -12,6 +12,21 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class RemoteKeysTest {
+    @Test public void actionTargetsOnlyPermitListedSettingsScreens() {
+        for (String action : Arrays.asList("android.settings.SETTINGS", "android.settings.WIFI_SETTINGS",
+                "android.settings.DISPLAY_SETTINGS", "android.settings.MANAGE_APPLICATIONS_SETTINGS")) {
+            String target = "action:" + action;
+            assertEquals(action, RemoteKeys.settingsAction(parse("190:" + target).get(190)));
+            assertEquals(action, RemoteKeys.settingsAction(RemoteKeys.parseAppScancodes(
+                    Arrays.asList("scan:490:" + target)).get(490)));
+        }
+        assertNull(RemoteKeys.settingsAction("action:android.intent.action.VIEW"));
+        assertNull(RemoteKeys.settingsAction("action:android.settings.DISPLAY_SETTINGS?x=1"));
+        assertNull(RemoteKeys.settingsAction("action:android.settings.DISPLAY_SETTINGS/extra"));
+        assertNull(RemoteKeys.settingsAction("action:android.settings.SETTINGS|WIFI_SETTINGS"));
+        assertNull(RemoteKeys.settingsAction("action:"));
+        assertNull(RemoteKeys.settingsAction(null));
+    }
     // Key names resolved by a stand-in: android.view.KeyEvent isn't available in JVM tests.
     private static int keyCode(String name) {
         if (name.equals("KEYCODE_BUTTON_3")) return 190;

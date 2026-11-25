@@ -2,6 +2,10 @@ package com.gathin.tvhome;
 
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
+    static android.view.View captionHolder(android.content.Context context, android.widget.TextView text){return text;}
+    static void captionScrolled(WallpaperPlayer player, androidx.recyclerview.widget.RecyclerView grid, float density){}
+    static boolean remoteSettingsActions(){return false;}
+    static android.view.ViewTreeObserver.OnGlobalLayoutListener captionLayout(android.widget.FrameLayout root, android.view.View holder, android.widget.TextView text, float dp, int pad){return null;}
     static final int MAX_THEME_PACKS=8;
     static void trimArtwork(int level){}
     static void stillMotion(android.widget.ImageView image,boolean active,boolean reduced){}

@@ -12,6 +12,28 @@ import org.json.*;
 
 /** Optional full-product features, compiled into the existing APK and data identity. */
 final class ProductFeatures {
+    static android.view.View captionHolder(android.content.Context context, android.widget.TextView text){android.widget.FrameLayout holder=new android.widget.FrameLayout(context);holder.addView(text);return holder;}
+    static void captionScrolled(WallpaperPlayer player, androidx.recyclerview.widget.RecyclerView grid, float density){
+        if(player!=null)player.scrolledAway(grid.canScrollVertically(-1)&&grid.computeVerticalScrollOffset()>Math.round(12*density));
+    }
+    static boolean remoteSettingsActions(){return true;}
+    static android.view.ViewTreeObserver.OnGlobalLayoutListener captionLayout(android.widget.FrameLayout root, android.view.View holder, android.widget.TextView text, float dp, int pad){
+        View buttons=root.findViewById(R.id.topButtons), grid=root.findViewById(R.id.grid);
+        android.graphics.Rect bounds=new android.graphics.Rect();
+        android.view.ViewTreeObserver.OnGlobalLayoutListener listener=()->{
+            if(buttons==null||grid==null||buttons.getHeight()==0)return;
+            buttons.getDrawingRect(bounds);root.offsetDescendantRectToMyCoords(buttons,bounds);
+            int width=Math.min(Math.round(520*dp),buttons.getWidth())+2*pad;
+            if(text.getMaxWidth()!=width)text.setMaxWidth(width);
+            int top=bounds.bottom;
+            android.widget.FrameLayout.LayoutParams lp=(android.widget.FrameLayout.LayoutParams)holder.getLayoutParams();
+            if(lp.topMargin!=top){lp.topMargin=top;holder.setLayoutParams(lp);}
+            grid.getDrawingRect(bounds);root.offsetDescendantRectToMyCoords(grid,bounds);
+            holder.setVisibility(top+holder.getHeight()>bounds.top+grid.getPaddingTop()?View.INVISIBLE:View.VISIBLE);
+        };
+        root.getViewTreeObserver().addOnGlobalLayoutListener(listener);
+        return listener;
+    }
     static final int MAX_THEME_PACKS=24;
     static void trimArtwork(int level){if(level>=android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW){ArtworkCache.clear();CinemaAssets.trim();}}
     static void stillMotion(android.widget.ImageView image,boolean active,boolean reduced){StillMotion.background(image,active,reduced);}

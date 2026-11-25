@@ -28,11 +28,14 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TOOLS = ROOT / "tools"
 LAUNCHER_PKG = "com.gathin.tvhome"
+sys.path.insert(0, str(TOOLS))  # Also works with python -I tools/manage.py.
+from theme_validation import MAX_CONFIG_BYTES, config_bytes, validate_value
 
 
 # ---------------------------------------------------------------- reading the repo
@@ -272,6 +275,8 @@ def theme_config(folder):
     if not path.is_file():
         return {}, None            # a folder of their own with no config.json yet: set starts the file
     try:
+        if path.stat().st_size > MAX_CONFIG_BYTES:
+            return {}, f"{path} exceeds the 65536-byte launcher limit. Nothing was written or pushed."
         text = path.read_text(encoding="utf-8-sig")
     except (OSError, UnicodeDecodeError) as e:
         return {}, f"cannot read {path}: {reason(e)}. Nothing was written or pushed."
@@ -435,15 +440,34 @@ def cmd_set(key, value, theme_folder):
     if problem:
         sys.exit(problem)
     parsed = value_as(key, item, value)   # before the file is written or anything is pushed
+    if item.get("type", "").strip() == "list of package names" and any(
+            not isinstance(entry, str) or not entry.strip() for entry in parsed):
+        sys.exit(f"{key} needs non-empty package strings. Nothing was written or pushed.")
+    try:
+        validate_value(key, parsed, folder)
+    except ValueError as error:
+        sys.exit(str(error))
     data[key] = parsed
     f = folder / "config.json"
     try:
+        raw = config_bytes(data)
+    except (ValueError, UnicodeError) as error:
+        sys.exit(str(error))
+    temporary = None
+    try:
         folder.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        # Replace only after a complete write; a full disk must not truncate the working config.
+        fd, temporary = tempfile.mkstemp(prefix=".config-", suffix=".tmp", dir=folder)
+        with os.fdopen(fd, "wb") as out:
+            out.write(raw)
+        os.replace(temporary, f)
     except OSError as e:
         # A folder that is read-only, a path with a file in the middle of it, a full disk: the key is not
         # written and the theme on the TV is untouched, so say which file and why rather than a traceback.
         sys.exit(f"cannot write {f}: {reason(e)}. Nothing was pushed.")
+    finally:
+        if temporary and os.path.exists(temporary):
+            os.unlink(temporary)
     print(f"{key} = {json.dumps(parsed)} in {f}")
     return install_theme(folder)
 

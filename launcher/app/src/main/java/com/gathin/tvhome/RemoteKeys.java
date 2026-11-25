@@ -385,11 +385,26 @@ final class RemoteKeys {
         return target != null && inputId(target) == null && target.indexOf('/') > 0;
     }
 
+    /** Only these settings actions are supported; no data, extras or arbitrary intent URI is accepted. */
+    static String settingsAction(String target) {
+        for (String action : new String[]{android.provider.Settings.ACTION_SETTINGS,
+                android.provider.Settings.ACTION_WIFI_SETTINGS, android.provider.Settings.ACTION_DISPLAY_SETTINGS,
+                android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS}) {
+            if (("action:" + action).equals(target)) return action;
+        }
+        return null;
+    }
+
     /** Opens an app from a remote button: its TV entry if it has one, else its phone entry. An "input:<id>" target
      *  switches to that TV input (an HDMI port) instead, an action word runs that action, and a
      *  "package/.Activity" target opens that activity. */
     static void launch(Context ctx, String pkg) {
         if (pkg == null || runAction(ctx, pkg)) return;
+        if (pkg.startsWith("action:")) {
+            String action = ProductFeatures.remoteSettingsActions() ? settingsAction(pkg) : null;
+            if (action != null) start(ctx, new Intent(action));
+            return;
+        }
         if (INPUTS.equals(pkg)) {
             // This launcher's own Inputs menu, as InputsRequestActivity opens it: addressed to Home directly, so a
             // vendor input picker that also answers VIEW_INPUTS never turns it into a chooser.

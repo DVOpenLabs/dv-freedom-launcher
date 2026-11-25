@@ -319,5 +319,21 @@
       "matching weather translation resources"
     ],
     "boundaries": "Reviewed source/vector resources only. No third-party film art, binaries, installer grant scripts or workflows copied. Optional packages are independent of the core APK."
+  },
+  "november2026Hardening": {
+    "repository": "https://github.com/Gathin23/cleanyourtv",
+    "commit": "7b7666ad05a3a62ba25768c51fbf06e9c4e67da5",
+    "license": "MIT",
+    "adapted": [
+      "same-file recovery-record discovery and ambiguity refusal (PRs 4136, 4239)",
+      "theme byte-limit preflight (PR4211); independent bounded field validators",
+      "unauthenticated ADB protocol probe (PRs 4180, 4342), with conservative incomplete-response handling",
+      "combined key filtering/Home redirection (PR3930) and user-input power-on disarm (PR4176)",
+      "sRGB still decoding (PR4317), clock glow fallback (PR4000)",
+      "edit-mode dimming and caption clearance/scroll fade (PRs 3996, 4028, 4112, 4335)",
+      "TCL settings fallback (PR4014), Coocaa SDK input-list fallback (PR4166)",
+      "settings-action mapping concept (PR4419), restricted to four existing Android Settings actions"
+    ],
+    "boundaries": "No new runtime permissions, downloaded media, upstream grant/disable scripts or workflows. Exact merged-manifest permission gate is independent DV implementation."
   }
 }

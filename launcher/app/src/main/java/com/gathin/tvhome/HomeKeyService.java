@@ -227,6 +227,7 @@ public class HomeKeyService extends AccessibilityService {
         AccessibilityServiceInfo info = getServiceInfo();
         if (info != null && (!stockHome.isEmpty() || !powerOnLiveTv.isEmpty() || watchFront)) {
             info.eventTypes |= AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
+            if (config.keyFilter) info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
             setServiceInfo(info);
         }
         if (!stockHome.isEmpty() || !powerOnLiveTv.isEmpty()) probeAtBoot();
@@ -361,6 +362,11 @@ public class HomeKeyService extends AccessibilityService {
 
     static boolean stillArmed(long now, long armedUntil) {
         return now < armedUntil;
+    }
+
+    static void keyOnHome() {
+        HomeKeyService service = running;
+        if (service != null) service.powerOnUntil = 0;
     }
 
     /** The settings menu offers Restart only while this helper is bound: it opens the system power menu. */

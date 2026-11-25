@@ -12,6 +12,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -57,6 +58,8 @@ final class WallpaperPlayer {
     private String displayed = "";
     /** wallpaper_captions: the shown picture's name from wallpapers/captions.txt; null when off or there are none. */
     private final TextView caption;
+    private boolean captionAway;
+    private ViewTreeObserver.OnGlobalLayoutListener captionLayout;
     private final Map<String, String> names;
     /** wallpaper_moods: the collection's groups by time of day; empty rotates through all of it. */
     private final Map<String, Set<String>> moods;
@@ -170,6 +173,13 @@ final class WallpaperPlayer {
     void close() {
         active = false;
         ProductFeatures.stillMotion(image,false,reducedMotion);
+        if (captionLayout != null) {
+            root.getViewTreeObserver().removeOnGlobalLayoutListener(captionLayout);
+            ((View) caption.getParent()).animate().cancel();
+        }
+        if (caption != null) {
+            caption.animate().cancel();
+        }
         closed = true;headerSample=null;
         decoder.shutdownNow();
     }
@@ -216,15 +226,17 @@ final class WallpaperPlayer {
      * Small light text under the top-right buttons, above everything else and never focusable. It sits where the
      * top bar ends in every layout, so it does not cover the clock, the stats line or the tiles.
      */
-    private static TextView makeCaption(Context context, FrameLayout root) {
+    private TextView makeCaption(Context context, FrameLayout root) {
         float dp = context.getResources().getDisplayMetrics().density;
         TextView text = new TextView(context);
         text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         text.setTextColor(0xD9FFFFFF);
         text.setShadowLayer(6 * dp, 0, dp, 0xCC000000);
+        int pad = Math.round(8 * dp);
+        text.setPadding(pad, pad, pad, pad);
         text.setSingleLine(true);
         text.setEllipsize(TextUtils.TruncateAt.END);
-        text.setMaxWidth(Math.round(520 * dp));
+        text.setMaxWidth(Math.round(536 * dp));
         text.setFocusable(false);
         text.setAlpha(0f);
         try {
@@ -234,10 +246,20 @@ final class WallpaperPlayer {
         }
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
-        params.topMargin = Math.round(110 * dp);
-        params.setMarginEnd(Math.round(62 * dp));
-        root.addView(text, params);
+        params.topMargin = Math.round(129 * dp);
+        params.setMarginEnd(Math.round(54 * dp));
+        View holder = ProductFeatures.captionHolder(context, text);
+        root.addView(holder, params);
+        captionLayout = ProductFeatures.captionLayout(root, holder, text, dp, pad);
         return text;
+    }
+
+    void scrolledAway(boolean away) {
+        if (caption == null || away == captionAway) return;
+        captionAway = away;
+        View holder = (View) caption.getParent();
+        holder.animate().cancel();
+        holder.animate().alpha(away ? 0f : 1f).setDuration(away ? 150 : 300).start();
     }
 
     /** The displayed picture's name, faded across a change; a picture without a name hides the caption. */
@@ -298,6 +320,7 @@ final class WallpaperPlayer {
                 options.inTargetDensity = scale[1];
             }
             options.inPreferredConfig = bitmapConfig;
+            options.inPreferredColorSpace = android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.SRGB);
             options.inMutable = dimColor != 0;
             Bitmap decoded = BitmapFactory.decodeFile(file.getPath(), options);
             if (decoded == null) return null;
