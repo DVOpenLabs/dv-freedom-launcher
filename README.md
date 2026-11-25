@@ -6,10 +6,12 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Download DV Freedom for Android TV and Google TV.** The public 1.0.0 test release includes the
-signed TV launcher and a desktop Setup bundle. Choose **Setup** for a guided installation with a
-recovery point. Choose **Android TV** if you already sideload apps. The release page lists checksums
-and the hardware tested. [Download version 1.0.0](https://github.com/DVOpenLabs/dv-freedom-launcher/releases/tag/v1.0.0)
+**[Download Windows Setup for x64 PCs (.exe, unsigned preview)](https://github.com/DVOpenLabs/dv-freedom-launcher/releases/download/v1.0.0/DV-Freedom-Setup-Windows-x64-1.0.0.exe)**
+
+Double-click the EXE to open the guided setup. Python is included. Choose **Try a preview** to explore
+before connecting a TV. Windows may show an unknown-publisher warning because this preview is unsigned.
+The signed Android TV APK, source-based Setup ZIP, platform builds and checksums are also available.
+[All 1.0.0 downloads](https://github.com/DVOpenLabs/dv-freedom-launcher/releases/tag/v1.0.0)
 
 The Android launcher uses version code 33. LG webOS, Samsung Tizen, hosted VIDAA/Vizio and Roku
 Ambient have separate RC1 packages and hardware requirements. Samsung requires a signing profile.
@@ -245,11 +247,9 @@ additional features; the platform editions do not have identical menus.*
 
 ## Try the Setup GUI
 
-**Windows users testing the release:** install Python 3.12 with the Windows Python launcher,
-download the **Setup** ZIP from Releases, extract it, and double-click **Start Setup.cmd**.
-On first use it prepares a local Python environment and downloads dependencies. Choose
-**Try a preview** to explore the interface, or **Connect my TV** to review an installation.
-The ZIP includes the signed TV package and the optional add-on catalogue.
+Open the Windows x64 EXE above and choose **Connect my TV** when you're ready to review an installation.
+Setup includes the signed TV launcher and 24 optional add-ons. To verify the EXE, compare its SHA-256
+with **Windows-x64-SHA256.txt** on the release page.
 
 For source testing, use **Python 3.12** and Git. No TV is needed to explore the example journey.
 
@@ -284,7 +284,8 @@ platform. The primary packaged target is Windows; other desktop environments nee
 **A source checkout does not include the verified Android release bundle.** The example journey and
 read-only checks work without it; Android installation remains unavailable until a valid signed
 bundle is supplied. Developers can follow the [build/signing instructions](setup_app/README.md).
-The public Setup ZIP runs from Python source. The standalone Windows EXE is awaiting distribution signing.
+The public Setup ZIP runs from Python source. With Python 3.12 and the Windows Python launcher
+installed, extract the ZIP and open **Start Setup.cmd**.
 
 Local records, keys and recovery folders stay private. See [Setup behavior and recovery](setup_app/README.md)
 and [installer prerequisites](setup_app/README.md). Closing only the browser tab leaves the

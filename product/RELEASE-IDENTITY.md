@@ -19,7 +19,8 @@ and authenticated release channel. Historical `private-alpha` bundles remain rea
 `release-candidate` requires an `X.Y.Z-rcN` version and `stable` requires `X.Y.Z`. Unknown or mismatched
 channels fail verification. A candidate is not promoted merely by changing a visible label. `setup_app/trust.json` pins the public verification key. Private keys,
 passwords, binaries and recovery files remain outside Git; losing signing keys breaks normal updates.
-The Windows executable has no Authenticode signature yet. This is not a signed public distribution.
+The public Windows x64 executable is an unsigned preview. Its separate checksum is published
+as `Windows-x64-SHA256.txt` alongside the EXE.
 
 ## Installation and recovery policy
 
@@ -45,7 +46,7 @@ Test preference changes in a separate local profile and retain a private recover
 
 The standalone Android installer was exercised on Sony hardware with a fresh install, an RC1-to-1.0.0
 upgrade, timed reversion and recovery to the original Home. First-time Setup feedback remains open.
-The Windows executable still requires distribution signing. Native LG and other TV platforms have
+Authenticode signing for a future Windows release remains pending. Native LG and other TV platforms have
 their own hardware acceptance paths.
 
 

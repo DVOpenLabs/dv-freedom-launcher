@@ -3,9 +3,10 @@
 One local Windows GUI for Android TV/Google TV, native LG/Samsung pilots, experimental hosted
 VIDAA/Vizio editions and a Roku ambient-app builder. Each path explains its own requirements and
 limits before proceeding; these are not equivalent full-Home replacements. See
-[all-platform setup](ALL-PLATFORMS.md). The public Setup ZIP includes the GUI, a signed Android TV
-launcher and 24 optional add-ons. On Windows, install Python 3.12 with the Windows Python launcher,
-extract the ZIP and open **Start Setup.cmd**. No AI account is required. The setup browser connects to loopback; an optional, separately
+[all-platform setup](ALL-PLATFORMS.md). On a Windows x64 PC, download and double-click the
+[unsigned Setup preview](https://github.com/DVOpenLabs/dv-freedom-launcher/releases/download/v1.0.0/DV-Freedom-Setup-Windows-x64-1.0.0.exe).
+It includes Python, the GUI, the signed Android TV launcher and 24 optional add-ons.
+Windows may show an unknown-publisher warning. No AI account is required. The setup browser connects to loopback; an optional, separately
 reviewed hosted Home listener binds one selected LAN address for its paired TV. Records stay local.
 
 ## What it does
@@ -57,7 +58,7 @@ personal media import and AI-provider calls are not part of this installer.
 
 ## Run from source
 
-For the public Windows test, extract the Setup ZIP and open **Start Setup.cmd** with Python
+To use the source-based Windows download, extract the Setup ZIP and open **Start Setup.cmd** with Python
 3.12 installed. It starts the local GUI and uses the bundled signed TV release and add-on
 catalogue. The separate phone application has its own distribution requirements.
 
@@ -99,8 +100,8 @@ and signs the bounded offline catalog. Keys and binaries must stay out of source
 Put the environment's Python on PATH, then run `setup_app/build-windows.ps1`. PyInstaller's
 [one-file/windowed build](https://pyinstaller.org/en/stable/usage.html) bundles the verified APK/catalog,
 UI/font/runtime and distribution licences. Only explicit verified release artifacts are bundled, never keys. Optional native phone APK/catalogue and companion packages are built separately.
-Build on Windows. The Android APK is release-signed; the **Windows EXE is unsigned** and is a private
-release candidate, not a public binary release. Do not advise bypassing OS security warnings.
+Build on Windows. The Android APK is release-signed. The public **Windows x64 EXE is an unsigned
+preview**. Its release checksum is in **Windows-x64-SHA256.txt**.
 
 ## Validation
 
@@ -197,8 +198,8 @@ feed selected. Bluetooth connects/disconnects only after an explicit action and 
 by firmware. Ambient installation does not select a system screensaver or replace your wallpaper.
 The launcher can open installed tools from **System → Optional TV tools**.
 
-Source publication is separate from public binary distribution. The Windows release candidate is
-unsigned; no new binary release is published automatically. See the [candidate limitations](../README.md#alpha-limitations).
+The public Windows preview was tested with Python absent from the system path. See the
+[release and hardware limits](../README.md#alpha-limitations).
 
 ## Native Android phone alternative
 
