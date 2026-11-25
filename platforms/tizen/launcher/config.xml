@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="https://dvopenlabs.github.io/freedom/tizen" version="0.1.0" viewmodes="maximized">
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="https://dvopenlabs.github.io/freedom/tizen" version="1.0.0" viewmodes="maximized">
  <tizen:application id="DVFreedom1.Launcher" package="DVFreedom1" required_version="6.0"/>
  <name>DV Freedom Launcher</name><description>Manual-launch Samsung pilot. Samsung Home remains available.</description>
  <author>DVOpenLabs</author><content src="index.html"/><icon src="icon.png"/>

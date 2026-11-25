@@ -5,6 +5,10 @@ for(const options of [{appearance:true,label:'LG'},{extended:true,label:'Samsung
  const before=JSON.stringify(state);assert.equal(C.visibleApps(state,state.profiles[0]).length,2);assert.equal(JSON.stringify(state),before);
  state.profiles[0].settings.familyHome=true;assert.deepEqual(C.visibleApps(state,state.profiles[0]).map(a=>a.id),['one.app']);assert.equal(state.apps.length,2);
  for(const mediaFit of ['fill','fit','matte'])assert.equal(C.settings({mediaFit}).mediaFit,mediaFit);
+ for(const calmStyle of ['current','onyx','orba','midnight']) assert.equal(C.settings({calmStyle}).calmStyle,calmStyle);
+ for(const clockStyle of ['current','flowing']) assert.equal(C.settings({clockStyle}).clockStyle,clockStyle);
+ for(const accent of ['current','silver','teal','amber']) assert.equal(C.settings({accent}).accent,accent);
+ assert.throws(()=>C.settings({calmStyle:'unknown'}));assert.throws(()=>C.settings({accent:'unknown'}));
  assert.throws(()=>C.settings({familyHome:'true'}));assert.throws(()=>C.settings({mediaFit:'remote-url'}));assert.equal(C.validate(state),state);
  const memory={getItem(){return null;},setItem(){throw new Error('Unexpected write');}};assert.equal(new C.Store(memory).read().profiles[0].settings.familyHome,undefined);
 }

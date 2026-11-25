@@ -36,7 +36,7 @@ final class ProductFeatures {
     }
     static final int MAX_THEME_PACKS=24;
     static void trimArtwork(int level){if(level>=android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW){ArtworkCache.clear();CinemaAssets.trim();}}
-    static void stillMotion(android.widget.ImageView image,boolean active,boolean reduced){StillMotion.background(image,active,reduced);}
+    static void stillMotion(android.widget.ImageView image,boolean active,boolean reduced){StillMotion.background(image,active&&!HomeSurfaceStyle.coversWallpaper(image.getContext()),reduced);}
     static boolean tileLift(boolean effects,boolean animations){return effects&&animations;}
     static boolean redirectConnected(StockHomeRedirectService s){HomeRedirect.connect(s);return true;}
     static boolean redirectWindow(StockHomeRedirectService s,android.view.accessibility.AccessibilityEvent e){HomeRedirect.window(s,e);return true;}
@@ -60,7 +60,8 @@ final class ProductFeatures {
     static boolean upstreamExtras(){return true;}
     static boolean gridRepeat(MainActivity a,KeyEvent e){return GridRepeat.key(a,e);}
     static void gridRepeatStop(Activity a){GridRepeat.stop(a);}
-    static void paused(Activity a){CinemaHome.close(a);GridRepeat.stop(a);OverlayRecovery.pause(a);StartupLaunch.stop(a);WakeRules.paused(a);}
+    private static final Map<Activity,HomeSurfaceStyle> surfaces=new WeakHashMap<>();
+    static void paused(Activity a){HomeSurfaceStyle surface=surfaces.remove(a);if(surface!=null)surface.close();CinemaHome.close(a);GridRepeat.stop(a);OverlayRecovery.pause(a);StartupLaunch.stop(a);WakeRules.paused(a);}
     static void interaction(Activity a){WakeRules.interaction();}
     static boolean homeAuto(String pkg,Set<String> added,List<String> favorites,Map<String,Integer> ranks,Map<String,Cards.Card> cards,android.content.pm.ResolveInfo info){if(!OptionalToolPolicy.PACKAGES.contains(pkg))return true;return added.contains(pkg)||favorites.contains(pkg)||ranks.containsKey(pkg)||ranks.containsKey(new ComponentName(pkg,info.activityInfo.name).flattenToShortString())||cards.containsKey(pkg);}
     static Intent libraryIntent(Context c,String pkg,Intent fallback){return AppShortcuts.intent(c,pkg,Config.load(c).launchActions.get(pkg),fallback);}
@@ -89,13 +90,16 @@ final class ProductFeatures {
     }
     static void wallpaperSample(Activity a,android.graphics.Bitmap bitmap){if(a instanceof ExperienceHomeActivity)((ExperienceHomeActivity)a).sample(bitmap);}
     static void resumed(Activity a){OverlayRecovery.resume(a);
+        HomeSurfaceStyle oldSurface=surfaces.remove(a);if(oldSurface!=null)oldSurface.close();
+        if(a instanceof MainActivity&&!HomeCategories.enabled(a)&&!ExperienceChoice.enabled(a)){HomeSurfaceStyle surface=HomeSurfaceStyle.attach(a);if(surface!=null)surfaces.put(a,surface);}
+
         HomeControlCenter.attach(a);
         WakeRules.attach(a);
         WeatherClient.attach(a);
         CinemaHome.attach(a);
         OptionalPanels.attach(a);
         NowPlaying.attach(a);
-        if(a instanceof ExperienceHomeActivity||(a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&(HomeCategories.enabled(a)||ExperienceChoice.enabled(a))))WallpaperPlaylist.attach(a);
+        if(!HomeSurfaceStyle.coversWallpaper(a)&&(a instanceof ExperienceHomeActivity||(a instanceof MainActivity||a instanceof CategoryHomeActivity)&&!(a instanceof MainActivity&&(HomeCategories.enabled(a)||ExperienceChoice.enabled(a)))))WallpaperPlaylist.attach(a);
         a.getWindow().getDecorView().postDelayed(()->{
             if(a.isDestroyed()||a.isFinishing()||!a.hasWindowFocus())return;
             if(!WakeRules.start(a))StartupLaunch.start(a);
@@ -104,12 +108,18 @@ final class ProductFeatures {
             if(a instanceof MainActivity&&!ExperienceChoice.enabled(a)&&PlacementSession.preview()==null&&StyleSession.preview()==null&&HomeCategories.enabled(a)){CategoryHomeActivity.openIfEnabled((MainActivity)a,Config.load(a));return;}
         },240);
     }
-    static boolean playlistEnabled(Context c){return c instanceof Activity&&CinemaHome.ownBackground((Activity)c)||WallpaperPlaylistChoice.enabled(c);}
+    static boolean calmWallpaper(Context c){return HomeSurfaceStyle.coversWallpaper(c);}
+    static boolean playlistEnabled(Context c){return HomeSurfaceStyle.coversWallpaper(c)||c instanceof Activity&&CinemaHome.ownBackground((Activity)c)||WallpaperPlaylistChoice.enabled(c);}
     static void profileKeys(Set<String> keys){setupKeys(keys);keys.add(PhoneSetupProvider.ENABLED);keys.add(LauncherLock.KEY);keys.add(ContentShelves.KEY);keys.add(ShelfOptions.KEY);keys.add(ShelfBackdrop.KEY);keys.add(OptionalPanels.CALENDAR);keys.add(WeatherClient.HOME);keys.add(WeatherClient.DREAM);keys.add(NowPlaying.KEY);}
-    static AutoCloseable dreamWeather(Context c,View root){View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return null;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return weather;}
+    static AutoCloseable dreamWeather(Context c,View root){AutoCloseable flow=FlowingClock.attach(c,root);View host=root.findViewById(R.id.dreamContent);if(!(host instanceof LinearLayout))return flow;WeatherClient.Attachment weather=new WeatherClient.Attachment(c,(LinearLayout)host,WeatherClient.DREAM,true);weather.start();return ()->{weather.close();if(flow!=null)flow.close();};}
     static boolean inputs(MainActivity a,boolean all){Config cfg=Config.load(a);if(cfg.coocaaSources||!cfg.sourcePanelService.isEmpty()||!cfg.inputSources.isEmpty()||!cfg.inputAction.isEmpty()||!cfg.inputUriScheme.isEmpty())return false;InputPicker.show(a,all);return true;}
-    static void setupKeys(Set<String> keys){keys.add(CinemaSpec.KEY);keys.add(PanZoomPolicy.KEY);keys.add(GridRepeatPolicy.KEY);keys.add(FamilyPolicy.KEY);keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(ShelfBackdrop.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
+    static void setupKeys(Set<String> keys){keys.addAll(Arrays.asList("freedom_calm_look","freedom_glass_dock","freedom_palette","freedom_weather_scene","freedom_clock_style"));keys.add(CinemaSpec.KEY);keys.add(PanZoomPolicy.KEY);keys.add(GridRepeatPolicy.KEY);keys.add(FamilyPolicy.KEY);keys.add(LibraryVisibility.KEY);keys.add(ShortcutPolicy.KEY);keys.add(FolderPolicy.KEY);keys.add(FreedomControls.KEY);keys.add(ShelfOptions.KEY);keys.add(ShelfBackdrop.KEY);keys.add(IconSizePolicy.KEY);keys.add(HomeCategories.KEY);keys.add(NativeTileEditor.KEY);keys.add(HomeAppearance.KEY);keys.add(WallpaperPlaylistChoice.KEY);keys.add(ExperiencePolicy.KEY);keys.add(ProfileAvatars.KEY);keys.add(SceneSchedules.KEY);}
     static boolean validateValue(String key,Object value){
+        if(key.equals("freedom_calm_look")){if(!(value instanceof String)||!Arrays.asList("current","onyx","orba","midnight").contains(value))throw new IllegalArgumentException("Invalid calm look");return true;}
+        if(key.equals("freedom_palette")){if(!(value instanceof String)||!Arrays.asList("theme","wallpaper").contains(value))throw new IllegalArgumentException("Invalid colour palette");return true;}
+        if(key.equals("freedom_clock_style")){if(!(value instanceof String)||!Arrays.asList("current","flow").contains(value))throw new IllegalArgumentException("Invalid clock style");return true;}
+        if(key.equals("freedom_glass_dock")||key.equals("freedom_weather_scene")){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid atmosphere switch");return true;}
+
         if(key.equals(ShelfBackdrop.KEY)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid shelf backdrop");return true;}
         if(key.equals(CinemaSpec.KEY)){if(!(value instanceof String))throw new IllegalArgumentException("Invalid cinema setup");new CinemaSpec((String)value);return true;}
         if(key.equals(PanZoomPolicy.KEY)){if(!(value instanceof Boolean))throw new IllegalArgumentException("Invalid still motion");return true;}

@@ -131,3 +131,7 @@ eligibility off. Developer-session expiry is never fixed by toggling Developer M
 does not install a helper, intercept Home or change standby/input settings. The pinned LG recovery
 source slice remains separate from a deployable helper; Samsung Home interception remains unsupported.
 Native manual tests and version-specific recovery review are still required before any helper work.
+
+## 1.0.0-rc1 candidate appearance
+
+Optional Onyx, Orba and Midnight overlays, a flowing clock type style, and silver, teal or amber dock accents are available in Appearance. They retain the selected wallpaper; the existing appearance remains the default for upgrades. LG uses its timed Keep/Revert preview; Samsung and hosted editions use the existing Apply/Cancel draft. These original CSS treatments do not add media, network access, weather or Android companion features. This is a source candidate, not hardware acceptance.

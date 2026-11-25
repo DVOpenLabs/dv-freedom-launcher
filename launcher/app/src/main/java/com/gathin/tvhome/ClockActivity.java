@@ -19,6 +19,7 @@ public class ClockActivity extends Activity {
 
 
     private ClockScene scene;
+    private AutoCloseable weather;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +35,21 @@ public class ClockActivity extends Activity {
     protected void onResume() {
         super.onResume();
         scene.start();
+        closeWeather();
+        weather = ProductFeatures.dreamWeather(this, getWindow().getDecorView());
     }
 
     @Override
     protected void onPause() {
         scene.stop();
+        closeWeather();
         super.onPause();
         finish();   // never left behind in the back stack
+    }
+
+    private void closeWeather() {
+        if (weather != null) try { weather.close(); } catch (Exception ignored) { }
+        weather = null;
     }
 
     @Override

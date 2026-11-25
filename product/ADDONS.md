@@ -90,7 +90,7 @@ Existing Chromecast and HDMI routes remain available; no casting fix or OEM shim
 
 ## Additional offline options
 
-The directory has 52 entries and 23 signed package definitions. Availability still requires a verified
+The directory has 53 entries and 24 signed package definitions. Availability still requires a verified
 artifact in the local bundle; a directory listing does not download or install a package.
 
 | Optional app | What it does | Access and limits |
@@ -114,3 +114,11 @@ matching signed launcher’s **Watch tonight** screen. Discover → Your watchli
 shows the disclosure before saving. It defaults off, needs no new Android permission, exports no
 credentials or viewing history, and makes no network call to serve this snapshot. Turning it off
 removes access on the next foreground read. Child-friendly Homes do not display the household list.
+
+### Panchang
+
+The optional **DV Freedom Panchang** companion requests no Android permissions. Choose English or Hindi,
+a regional calendar, and a listed or manually entered city/time zone. Day/month views share that location.
+Computed sunrise-tithi observances are separate from user-entered festival/occasion dates; major-festival
+dates are not automatically predicted. The devotional view runs in the foreground and closes with Back.
+It does not select a screensaver, set alarms or change Home. See [the companion guide](../launcher/panchang/README.md).

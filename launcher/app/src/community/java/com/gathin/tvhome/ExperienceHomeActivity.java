@@ -25,6 +25,7 @@ public final class ExperienceHomeActivity extends Activity {
     private FrameLayout root,chrome;private LinearLayout info,controls;private RecyclerView list;private LinearLayoutManager listLayout;
     private TextView clock,date,hero,settings,trialRevert;private View topShade,bottomShade,dock,labelShade;private LinearLayout trialBar;
     private CinemaWorld world;private CinemaWorldMotion worldMotion;private TextView worldLink;private String worldToken="";
+    private HomeSurfaceStyle surface; private int surfaceIndex;
     private ContentShelves.Row shelf;private WallpaperPlayer wallpaper;private LiveVideo video;private Config config;private Typeface font;
     private List<HomeCategories.App> catalog=Collections.emptyList(),favorites=Collections.emptyList();
     private String focusProfile;private String look,signature,preview,selectedPackage="";private float unit=1;private int selected,ink=0xfff5f7fa,labelInk=0xfff5f7fa;private boolean resumed,quiet;
@@ -43,17 +44,18 @@ public final class ExperienceHomeActivity extends Activity {
     private TextView button(String label,int id,Runnable action){TextView v=text(label,14);if(id!=0)v.setId(id);v.setGravity(Gravity.CENTER);v.setPadding(px(13),0,px(13),0);v.setFocusable(true);v.setClickable(true);focus(v,false);v.setOnFocusChangeListener((x,on)->focus(x,on));v.setOnClickListener(x->action.run());v.setOnKeyListener((x,key,event)->{if(event.getAction()==KeyEvent.ACTION_DOWN&&key==KeyEvent.KEYCODE_DPAD_DOWN){focusApp(selected);return true;}return false;});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,px(38));p.setMarginStart(px(8));controls.addView(v,p);return v;}
     private int catalogSignature(){int result=1;for(HomeCategories.App app:HomeCategories.catalog(this,Config.load(this)))result=31*result+Objects.hash(app.pkg,app.label);return result;}
     private String currentSignature(){return ProfileStore.id()+"|"+ProfileStore.preferences(this).getAll().hashCode()+"|"+getResources().getDisplayMetrics().widthPixels+"|"+catalogSignature();}
-    private void release(){if(worldMotion!=null){worldMotion.stop();worldMotion=null;}if(wallpaper!=null){wallpaper.close();wallpaper=null;}if(video!=null){video.close();video=null;}}
+    private void release(){if(surface!=null){surface.close();surface=null;}if(worldMotion!=null){worldMotion.stop();worldMotion=null;}if(wallpaper!=null){wallpaper.close();wallpaper=null;}if(video!=null){video.close();video=null;}}
     private void render(){
         config=Config.load(this);String active=ProfileStore.id();if(focusProfile!=null&&!focusProfile.equals(active))selectedPackage="";focusProfile=active;look=preview==null?ExperienceChoice.saved(this):preview;
         if(ExperiencePolicy.SHOWCASE.equals(look))look=ExperiencePolicy.CINEMA;
         if(ExperiencePolicy.LEGACY.equals(look)||preview!=null&&!ExperienceChoice.trialValid(preview)){finish();return;}
         if(shelf!=null){shelf.close();shelf=null;}unit=getResources().getDisplayMetrics().widthPixels/960f;release();handler.removeCallbacks(idleTimeout);idle.stop();quiet=false;quietViews.clear();root.removeAllViews();root.setBackgroundColor(config.backgroundColor);
         View template=getLayoutInflater().inflate(R.layout.item_app,root,false);font=((TextView)template.findViewById(R.id.name)).getTypeface();
-        wallpaper=new WallpaperPlayer(this,root,config);
-        ThemeLibrary.Entry theme=ThemeLibrary.active();if(!ProductFeatures.playlistEnabled(this)&&config.wallpaperEnabled&&theme!=null&&ThemeLibrary.liveAllowed()&&ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE,false)&&LiveVideo.supported(this,config.reducedMotion)){
+        wallpaper=HomeSurfaceStyle.coversWallpaper(this)?null:new WallpaperPlayer(this,root,config);
+        ThemeLibrary.Entry theme=ThemeLibrary.active();if(!HomeSurfaceStyle.coversWallpaper(this)&&!ProductFeatures.playlistEnabled(this)&&config.wallpaperEnabled&&theme!=null&&ThemeLibrary.liveAllowed()&&ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE,false)&&LiveVideo.supported(this,config.reducedMotion)){
             File file=new File(theme.directory,"video.mp4");if(file.isFile()){video=new LiveVideo(this,file,config.wallpaperDim);root.addView(video.view(),Math.min(1,root.getChildCount()),new FrameLayout.LayoutParams(-1,-1));}
         }
+        surfaceIndex=root.getChildCount();
         world=null;worldToken="";worldLink=null;chrome=new FrameLayout(this);chrome.setClipChildren(false);root.addView(chrome,new FrameLayout.LayoutParams(-1,-1));
         topShade=new View(this);topShade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);topShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xb3081020,0x00081020}));put(topShade,0,0,960,175);
         bottomShade=new View(this);bottomShade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);bottomShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00081020,0xb3081020}));put(bottomShade,0,350,960,190);
@@ -67,7 +69,7 @@ public final class ExperienceHomeActivity extends Activity {
         String position=PlacementSession.selected(this);if(!AppPlacement.valid(position))position=ExperiencePolicy.defaultPosition(look);
         geometry=new ExperiencePolicy.Geometry(look,position,Math.max(1,Math.min(Math.min(8,config.columns),favorites.size())),config.tileGap,IconSizes.current(this));
         labelShade=new View(this);labelShade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);put(labelShade,0,geometry.labelTop-28,960,80);quietViews.add(labelShade);
-        if(!ExperiencePolicy.CLEAN.equals(look)){dock=new View(this);dock.setBackground(round(ExperiencePolicy.CINEMA.equals(look)?0xa61b2a3c:0xb34a6078,ExperiencePolicy.CINEMA.equals(look)?16:20));put(dock,geometry.left-14,geometry.top-16,960-2*geometry.left+28,geometry.cardHeight+(ExperiencePolicy.CINEMA.equals(look)?34:55));quietViews.add(dock);}
+        if(!ExperiencePolicy.CLEAN.equals(look)||ProfileStore.preferences(this).getBoolean(HomeSurfacePolicy.GLASS,false)){dock=new View(this);dock.setBackground(round(ExperiencePolicy.CINEMA.equals(look)?0xa61b2a3c:0xb34a6078,ExperiencePolicy.CINEMA.equals(look)?16:20));put(dock,geometry.left-14,geometry.top-16,960-2*geometry.left+28,geometry.cardHeight+(ExperiencePolicy.CINEMA.equals(look)?34:55));quietViews.add(dock);}
         list=new RecyclerView(this);list.setId(R.id.grid);list.setClipChildren(false);list.setClipToPadding(false);list.setItemAnimator(null);list.setOverScrollMode(View.OVER_SCROLL_NEVER);list.setItemViewCacheSize(2);list.setPadding(px(7),px(7),px(7),0);
         list.setLayoutDirection(getResources().getBoolean(R.bool.rtl_app_grid)?View.LAYOUT_DIRECTION_RTL:View.LAYOUT_DIRECTION_LTR);listLayout=new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false);list.setLayoutManager(listLayout);list.setAdapter(new Tiles());
         put(list,geometry.left-7,geometry.top-7,960-2*geometry.left+14,geometry.cardHeight+44);quietViews.add(list);quietViews.add(controls);
@@ -75,7 +77,17 @@ public final class ExperienceHomeActivity extends Activity {
         if(preview==null&&ContentShelves.enabled(this)){LinearLayout shelfHost=new LinearLayout(this);shelfHost.setOrientation(LinearLayout.VERTICAL);shelfHost.setPadding(px(12),px(8),px(12),px(6));shelfHost.setBackground(round(0xde111b2a,14));put(shelfHost,46,geometry.top<260?geometry.top+geometry.cardHeight+60:142,868,154);quietViews.add(shelfHost);shelf=new ContentShelves.Row(this,shelfHost,list,false);}
         selected=FocusMemory.index(ProfileStore.id(),"home",favorites.stream().map(app->app.pkg).collect(java.util.stream.Collectors.toList()),0);for(int i=0;i<favorites.size();i++)if(favorites.get(i).pkg.equals(selectedPackage))selected=i;updateSelection();
         idleSeconds=ProfileStore.preferences(this).getInt(HomePolish.IDLE,0);tvButton=config.tvButtonPicker?new TvButtonController(this,config):null;appKeys=RemoteKeys.parseAppKeys(config.appKeys);signature=currentSignature();
-        applyInk(new int[]{config.backgroundColor},new int[]{config.backgroundColor});if(wallpaper!=null){wallpaper.headerSample(this::sample);wallpaper.start();}if(video!=null)video.start();ProductFeatures.resumed(this);handler.removeCallbacks(tick);handler.post(tick);list.post(()->focusApp(selected));if(!WallpaperPlaylistChoice.enabled(this)&&theme!=null)world(theme.token);armIdle();
+        applyInk(new int[]{config.backgroundColor},new int[]{config.backgroundColor});attachSurface();if(wallpaper!=null){wallpaper.headerSample(this::sample);wallpaper.start();}if(video!=null)video.start();ProductFeatures.resumed(this);handler.removeCallbacks(tick);handler.post(tick);list.post(()->focusApp(selected));if(!WallpaperPlaylistChoice.enabled(this)&&theme!=null)world(theme.token);armIdle();
+    }
+    private void attachSurface(){
+        surface=HomeSurfaceStyle.attach(this,root,surfaceIndex,dock);
+        if(surface!=null)surface.onPaletteChanged(()->{
+            if(list==null)return;
+            for(int i=0;i<list.getChildCount();i++){
+                RecyclerView.ViewHolder holder=list.getChildViewHolder(list.getChildAt(i));
+                if(holder instanceof Tile&&holder.itemView.isFocused())((Tile)holder).paint(true);
+            }
+        });
     }
     void world(String token){
         if(token.equals(worldToken))return;worldToken=token;CinemaWorld next=CinemaWorld.find(CinemaStore.read(this),token);boolean had=world!=null;world=next;
@@ -91,7 +103,7 @@ public final class ExperienceHomeActivity extends Activity {
     private void worldHeaderInk(View view,int color){if(view instanceof TextView)((TextView)view).setTextColor(color);else if(view instanceof ViewGroup)for(int i=0;i<((ViewGroup)view).getChildCount();i++)worldHeaderInk(((ViewGroup)view).getChildAt(i),color);}
     private void worldChrome(){
         if(world==null)return;ink=0xfff6ecda;labelInk=world.accent();worldHeaderInk(info,ink);clock.setTextColor(world.accent());clock.setTypeface(Typeface.create(world.serif()?"serif":"sans-serif-light",Typeface.NORMAL));date.setTypeface(Typeface.create(world.serif()?"serif":"sans-serif",Typeface.NORMAL));
-        if(dock!=null)dock.setVisibility(View.INVISIBLE);if(labelShade!=null)labelShade.setBackground(null);hero.setVisibility(View.GONE);
+        if(dock!=null&&!ProfileStore.preferences(this).getBoolean(HomeSurfacePolicy.GLASS,false))dock.setVisibility(View.INVISIBLE);if(labelShade!=null)labelShade.setBackground(null);hero.setVisibility(View.GONE);
         topShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xe0081019,0x60081019,0x00081019}));bottomShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00081019,0xc0081019,0xf0081019}));
         for(int i=0;i<controls.getChildCount();i++){View v=controls.getChildAt(i);v.setBackground(CinemaWorldArt.focus(world.accent()));if(v instanceof TextView){((TextView)v).setTypeface(Typeface.create(world.serif()?"serif":"sans-serif",Typeface.NORMAL));((TextView)v).setTextColor(world.accent());}v.setOnFocusChangeListener((view,on)->{view.setBackground(CinemaWorldArt.focus(on?0xfff5f7fa:world==null?0xff99c9ff:world.accent()));view.setScaleX(on?1.03f:1);view.setScaleY(on?1.03f:1);});}
     }
@@ -127,7 +139,15 @@ public final class ExperienceHomeActivity extends Activity {
         }
         void paint(boolean on){
             art.animate().cancel();float scale=on?1.07f:1;art.animate().scaleX(scale).scaleY(scale).setDuration(config.animations&&!config.reducedMotion?150:0).start();
-            ring.setBackground(world!=null?CinemaWorldArt.focus(world.accent()):(Drawable)ring.getTag());ring.setVisibility(on?View.VISIBLE:View.INVISIBLE);
+            int fallback=world!=null?world.accent():0xfff5f7fa;
+            int focusAccent=surface==null?fallback:surface.accent(fallback);
+            if(world!=null)ring.setBackground(CinemaWorldArt.focus(focusAccent));
+            else if(focusAccent!=fallback){
+                GradientDrawable dark=round(Color.TRANSPARENT,16);dark.setStroke(px(5),0xff101820);
+                GradientDrawable light=round(Color.TRANSPARENT,14);light.setStroke(px(2),focusAccent);
+                LayerDrawable outline=new LayerDrawable(new Drawable[]{dark,light});outline.setLayerInset(1,px(2),px(2),px(2),px(2));ring.setBackground(outline);
+            } else ring.setBackground((Drawable)ring.getTag());
+            ring.setVisibility(on?View.VISIBLE:View.INVISIBLE);
             if(world!=null){name.setTypeface(Typeface.create(world.serif()?"serif":"sans-serif",Typeface.NORMAL));name.setTextColor(world.accent());name.setVisibility(on?View.VISIBLE:View.INVISIBLE);name.setAlpha(1);worldName(on);return;}
             FrameLayout.LayoutParams title=(FrameLayout.LayoutParams)name.getLayoutParams();if(title.width!=px(geometry.cardWidth)||title.leftMargin!=0){title.width=px(geometry.cardWidth);title.leftMargin=0;name.setLayoutParams(title);}
             name.setTypeface(font);name.setTextColor(labelInk);int mode=ProfileStore.preferences(ExperienceHomeActivity.this).getInt(HomePolish.NAMES,0);name.setVisibility(ExperiencePolicy.CINEMA.equals(look)||mode==3?View.INVISIBLE:View.VISIBLE);name.setAlpha(on?1:PolishPolicy.nameAlpha(mode,config.alwaysShowNames?1:0));
@@ -152,7 +172,7 @@ public final class ExperienceHomeActivity extends Activity {
     private void applyInk(int[] head,int[] labels){
         if(world!=null){worldChrome();return;}
         android.content.SharedPreferences p=ProfileStore.preferences(this);int choice=p.getBoolean(HomePolish.HEADER,false)?p.getInt(HomePolish.INK,0):0;
-        ink=ExperiencePolicy.ink(choice,head);labelInk=ExperiencePolicy.ink(choice,labels);if(!ExperiencePolicy.CLEAN.equals(look)){labelInk=choice==2?0xff182334:0xfff5f7fa;if(dock!=null){GradientDrawable material=round(choice==2?0xe6eef3fa:ExperiencePolicy.CINEMA.equals(look)?0xf0101822:0xde243b50,ExperiencePolicy.CINEMA.equals(look)?12:20);if(ExperiencePolicy.GLASS.equals(look))material.setStroke(px(1),choice==2?0x66708ba0:0x667aa6c2);dock.setBackground(material);}}headerInk(info,ink);hero.setTextColor(labelInk);
+        ink=ExperiencePolicy.ink(choice,head);labelInk=ExperiencePolicy.ink(choice,labels);if(!ExperiencePolicy.CLEAN.equals(look)){labelInk=(ProfileStore.preferences(this).getBoolean(HomeSurfacePolicy.GLASS,false)||"wallpaper".equals(ProfileStore.preferences(this).getString(HomeSurfacePolicy.PALETTE,"theme")))?0xfff5f7fa:choice==2?0xff182334:0xfff5f7fa;if(dock!=null&&surface==null){GradientDrawable material=round(choice==2?0xe6eef3fa:ExperiencePolicy.CINEMA.equals(look)?0xf0101822:0xde243b50,ExperiencePolicy.CINEMA.equals(look)?12:20);if(ExperiencePolicy.GLASS.equals(look))material.setStroke(px(1),choice==2?0x66708ba0:0x667aa6c2);dock.setBackground(material);}}headerInk(info,ink);hero.setTextColor(labelInk);
         if(labelShade!=null)labelShade.setBackground(ExperiencePolicy.CLEAN.equals(look)?new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00000000,(labelInk==0xfff5f7fa?0x00081020:0x00eef3fa)|(SurfaceContrast.alpha(labelInk,labels)<<24),0x00000000}):null);
         boolean light=ink==0xfff5f7fa;int surface=light?0x00081020:0x00eef3fa;int alpha=SurfaceContrast.alpha(ink,head);topShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{surface|(alpha<<24),surface|(alpha<<24),surface}));
         boolean lightLabels=labelInk==0xfff5f7fa;bottomShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00000000,lightLabels?0xb3081020:0x99f5f7fa}));
@@ -185,8 +205,8 @@ public final class ExperienceHomeActivity extends Activity {
     }
     @Override public boolean dispatchTouchEvent(android.view.MotionEvent event){if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN&&quiet){touchWake=true;idle.quiet=false;setQuiet(false);armIdle();}if(touchWake){if(event.getActionMasked()==android.view.MotionEvent.ACTION_UP||event.getActionMasked()==android.view.MotionEvent.ACTION_CANCEL)touchWake=false;return true;}if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN)armIdle();return super.dispatchTouchEvent(event);}
     private void action(){String action=getIntent().getStringExtra("home_action");getIntent().removeExtra("home_action");if(MainActivity.ACTION_VIEW_INPUTS.equals(action))handler.post(this::inputs);else if(MainActivity.ACTION_LIBRARY.equals(action))handler.post(this::allApps);else if(MainActivity.ACTION_IDLE_PREVIEW.equals(action)){idle.quiet=true;setQuiet(true);}}
-    @Override protected void onResume(){super.onResume();resumed=true;Config.load(this);if(signature==null||!signature.equals(currentSignature())||preview!=null)render();else{if(wallpaper!=null)wallpaper.start();if(video!=null)video.start();ProductFeatures.resumed(this);handler.removeCallbacks(tick);handler.post(tick);armIdle();}if(!CinemaWorldPreview.token().isEmpty()){idle.quiet=false;setQuiet(false);}if(worldMotion!=null)worldMotion.start();action();if(preview!=null&&!isFinishing())handler.postDelayed(()->ExperienceChoice.prompt(this,preview),180);else if(PlacementSession.preview()!=null)handler.postDelayed(()->PlacementSession.prompt(this),180);}
-    @Override protected void onPause(){resumed=false;if(worldMotion!=null)worldMotion.stop();ProductFeatures.paused(this);handler.removeCallbacks(tick);handler.removeCallbacks(idleTimeout);idle.stop();if(wallpaper!=null)wallpaper.stop();if(video!=null)video.stop();if(preview!=null){ExperienceChoice.cancel();finish();}super.onPause();}
+    @Override protected void onResume(){super.onResume();resumed=true;Config.load(this);if(signature==null||!signature.equals(currentSignature())||preview!=null)render();else{attachSurface();if(wallpaper!=null)wallpaper.start();if(video!=null)video.start();ProductFeatures.resumed(this);handler.removeCallbacks(tick);handler.post(tick);armIdle();}if(!CinemaWorldPreview.token().isEmpty()){idle.quiet=false;setQuiet(false);}if(worldMotion!=null)worldMotion.start();action();if(preview!=null&&!isFinishing())handler.postDelayed(()->ExperienceChoice.prompt(this,preview),180);else if(PlacementSession.preview()!=null)handler.postDelayed(()->PlacementSession.prompt(this),180);}
+    @Override protected void onPause(){resumed=false;if(surface!=null){surface.close();surface=null;}if(worldMotion!=null)worldMotion.stop();ProductFeatures.paused(this);handler.removeCallbacks(tick);handler.removeCallbacks(idleTimeout);idle.stop();if(wallpaper!=null)wallpaper.stop();if(video!=null)video.stop();if(preview!=null){ExperienceChoice.cancel();finish();}super.onPause();}
     @Override public void onTrimMemory(int level){super.onTrimMemory(level);ProductFeatures.trimArtwork(level);}
     @Override protected void onDestroy(){handler.removeCallbacksAndMessages(null);release();if(current.get()==this)current=EMPTY;super.onDestroy();}
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);preview=intent.getStringExtra(ExperienceChoice.EXTRA);if(resumed){Config.load(this);if(signature==null||!signature.equals(currentSignature()))render();action();}}

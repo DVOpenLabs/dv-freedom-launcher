@@ -82,3 +82,7 @@ node platforms/webos/test-launcher.cjs
 
 No hardware is contacted by these tests. Hardware acceptance remains separate. Protocol references and source pins are in
 [the source register](../../product/sources.json); these projects are references, not bundled dependencies.
+
+## 1.0.0-rc1 candidate appearance
+
+Optional Onyx, Orba and Midnight overlays, a flowing clock type style, and silver, teal or amber dock accents are available in Appearance. They retain the selected wallpaper; the existing appearance remains the default for upgrades. LG uses its timed Keep/Revert preview; Samsung and hosted editions use the existing Apply/Cancel draft. These original CSS treatments do not add media, network access, weather or Android companion features. This is a source candidate, not hardware acceptance.

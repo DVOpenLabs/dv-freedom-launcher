@@ -15,13 +15,13 @@ from setup_app.core import SetupError
 def ipk(app=LG_ID,extra=None):
     data=io.BytesIO()
     with tarfile.open(fileobj=data,mode='w:gz') as tar:
-        values={f'usr/palm/applications/{app}/appinfo.json':json.dumps({'id':app,'version':'0.1.0','requiredACG':['application.launcher','application.query']}),f'usr/palm/packages/{app}/packageinfo.json':json.dumps({'id':app,'app':app})}
+        values={f'usr/palm/applications/{app}/appinfo.json':json.dumps({'id':app,'version':'1.0.0','requiredACG':['application.launcher','application.query']}),f'usr/palm/packages/{app}/packageinfo.json':json.dumps({'id':app,'app':app})}
         if extra:values.update(extra)
         for name,value in values.items():
             raw=value.encode();entry=tarfile.TarInfo(name);entry.size=len(raw);tar.addfile(entry,io.BytesIO(raw))
     control=io.BytesIO()
     with tarfile.open(fileobj=control,mode='w:gz') as tar:
-        raw=f'Package: {app}\nVersion: 0.1.0\n'.encode();entry=tarfile.TarInfo('control');entry.size=len(raw);tar.addfile(entry,io.BytesIO(raw))
+        raw=f'Package: {app}\nVersion: 1.0.0\n'.encode();entry=tarfile.TarInfo('control');entry.size=len(raw);tar.addfile(entry,io.BytesIO(raw))
     out=b'!<arch>\n'
     for name,raw in [('debian-binary',b'2.0\n'),('control.tar.gz',control.getvalue()),('data.tar.gz',data.getvalue())]:
         header=f'{name+"/":<16}{0:<12}{0:<6}{0:<6}{100644:<8}{len(raw):<10}`\n'.encode();assert len(header)==60
@@ -170,6 +170,16 @@ class NativeTest(unittest.TestCase):
         wgt=self.root/'unsigned.wgt'
         with zipfile.ZipFile(wgt,'w') as z:z.writestr('config.xml',f'<widget xmlns:t="http://tizen.org/ns/widgets"><t:application id="{TIZEN_ID}" package="DVFreedom1"/></widget>')
         with self.assertRaises(SetupError):self.n.validate_package('tizen',wgt)
+    def test_native_wrong_version_is_rejected(self):
+        wrong=json.dumps({'id':LG_ID,'version':'9.0.0','requiredACG':['application.launcher','application.query']})
+        path=self.root/'wrong-version.ipk';path.write_bytes(ipk(extra={f'usr/palm/applications/{LG_ID}/appinfo.json':wrong}))
+        with self.assertRaises(SetupError):self.n.validate_package('lg',path)
+        import xml.etree.ElementTree as ET
+        root=ET.parse(Path(__file__).resolve().parents[2]/'platforms/tizen/launcher/config.xml').getroot();root.set('version','9.0.0')
+        path=self.root/'wrong-version.wgt'
+        with zipfile.ZipFile(path,'w') as z:
+            z.writestr('config.xml',ET.tostring(root));z.writestr('author-signature.xml','fixture');z.writestr('signature1.xml','fixture')
+        with self.assertRaises(SetupError):self.n.validate_package('tizen',path)
     def test_bounded_cli_response_parser_and_no_unknown_target_fallback(self):
         self.assertEqual(json_output('target\n[]','list'),[])
         for value in ('noise','[]\ntrailing','[{}','{}'):

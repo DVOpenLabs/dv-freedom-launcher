@@ -5,6 +5,21 @@ package, signing path and data directory. It does not install Projectivy, a seco
 The interface takes design inspiration from Projectivy; the implementation and artwork are independent.
 See the [alpha limitations](../README.md#alpha-limitations) before trying it on a new device.
 
+## Optional atmosphere and clock
+
+Open **Appearance → Looks, glass & clock**, or Personalisation Studio → **Atmosphere**. Calm looks
+cover the rendered background without replacing saved wallpaper files or playlist choices. Onyx is
+black; Orba and Midnight use original procedural colour. Glass samples a small still thumbnail,
+including when a live video is selected; it never captures frames or blurs a full screen each frame.
+Wallpaper colours tint dock material; Experience and Showcase also coordinate focus accents while
+retaining their text-contrast policy. Weather scenery uses only a fresh approved local snapshot;
+missing, stale and unrecognised conditions show no weather effect. These controls start off/current.
+
+**Flowing digits** applies to the launcher clock screensaver and in-app clock. **Preview clock draft**
+opens a temporary view without saving. Reduced motion, power saving, low memory or disabled system
+animations use a static digit transition. Studio's Home illustration is still-only, not a live clock
+or forecast. Review lists only changed choices; Undo, Cancel and guarded Apply retain their contracts.
+
 ## Reliability and recovery
 
 Alpha 30 preserves key filtering when the optional Home helper also watches windows. Explicit

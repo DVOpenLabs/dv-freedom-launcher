@@ -14,14 +14,14 @@ from cryptography.hazmat.primitives import hashes,serialization
 from cryptography.hazmat.primitives.asymmetric import rsa,ed25519
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.x509.oid import NameOID
-from setup_app.release import canonical,digest,apk_certificate,verify_resource_paths
+from setup_app.release import canonical,digest,apk_certificate,verify_resource_paths,valid_channel_version
 
 ROOT=Path(__file__).resolve().parents[1]
 def write_private(path,value):
     fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
     with os.fdopen(fd,'wb') as out:out.write(value)
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--key-dir',type=Path,required=True);p.add_argument('--init-keys',action='store_true');a=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--key-dir',type=Path,required=True);p.add_argument('--init-keys',action='store_true');p.add_argument('--channel',choices=('private-alpha','release-candidate','stable'),default='release-candidate');a=p.parse_args()
     folder=a.key_dir.resolve();folder.mkdir(parents=True,exist_ok=True,mode=0o700)
     if ROOT==folder or ROOT in folder.parents:raise SystemExit('Keep signing keys in an ignored private directory outside public source.')
     if os.name=='nt':
@@ -45,7 +45,8 @@ def main():
     if certificate!=apk_certificate(apk):raise SystemExit('Signer extraction did not match Android SDK verification.')
     metadata=json.loads((apk.parent/'output-metadata.json').read_text(encoding='utf-8'));element=metadata['elements'][0]
     if metadata['applicationId']!='com.dvopenlabs.freedomlauncher':raise SystemExit('Unexpected release identity.')
+    if not valid_channel_version(a.channel,element['versionName']):raise SystemExit('Release version does not match the selected channel; no catalog was written.')
     bundle=ROOT/'setup_app/release_bundle';bundle.mkdir(exist_ok=True);shutil.copyfile(apk,bundle/'launcher.apk')
-    body={'schema':1,'package':metadata['applicationId'],'versionCode':element['versionCode'],'versionName':element['versionName'],'minSdk':26,'file':'launcher.apk','bytes':apk.stat().st_size,'sha256':digest(apk),'certificate':certificate,'channel':'private-alpha'}
+    body={'schema':1,'package':metadata['applicationId'],'versionCode':element['versionCode'],'versionName':element['versionName'],'minSdk':26,'file':'launcher.apk','bytes':apk.stat().st_size,'sha256':digest(apk),'certificate':certificate,'channel':a.channel}
     (bundle/'catalog.json').write_text(json.dumps({'release':body,'signature':base64.b64encode(catalog.sign(canonical(body))).decode()},indent=2)+'\n',encoding='utf-8');print('Signed offline release prepared; private keys remain outside the bundle.')
 if __name__=='__main__':main()

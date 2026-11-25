@@ -1,0 +1,7 @@
+# Platform candidates: 1.0.0-rc1
+
+Candidate status describes the source snapshot, not hardware stability or a published release. LG webOS and Samsung Tizen manifests use numeric version 1.0.0 because their packaging formats use numeric versions; Roku uses 1.0.0 in its manifest. The rc1 qualifier is release metadata, not a claim of stable hardware acceptance. VIDAA and Vizio are hosted candidates using the shared renderer and companion transport.
+
+LG and Samsung remain manual-launch apps; LG Home and Samsung Home remain available. VIDAA and Vizio require their authorized local companion. Roku remains an ambient app, not a launcher. Weather and the Android Panchang companion are not implemented on these platforms. Actual remote, app launch/playback, video lifecycle, standby and model-specific compatibility require separate owner acceptance.
+
+Stage LG with `python platforms/webos/prepare_launcher.py NEW_DIRECTORY` (use `--sdk-version` for the verified legacy target), then the official `ares-package`. Stage Samsung with `python platforms/tizen/prepare_launcher.py NEW_DIRECTORY --archive NEW_UNSIGNED.wgt`; signing requires the owner's official certificate profile. Stage hosted editions using `platforms.hosted.prepare_launcher.prepare`. Build Roku with `python -m platforms.roku.prepare_channel NEW.zip`. None of these source steps installs or changes Home. Do not describe an unsigned archive as an installable signed package.

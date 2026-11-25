@@ -6,11 +6,23 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** Android alpha 30; LG/Samsung native pilots; experimental VIDAA/Vizio hosted
-editions; Roku ambient app. These have different capabilities and testing limits. There is no public
-Windows installer or general production binary release yet.
+**Development status:** **1.0.0-rc1 release candidates** for Android TV/Google TV, native LG/webOS,
+Samsung/Tizen, hosted VIDAA/Vizio and Roku Ambient. Candidate does not mean certified stable on every
+TV. Native and hosted editions retain their own capabilities, signing requirements and hardware checks.
+See [platform candidates](platforms/CANDIDATES.md). The Windows candidate is unsigned.
 
-**Latest update — 25 November 2026:** alpha 30 improves Home/input reliability, still-image colour
+**Latest update — 25 November 2026:** Personalisation Studio adds optional **Atmosphere** controls:
+Onyx, Orba and Midnight calm looks, a cached soft glass dock, wallpaper-derived dock/focus colours,
+weather scenery from an approved fresh local cache, and a flowing clock with a separate draft preview.
+All start at the current appearance. Browsing and Cancel save nothing; upgrades preserve existing
+Home, media, app order, profiles and grants. Full settings help and longer values now have room to wrap.
+
+**Panchang** is a separate optional offline companion with English/Hindi UI, five regional calendars,
+manual locations, day/month views, computed tithi observances and locally entered festival dates.
+It requests no permissions, predicts no major-festival dates and does not change the system clock or
+screensaver. The other TV platforms cannot run Android companions.
+
+**Previous update — 25 November 2026:** alpha 30 improves Home/input reliability, still-image colour
 handling and OLED clock fallback. Wallpaper captions reserve room below controls and fade as the Classic
 grid scrolls; editing a dock slot keeps the app grid bright. TCL Settings and Coocaa/Skyworth input
 discovery have additional fallbacks. Upgrades preserve existing Home, wallpapers, profiles and grants.
@@ -81,7 +93,7 @@ restricted modes start off. See the guides for requirements and testing limits.
 [Feature guide](product/ANDROID-COMMUNITY.md) ·
 [Report feedback](https://github.com/DVOpenLabs/dv-freedom-launcher/issues/new/choose)
 
-## New in the Android alpha
+## New in the Android candidate
 
 **Appearance → Cinema Studio** adds an optional logo dock, coordinated gold/silver/ember emblems,
 user-written taglines, personal poster/book/character collections, a local mood picker and procedural
@@ -102,7 +114,7 @@ power saving. It does not animate characters, hair or auras.
 tide, with preview/Apply, an expiry date and optional drifting clock. Scenes draw locally without
 artwork downloads. They do not select Android’s screensaver or change the Home wallpaper.
 
-The alpha also retains appearance presets, compatibility/recovery guidance, Storage/USB access and
+The candidate also retains appearance presets, compatibility/recovery guidance, Storage/USB access and
 slower Classic-grid arrows. See the [feature guide](product/ANDROID-COMMUNITY.md) and
 [Companions guide](product/ANDROID-COMPANION.md#seasonal-ambient-looks) for limits.
 Source publication does not publish a new downloadable binary release.
@@ -123,7 +135,7 @@ steps and recovery limits; they do not inherit Android installation guarantees.
 
 | System | What you can try now | Requirements and limits |
 | --- | --- | --- |
-| **Android TV / Google TV** | Native launcher and optional companion apps. | Android 8+ for the full product. Authorized debugging for setup. This alpha is not certified for every device or firmware. [Android guide](product/ANDROID-COMMUNITY.md). |
+| **Android TV / Google TV** | Native launcher and optional companion apps. | Android 8+ for the full product. Authorized debugging for setup. This candidate is not certified for every device or firmware. [Android guide](product/ANDROID-COMMUNITY.md). |
 | **LG webOS** | Separate manual-launch Home app and guided first-install/helper preparation. | LG developer tools and Developer Mode. Legacy full-screen startup/layout checked; full physical acceptance pending. No automatic LG Home takeover. [Native setup](setup_app/NATIVE-SETUP.md). |
 | **Samsung Tizen** | Manual-launch pilot with app discovery, local profiles, layouts and silent media. | Samsung SDK, Developer Mode and your signing certificate. Source/browser/mock checked; signing and physical TV acceptance pending. No Home override or automatic startup. [Samsung guide](platforms/tizen/README.md). |
 | **Hisense VIDAA** | Experimental hosted Home and guided app selection. | Existing authorized MQTT profile and a computer that stays on. Vendor debug-tile installation is manual; fresh pairing is not provided. Hardware acceptance pending. [Hosted guide](platforms/hosted/README.md). |
@@ -263,7 +275,7 @@ platform. The primary packaged target is Windows; other desktop environments nee
 **A source checkout does not include the verified Android release bundle.** The example journey and
 read-only checks work without it; Android installation remains unavailable until a valid signed
 bundle is supplied. Developers can follow the [build/signing instructions](setup_app/README.md).
-The existing Windows EXE is an unsigned private test alpha, not a GitHub download.
+The Windows EXE is an unsigned private release candidate; source publication does not publish a binary download.
 
 Local records, keys and recovery folders stay private. See [Setup behavior and recovery](setup_app/README.md)
 and [installer prerequisites](setup_app/README.md). Closing only the browser tab leaves the
@@ -287,9 +299,11 @@ installer bundles require separately managed release signing. Existing pilot ide
 not included. Check identity, certificate and backup before installing over an existing app:
 [release identity and recovery policy](product/RELEASE-IDENTITY.md).
 
-## Alpha limitations
+<a id="alpha-limitations"></a>
 
-This is a development alpha, not a general production release. Model-specific remote keys, HDMI/CEC,
+## Release candidate limitations
+
+This is a release candidate, not a general stable release. Model-specific remote keys, HDMI/CEC,
 streaming playback, file-picker support and private-service integrations need testing on the actual
 device. A browser preview or successful app launch does not establish TV compatibility or playback.
 Expanded settings help still has English fallbacks. Native LG/Samsung and hosted/ambient editions

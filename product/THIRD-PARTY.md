@@ -178,3 +178,16 @@ record identity, theme-size preflight, unauthenticated ADB detection, Home/input
 decoding, clock glow, caption/edit-mode presentation and TCL/Coocaa fallbacks. DV Freedom constrains
 settings-action targets, bounds input rows and retains its permission/preview contracts. No upstream
 installer grants, stock-Home disabling, workflows or media are imported. See the source register.
+
+## Panchang and Home surfaces
+
+DV Freedom Panchang adapts the MIT-licensed `addons/hindu-calendar` source and astronomy tests
+from CleanYourTV commit `7b7666ad05a3a62ba25768c51fbf06e9c4e67da5`, copyright 2026 Gathin.
+The complete upstream notice is retained in [launcher/panchang/LICENSE](../launcher/panchang/LICENSE).
+DV adds manual location, English/Hindi selection, local user-entered occasions and a foreground
+devotional view. Upstream Hindi Panchang festival-date rules and artwork were not imported;
+major festivals are not automatically predicted.
+
+The flowing clock, calm backgrounds, still-image dock treatment, palette and weather-scene
+renderers are original DV Freedom implementations. They bundle no third-party media; the
+user-selected still image remains subject to its own rights.

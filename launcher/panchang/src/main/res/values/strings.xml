@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name" translatable="false">Panchang</string>
+    <string name="previous">Previous</string>
+    <string name="today">Today</string>
+    <string name="next">Next</string>
+    <string name="month">Month</string>
+    <string name="day">Day</string>
+    <string name="city">City</string>
+    <string name="region">Region</string>
+    <string name="screensaver">Screensaver</string>
+    <string name="screensaver_missing">Screensaver settings are unavailable on this TV.</string>
+    <string name="tithi">Tithi</string>
+    <string name="nakshatra">Nakshatra</string>
+    <string name="yoga">Yoga</string>
+    <string name="karana">Karana</string>
+    <string name="till">till %1$s</string>
+    <string name="rahu_kala">Rahu Kala</string>
+    <string name="yamaganda">Yamaganda</string>
+    <string name="gulika">Gulika</string>
+    <string name="abhijit">Abhijit</string>
+    <string name="range">%1$s – %2$s</string>
+    <string name="no_sun">No sunrise or sunset at this latitude today.</string>
+    <string name="sun_times">Sunrise %1$s · Sunset %2$s</string>
+    <string name="place">%1$s · %2$s</string>
+    <string name="month_range">%1$s – %2$s</string>
+    <string name="month_day">%1$s · %2$s · %3$s · %4$s</string>
+    <string name="heading">%1$s · %2$s %3$s</string>
+    <string name="manual">Manual location</string>
+    <string name="language">Language</string>
+    <string name="ambient">Devotional display</string>
+    <string name="manual_name">City or place</string>
+    <string name="latitude">Latitude (−90 to 90)</string>
+    <string name="longitude">Longitude (−180 to 180)</string>
+    <string name="time_zone">Time zone ID, e.g. Asia/Kolkata</string>
+    <string name="invalid_location">Check the name, coordinates and time zone ID.</string>
+    <string name="observances">Observances</string>
+    <string name="observance_explanation">Sunrise tithi markers for this regional month and location. Where sunrise is unavailable, local noon is used. These are not festival or fasting dates; observance conventions differ.</string>
+    <string name="no_observances">No marked sunrise tithis in this month.</string>
+    <string name="user_occasions">Your entered occasions</string>
+    <string name="no_custom_occasions">No entered occasions in this month.</string>
+    <string name="add_occasion">Add</string>
+    <string name="remove_occasion">Remove</string>
+    <string name="occasion_date">Date (YYYY-MM-DD)</string>
+    <string name="occasion_title">Festival or occasion (up to 80 characters)</string>
+    <string name="invalid_occasion">Check the date and title, duplicate entries and 200-entry limit.</string>
+    <string name="confirm_remove">Remove “%1$s” from your occasions?</string>
+</resources>

@@ -320,6 +320,14 @@
     ],
     "boundaries": "Reviewed source/vector resources only. No third-party film art, binaries, installer grant scripts or workflows copied. Optional packages are independent of the core APK."
   },
+  "panchangAndHomeSurfaces": {
+    "repository": "https://github.com/Gathin23/cleanyourtv",
+    "commit": "7b7666ad05a3a62ba25768c51fbf06e9c4e67da5",
+    "path": "addons/hindu-calendar",
+    "license": "MIT; copyright 2026 Gathin; full notice in launcher/panchang/LICENSE",
+    "adaptation": "Astronomy, regional calendar, interface and upstream tests; DV adds local locations, language selection, computed observances and user-entered occasions",
+    "boundaries": "Hindi Panchang festival rules and artwork not imported; major festivals not automatically predicted. Home surface and flowing clock renderers are original DV code and bundle no third-party media."
+  },
   "november2026Hardening": {
     "repository": "https://github.com/Gathin23/cleanyourtv",
     "commit": "7b7666ad05a3a62ba25768c51fbf06e9c4e67da5",

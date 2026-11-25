@@ -18,3 +18,5 @@ include ':companions'
 include ':remote'
 
 include ':camera'
+
+include ':panchang'

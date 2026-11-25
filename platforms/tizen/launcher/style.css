@@ -10,3 +10,17 @@ nav>button+button{margin-left:24px}.rail>button+button{margin-left:0;margin-top:
 
 /* Optional local picture framing; defaults leave existing scenes unchanged. */
 .media-fit #scene,.media-matte #scene{background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#101923}.media-fit #motion,.media-matte #motion{object-fit:contain}.media-matte #scene,.media-matte #motion{top:5%;left:7%;right:auto;bottom:auto;width:86%;height:90%;box-shadow:0 8px 22px #0008}.media-matte{background:#e5dfd4}
+
+/* Optional overlays retain the selected wallpaper and work without animation. */
+.calm-onyx #readability{background:rgba(7,9,13,.64)}
+.calm-orba #readability{background:linear-gradient(135deg,rgba(28,39,48,.68),rgba(55,43,53,.34),rgba(10,18,27,.7))}
+.calm-midnight #readability{background:linear-gradient(135deg,rgba(7,17,39,.7),rgba(30,25,58,.38),rgba(6,12,28,.7))}
+.clock-flowing #clock{font-family:Georgia,serif;font-style:italic;letter-spacing:2px}
+.accent-silver .art{border-color:#cbd7df}
+.accent-teal .art{border-color:#91d7d1}
+.accent-amber .art{border-color:#e7c487}
+
+/* Still draft preview; settings remain unsaved until Apply. */
+.mini-calm-onyx{background:#111318}.mini-calm-orba{background:linear-gradient(135deg,#233943,#493c46)}.mini-calm-midnight{background:linear-gradient(135deg,#101d39,#292342)}
+.mini-clock-flowing .mini-clock{font-family:Georgia,serif;font-style:italic;letter-spacing:1px}
+.mini-accent-silver .mini-dock span{border:2px solid #cbd7df}.mini-accent-teal .mini-dock span{border:2px solid #91d7d1}.mini-accent-amber .mini-dock span{border:2px solid #e7c487}

@@ -22,6 +22,7 @@ final class LiveVideo implements TextureView.SurfaceTextureListener {
     private MediaPlayer player;private Surface surface;
     private boolean visible;private int position,videoWidth,videoHeight;
     static boolean supported(Context ctx,boolean reducedMotion){
+        if(ProductFeatures.calmWallpaper(ctx))return false;
         ActivityManager manager=(ActivityManager)ctx.getSystemService(Context.ACTIVITY_SERVICE);
         if(manager==null)return false;ActivityManager.MemoryInfo info=new ActivityManager.MemoryInfo();manager.getMemoryInfo(info);
         return PlaybackGate.supported(info.totalMem,manager.isLowRamDevice(),reducedMotion);

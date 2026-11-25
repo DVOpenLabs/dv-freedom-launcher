@@ -85,6 +85,27 @@ final class WeatherClient {
                             }).show();
                 }).setNegativeButton("Close", null).show();
     }
+    /** Read only the signature-protected local cache, with no network or location access. */
+    static WeatherSnapshot trustedSnapshot(Context context, CancellationSignal cancel) {
+        android.content.pm.ProviderInfo provider = context.getPackageManager().resolveContentProvider(CURRENT.getAuthority(), 0);
+        if (provider != null && PACKAGE.equals(provider.packageName) && provider.readPermission != null
+                && context.getPackageManager().checkSignatures(context.getPackageName(), PACKAGE) == android.content.pm.PackageManager.SIGNATURE_MATCH) {
+            try {
+                if ((context.getPackageManager().getPermissionInfo(provider.readPermission, 0).protectionLevel
+                        & android.content.pm.PermissionInfo.PROTECTION_MASK_BASE) == android.content.pm.PermissionInfo.PROTECTION_SIGNATURE) {
+                    try (Cursor row = context.getContentResolver().query(CURRENT, null, null, null, null, cancel)) {
+                        if (row != null && row.moveToFirst() && row.getInt(0) == 1)
+                            return new WeatherSnapshot(row.getDouble(1), row.getString(2), row.getString(3), row.getLong(4));
+                    }
+                }
+            } catch (Exception unavailable) { /* No trusted, shared cache. */ }
+        }
+        if (legacy(context)) try (Cursor row = context.getContentResolver().query(LEGACY, null, null, null, null, cancel)) {
+            if (row != null && row.moveToFirst() && !row.isNull(1))
+                return new WeatherSnapshot(row.getDouble(1), row.getString(0), row.getString(2), row.getLong(4));
+        } catch (RuntimeException unavailable) { /* No authorized cache. */ }
+        return null;
+    }
     static final class Attachment implements AutoCloseable {
         final Context context; final LinearLayout host; final String key; final boolean dream;
         final Handler main = new Handler(Looper.getMainLooper());

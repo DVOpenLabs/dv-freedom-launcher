@@ -1,5 +1,5 @@
 # Run inside a developer environment with setup_app/requirements-build.txt installed.
-# Produces a private-alpha Windows EXE with a separately signed offline Android APK.
+# Produces a unsigned candidate Windows EXE with a separately signed offline Android APK.
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 Push-Location $projectRoot

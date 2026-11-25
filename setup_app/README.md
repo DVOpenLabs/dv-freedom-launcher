@@ -1,4 +1,4 @@
-# DV Freedom Setup — installer private alpha
+# DV Freedom Setup — private release candidate
 
 One local Windows GUI for Android TV/Google TV, native LG/Samsung pilots, experimental hosted
 VIDAA/Vizio editions and a Roku ambient-app builder. Each path explains its own requirements and
@@ -83,7 +83,7 @@ Use JDK 17, SDK 34/build-tools 34.0.0, and a project-local Python environment fr
 
 ```sh
 python -m setup_app.build_release --key-dir <private-directory-outside-repository> --init-keys
-python -m setup_app.build_release --key-dir <same-private-directory>
+python -m setup_app.build_release --key-dir <same-private-directory> --channel release-candidate
 ```
 
 Use `--init-keys` only for the first build; it explicitly creates persistent release/catalog keys.
@@ -95,7 +95,7 @@ Put the environment's Python on PATH, then run `setup_app/build-windows.ps1`. Py
 [one-file/windowed build](https://pyinstaller.org/en/stable/usage.html) bundles the verified APK/catalog,
 UI/font/runtime and distribution licences. Only explicit verified release artifacts are bundled, never keys. Optional native phone APK/catalogue and companion packages are built separately.
 Build on Windows. The Android APK is release-signed; the **Windows EXE is unsigned** and is a private
-alpha, not a public release. Do not advise bypassing OS security warnings.
+release candidate, not a public binary release. Do not advise bypassing OS security warnings.
 
 ## Validation
 
@@ -142,7 +142,7 @@ Use **Stop sharing** to revoke access immediately. Closing the dialog alone does
 
 This is HTTP on a trusted home network. Do not port-forward it or use it on public/shared networks. No
 firewall rule or discovery scan is added. If the phone cannot connect, stop sharing and use the computer
-journey; this alpha does not automatically change firewall/network policy. Ordinary Setup stays loopback-only.
+journey; this candidate does not automatically change firewall/network policy. Ordinary Setup stays loopback-only.
 
 Receiving a draft changes nothing on the TV. **Review received draft** stops sharing and opens the
 computer's choices for normal review. JPEG/PNG files up to 8 MB and MP4 up to 48 MB stay in a private
@@ -179,7 +179,7 @@ APK/recovery data is ignored by Git; do not commit binaries, private connection 
 
 ## Optional features
 
-The signed alpha 20 launcher includes folders, Simple/All settings, Control Center, Wallpaper Studio
+The 1.0.0-rc1 launcher includes folders, Simple/All settings, Control Center, Wallpaper Studio
 and offline setup help. Add-on Center’s **DV Freedom Companions** entry also explains Discover,
 Immich/WebDAV photos and explicitly reviewed Gemini drafts. Bring your own credentials in the private
 TV forms; installing or opening the panel never enables a connection. Phone Remote’s optional setup/
@@ -192,8 +192,8 @@ feed selected. Bluetooth connects/disconnects only after an explicit action and 
 by firmware. Ambient installation does not select a system screensaver or replace your wallpaper.
 The launcher can open installed tools from **System → Optional TV tools**.
 
-Source publication is separate from public binary distribution. The locally rebuilt Windows alpha
-continues to be unsigned; no new release is published automatically. See the [alpha limitations](../README.md#alpha-limitations).
+Source publication is separate from public binary distribution. The Windows release candidate is
+unsigned; no new binary release is published automatically. See the [candidate limitations](../README.md#alpha-limitations).
 
 ## Native Android phone alternative
 
@@ -212,7 +212,7 @@ python -m setup_app.build_addons --key-dir <same-private-directory>
 python -m setup_app.build_phone --key-dir <same-private-directory>
 ```
 
-The Add-on Centre contains 52 curated package/source/guide entries and 23 supported signed package
+The Add-on Centre contains 53 curated package/source/guide entries and 24 supported signed package
 definitions. Only verified artifacts included in the bundle can be installed. New runtime/special
 access and configured network sources remain separate choices. See [Add-ons](../product/ADDONS.md).
 
@@ -226,3 +226,13 @@ The **Cinema Studio** link opens the offline four-step creator. Connect through 
 compatible DV Freedom installation, edit the draft and send it for native review/Apply. Download/import JSON is also
 available without a device; it references local artwork and does not include image bytes. No AI account
 is required. See [Cinema Studio](../product/CINEMA-STUDIO.md) for profile guards, limits and prerequisites.
+
+## Release candidates and channels
+
+Setup displays the Android channel authenticated by the offline catalogue. `release-candidate` requires
+an X.Y.Z-rcN version; `stable` requires X.Y.Z. Existing private-alpha catalogues remain readable.
+Use the existing signing directory for upgrades; do not recreate keys. Platform candidate scope and
+manual packaging/signing requirements are in [the candidate guide](../platforms/CANDIDATES.md).
+Candidate packages retain hardware, first-install/update/recovery and physical remote/playback gates.
+Panchang is a separate optional offline app with no requested permissions; installing it does not
+select a Home, add a row automatically or choose a system screensaver.

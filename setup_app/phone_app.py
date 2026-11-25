@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import re
 from .core import SetupError
-from .release import canonical, digest, apk_certificate, MAX_APK
+from .release import canonical, digest, apk_certificate, MAX_APK, valid_channel_version
 
 class PhoneCatalog:
     def __init__(self,folder=None,trust=None):
@@ -20,7 +20,7 @@ class PhoneCatalog:
             r=envelope['release'];key=json.loads(self.trust.read_text(encoding='utf-8'))
             Ed25519PublicKey.from_public_bytes(base64.b64decode(key['publicKey'],validate=True)).verify(base64.b64decode(envelope['signature'],validate=True),canonical(r))
             if set(r)!={'schema','package','versionCode','versionName','minSdk','file','bytes','sha256','certificate','channel'}:raise ValueError()
-            if r['schema']!=1 or r['package']!='com.dvopenlabs.freedom.setup' or r['file']!='phone-setup.apk' or r['channel']!='private-alpha' or r['minSdk']!=29:raise ValueError()
+            if r['schema']!=1 or r['package']!='com.dvopenlabs.freedom.setup' or r['file']!='phone-setup.apk' or not valid_channel_version(r['channel'],r['versionName']) or r['minSdk']!=29:raise ValueError()
             if type(r['versionCode']) is not int or r['versionCode']<1 or type(r['bytes']) is not int or not 0<r['bytes']<=MAX_APK or not isinstance(r['versionName'],str) or len(r['versionName'])>80:raise ValueError()
             if any(not isinstance(r[k],str) or not re.fullmatch('[a-f0-9]{64}',r[k]) for k in ('sha256','certificate')):raise ValueError()
             apk=self.folder/r['file']

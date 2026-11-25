@@ -26,6 +26,13 @@ class CatalogTests(unittest.TestCase):
         body={'schema':1,'items':self.items};(self.folder/'catalog.json').write_text(json.dumps({'addons':body,'signature':base64.b64encode(self.key.sign(canonical(body))).decode()}))
     def test_all_reviewed_artifacts_verify(self):
         for id in PACKAGES:self.assertEqual(self.catalog.verify(id)['package'],PACKAGES[id])
+    def test_legacy_bundle_keeps_existing_addons_available(self):
+        self.items=[x for x in self.items if x['id']!='panchang'];self.save()
+        self.assertEqual(self.catalog.verify('weather')['package'],PACKAGES['weather'])
+        with self.assertRaises(SetupError):self.catalog.verify('panchang')
+    def test_panchang_rejects_requested_permissions(self):
+        next(x for x in self.items if x['id']=='panchang')['permissions']=['android.permission.INTERNET'];self.save()
+        with self.assertRaises(SetupError):self.catalog.verify('panchang')
     def test_tampered_apk_is_rejected(self):
         (self.folder/'weather.apk').write_bytes(b'changed')
         with self.assertRaises(SetupError):self.catalog.verify('weather')
@@ -33,10 +40,10 @@ class CatalogTests(unittest.TestCase):
         doc=json.loads((self.folder/'catalog.json').read_text());doc['addons']['items'][0]['versionCode']=99;(self.folder/'catalog.json').write_text(json.dumps(doc))
         with self.assertRaises(SetupError):self.catalog.verify('weather')
     def test_signed_unknown_identity_is_still_rejected(self):
-        self.items[0]['package']='org.unreviewed.app';self.save()
+        next(x for x in self.items if x['id']=='weather')['package']='org.unreviewed.app';self.save()
         with self.assertRaises(SetupError):self.catalog.verify('weather')
     def test_path_escape_is_rejected_even_when_signed(self):
-        self.items[0]['file']='../weather.apk';self.save()
+        next(x for x in self.items if x['id']=='weather')['file']='../weather.apk';self.save()
         with self.assertRaises(SetupError):self.catalog.verify('weather')
     def test_duplicate_catalog_ids_rejected(self):
         self.items[1]=dict(self.items[0]);self.save()

@@ -140,3 +140,7 @@ installation review, separately from installed apps and starter favourites.
 App names wrap within their tiles. The runtime measures the required caption height and expands
 the minimum tile height while retaining the saved icon size and spacing. Native legacy layout
 measurements show unclipped starter captions; physical remote/input/playback checks remain separate.
+
+## 1.0.0-rc1 candidate appearance
+
+Optional Onyx, Orba and Midnight overlays, a flowing clock type style, and silver, teal or amber dock accents are available in Appearance. They retain the selected wallpaper; the existing appearance remains the default for upgrades. LG uses its timed Keep/Revert preview; Samsung and hosted editions use the existing Apply/Cancel draft. These original CSS treatments do not add media, network access, weather or Android companion features. This is a source candidate, not hardware acceptance.

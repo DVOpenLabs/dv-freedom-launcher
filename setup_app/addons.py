@@ -13,6 +13,7 @@ from .release import canonical, digest, apk_certificate, MAX_APK
 from .transport import InstallerDevice
 
 PACKAGES={
+ 'panchang':'com.dvopenlabs.freedom.panchang',
  'weather':'io.github.sumyabazar1.weather',
  'sleep-timer':'io.github.luyzfernando08.sleeptimer',
  'world-clock':'io.github.savioronezero.worldclock',
@@ -50,14 +51,15 @@ class AddonCatalog:
             if len(raw)>32768:raise ValueError()
             envelope=json.loads(raw);body=envelope['addons'];key=json.loads(self.trust.read_text(encoding='utf-8'))
             Ed25519PublicKey.from_public_bytes(base64.b64decode(key['publicKey'],validate=True)).verify(base64.b64decode(envelope['signature'],validate=True),canonical(body))
-            if set(body)!={'schema','items'} or body['schema']!=1 or not isinstance(body['items'],list) or len(body['items'])!=len(PACKAGES):raise ValueError()
+            if set(body)!={'schema','items'} or body['schema']!=1 or not isinstance(body['items'],list) or len(body['items']) not in (len(PACKAGES),len(PACKAGES)-1):raise ValueError()
             ids=[item['id'] for item in body['items']]
-            if len(set(ids))!=len(PACKAGES) or set(ids)!=set(PACKAGES):raise ValueError()
+            if len(set(ids))!=len(ids) or set(ids) not in (set(PACKAGES),set(PACKAGES)-{'panchang'}):raise ValueError()
             item=next(x for x in body['items'] if x['id']==id)
             if set(item)!={'id','package','file','versionCode','versionName','minSdk','bytes','sha256','certificate','permissions'}:raise ValueError()
             if item['package']!=PACKAGES[id] or item['file']!=id+'.apk' or type(item['versionCode']) is not int or item['versionCode']<1 or type(item['minSdk']) is not int or not 26<=item['minSdk']<=34:raise ValueError()
             if type(item['bytes']) is not int or not 0<item['bytes']<=MAX_APK or not isinstance(item['versionName'],str) or len(item['versionName'])>80:raise ValueError()
             if not isinstance(item['permissions'],list) or len(item['permissions'])>24 or any(not isinstance(p,str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_.]{1,160}',p) for p in item['permissions']):raise ValueError()
+            if id=='panchang' and item['permissions']:raise ValueError()
             if any(not isinstance(item[k],str) or not re.fullmatch('[0-9a-f]{64}',item[k]) for k in ['sha256','certificate']):raise ValueError()
             path=self.folder/item['file']
             if path.stat().st_size!=item['bytes'] or digest(path)!=item['sha256'] or apk_certificate(path)!=item['certificate']:raise ValueError()

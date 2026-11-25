@@ -44,6 +44,12 @@ class PhoneCatalogTest(unittest.TestCase):
         self.assertTrue(self.catalog.summary()['available'])
         self.assertNotIn(str(self.root), json.dumps(self.catalog.summary()))
 
+    def test_signed_channel_matches_version(self):
+        for channel,version in [('private-alpha','test'),('release-candidate','1.0.0-rc1'),('stable','1.0.0')]:
+            self.release.update(channel=channel,versionName=version);self.save();self.assertEqual(self.catalog.verify()['channel'],channel)
+        for channel,version in [('stable','1.0.0-rc1'),('release-candidate','1.0.0'),('unknown','1.0.0')]:
+            self.release.update(channel=channel,versionName=version);self.save()
+            with self.assertRaises(SetupError):self.catalog.verify()
     def test_tampered_artifact_cannot_be_downloaded(self):
         self.apk.write_bytes(b'changed')
         with self.assertRaises(SetupError):

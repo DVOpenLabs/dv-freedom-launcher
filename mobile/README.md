@@ -2,8 +2,8 @@
 
 A separate native setup app for Android 10+ phones and Android TVs with **pairing-code Wireless
 debugging**. The phone and TV must be on the same trusted private network. Legacy USB/TCP-only ADB
-devices and native LG/Samsung use desktop Setup. This source build is an alpha; hardware acceptance
-is separate from JVM/build checks. It does not install automatically on your phone or TV. This first phone edition installs/previews the
+devices and native LG/Samsung use desktop Setup. This source build is a 1.0.0-rc1 release candidate;
+hardware acceptance is separate from JVM/build checks. It does not install automatically on your phone or TV. This first phone edition installs/previews the
 launcher only; optional package installation stays in desktop Setup’s Add-on Centre.
 
 ## Guided setup

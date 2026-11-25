@@ -9,6 +9,14 @@ import zipfile
 from .core import SetupError
 
 MAX_APK=40*1024*1024
+def valid_channel_version(channel, version):
+    if not isinstance(version,str) or not 0<len(version)<=80:return False
+    if channel=='private-alpha':return True  # Historical signed catalogs use varied alpha names.
+    semver=r'(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)'
+    if channel=='stable':return re.fullmatch(semver,version) is not None
+    if channel=='release-candidate':return re.fullmatch(semver+r'-rc(?:0|[1-9][0-9]*)',version) is not None
+    return False
+
 def canonical(value):return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=True).encode()
 def digest(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
@@ -62,7 +70,7 @@ class Catalog:
             envelope=json.loads(raw);body=envelope['release'];key=json.loads(self.trust.read_text(encoding='utf-8'))
             Ed25519PublicKey.from_public_bytes(base64.b64decode(key['publicKey'],validate=True)).verify(base64.b64decode(envelope['signature'],validate=True),canonical(body))
             if set(body)!={'schema','package','versionCode','versionName','minSdk','file','bytes','sha256','certificate','channel'} or body['schema']!=1:raise ValueError()
-            if body['package']!='com.dvopenlabs.freedomlauncher' or body['file']!='launcher.apk' or body['channel']!='private-alpha':raise ValueError()
+            if body['package']!='com.dvopenlabs.freedomlauncher' or body['file']!='launcher.apk' or not valid_channel_version(body['channel'],body['versionName']):raise ValueError()
             if type(body['bytes']) is not int or not 0<body['bytes']<=MAX_APK or type(body['versionCode']) is not int or body['versionCode']<1 or body['minSdk']!=26:raise ValueError()
             if any(not isinstance(body[k],str) or not re.fullmatch('[0-9a-f]{64}',body[k]) for k in ['sha256','certificate']):raise ValueError()
             apk=self.folder/body['file']

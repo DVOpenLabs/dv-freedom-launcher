@@ -21,3 +21,7 @@ clock shift each minute does not disable the TV's own idle/OLED protection.
 The generated source was validated with BrighterScript **0.73.8** (development-only npm tool, not
 bundled or required by the setup runtime). This checks syntax/project structure, not actual rendering,
 remote behavior, screen protection, standby, startup or hardware compatibility.
+
+## 1.0.0-rc1 candidate
+
+The candidate retains the existing three backgrounds and clock formats. It is an ambient app, with no launcher, weather provider or Android companion integration. Hardware and Store acceptance remain pending.

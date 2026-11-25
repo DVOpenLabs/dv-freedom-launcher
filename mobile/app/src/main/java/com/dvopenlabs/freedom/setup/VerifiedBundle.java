@@ -23,8 +23,14 @@ final class VerifiedBundle {
     }
     static void verify(JSONObject r,String signature,String key)throws Exception{
         SetupPolicy.fields(r,"schema","package","versionCode","versionName","minSdk","file","bytes","sha256","certificate","channel");
-        if(r.getInt("schema")!=1||!SetupPolicy.PACKAGE.equals(r.getString("package"))||!"launcher.apk".equals(r.getString("file"))||!"private-alpha".equals(r.getString("channel"))||r.getInt("minSdk")!=26||r.getInt("versionCode")<1||r.getInt("bytes")<1||r.getInt("bytes")>SetupPolicy.MAX_APK||r.getString("versionName").length()>80||!r.getString("sha256").matches("[a-f0-9]{64}")||!r.getString("certificate").matches("[a-f0-9]{64}"))throw new IOException("Unsupported release identity");
+        if(r.getInt("schema")!=1||!SetupPolicy.PACKAGE.equals(r.getString("package"))||!"launcher.apk".equals(r.getString("file"))||!validChannelVersion(r.getString("channel"),r.getString("versionName"))||r.getInt("minSdk")!=26||r.getInt("versionCode")<1||r.getInt("bytes")<1||r.getInt("bytes")>SetupPolicy.MAX_APK||r.getString("versionName").length()>80||!r.getString("sha256").matches("[a-f0-9]{64}")||!r.getString("certificate").matches("[a-f0-9]{64}"))throw new IOException("Unsupported release identity");
         byte[] raw=SetupPolicy.canonical(r).getBytes(StandardCharsets.UTF_8),pub=Base64.getDecoder().decode(key),sig=Base64.getDecoder().decode(signature);if(pub.length!=32||sig.length!=64)throw new IOException("Invalid release signature");Ed25519Signer verifier=new Ed25519Signer();verifier.init(false,new Ed25519PublicKeyParameters(pub,0));verifier.update(raw,0,raw.length);if(!verifier.verifySignature(sig))throw new IOException("Offline release signature failed");
+    }
+    static boolean validChannelVersion(String channel,String version){
+        if(version.length()==0||version.length()>80)return false;
+        if("private-alpha".equals(channel))return true;
+        String semver="(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)";
+        return "stable".equals(channel)?version.matches(semver):"release-candidate".equals(channel)&&version.matches(semver+"-rc(?:0|[1-9][0-9]*)");
     }
     static final class Archive {final String packageName,certificate;final long version;Archive(String p,long v,String s){packageName=p;version=v;certificate=s;}}
     static Archive archive(Context c,File file)throws Exception{PackageInfo p=c.getPackageManager().getPackageArchiveInfo(file.getPath(),PackageManager.GET_SIGNING_CERTIFICATES);if(p==null||p.signingInfo==null||p.signingInfo.hasMultipleSigners()||p.signingInfo.getApkContentsSigners().length!=1)throw new IOException("APK signer unavailable");return new Archive(p.packageName,p.getLongVersionCode(),SetupPolicy.sha(p.signingInfo.getApkContentsSigners()[0].toByteArray()));}

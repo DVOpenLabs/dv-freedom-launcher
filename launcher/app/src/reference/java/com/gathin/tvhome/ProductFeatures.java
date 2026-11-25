@@ -2,6 +2,7 @@ package com.gathin.tvhome;
 
 /** Reference build extension points; R8 removes these no-ops and their calls. */
 final class ProductFeatures {
+    static boolean calmWallpaper(android.content.Context c){return false;}
     static android.view.View captionHolder(android.content.Context context, android.widget.TextView text){return text;}
     static void captionScrolled(WallpaperPlayer player, androidx.recyclerview.widget.RecyclerView grid, float density){}
     static boolean remoteSettingsActions(){return false;}

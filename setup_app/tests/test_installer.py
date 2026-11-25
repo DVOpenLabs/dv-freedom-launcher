@@ -69,6 +69,13 @@ class InstallerTest(unittest.TestCase):
     def test_signed_catalog_and_byte_tampering(self):
         self.assertEqual(self.catalog.verify()['package'],PACKAGE);self.apk.write_bytes(self.apk.read_bytes()+b'x')
         with self.assertRaises(SetupError):self.catalog.verify()
+    def test_signed_release_channels_and_versions(self):
+        for channel,version in [('private-alpha','test-alpha'),('release-candidate','1.0.0-rc1'),('stable','1.0.0')]:
+            self.body.update(channel=channel,versionName=version);self.sign()
+            self.assertEqual(self.catalog.verify()['channel'],channel)
+        for channel,version in [('unknown','1.0.0'),('stable','1.0.0-rc1'),('stable','1.0-alpha1'),('release-candidate','1.0.0'),('release-candidate','01.0.0-rc1'),('release-candidate','1.0.0-rc01')]:
+            self.body.update(channel=channel,versionName=version);self.sign()
+            with self.assertRaises(SetupError):self.catalog.verify()
     def test_catalog_signature_tampering(self):
         p=self.bundle/'catalog.json';v=json.loads(p.read_text());v['release']['versionCode']=15;p.write_text(json.dumps(v))
         with self.assertRaises(SetupError):self.catalog.verify()

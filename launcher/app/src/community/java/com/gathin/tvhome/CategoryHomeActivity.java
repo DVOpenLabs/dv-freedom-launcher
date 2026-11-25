@@ -20,6 +20,7 @@ public final class CategoryHomeActivity extends Activity {
     static final String PREVIEW="category_preview";
     static final String IDLE_PREVIEW="category_idle_preview";
     private FrameLayout root;private LinearLayout body,header;private ScrollView scroll;
+    private HomeSurfaceStyle surface;private int surfaceIndex;
     private WallpaperPlayer wallpaper;private LiveVideo video;private Config config;
     private final Handler timer=new Handler(Looper.getMainLooper());
     private final PolishPolicy.Idle idle=new PolishPolicy.Idle();private int idleSeconds;private boolean touchWake;
@@ -43,7 +44,7 @@ public final class CategoryHomeActivity extends Activity {
     private int dp(float value){return Math.round(value*getResources().getDisplayMetrics().density);}
     private TextView text(String value,float size){TextView view=new TextView(this);view.setText(value);view.setTextSize(size);view.setTextColor(ink);view.setTypeface(typeface);view.setShadowLayer(ink==0xfff5f7fa?dp(1):0,0,1,0xc0000000);return view;}
     private TextView button(String label,Runnable action){TextView view=text(label,16);view.setGravity(Gravity.CENTER);view.setPadding(dp(18),dp(10),dp(18),dp(10));view.setTextColor(Color.WHITE);view.setBackgroundResource(R.drawable.settings_choice_bg);view.setFocusable(true);view.setClickable(true);view.setOnClickListener(v->action.run());view.setOnKeyListener((v,key,event)->{if(event.getAction()==KeyEvent.ACTION_DOWN&&key==KeyEvent.KEYCODE_DPAD_DOWN&&!rows.isEmpty()){rows.get(0).focus(selections.get(rows.get(0).id),0);return true;}return event.getAction()==KeyEvent.ACTION_DOWN&&key==KeyEvent.KEYCODE_DPAD_UP;});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(48));p.setMarginStart(dp(8));header.addView(view,p);quietChrome.add(view);return view;}
-    private void release(){if(wallpaper!=null){wallpaper.stop();wallpaper.close();wallpaper=null;}if(video!=null){video.close();video=null;}}
+    private void release(){if(surface!=null){surface.close();surface=null;}if(wallpaper!=null){wallpaper.stop();wallpaper.close();wallpaper=null;}if(video!=null){video.close();video=null;}}
     private void render(){
         config=Config.load(this);HomeCategories.State state=HomeCategories.read(this);if(!preview&&!state.enabled){finish();return;}
         timer.removeCallbacks(idleTimeout);idle.stop();restoreChrome(false);quietChrome.clear();touchWake=false;
@@ -53,11 +54,12 @@ public final class CategoryHomeActivity extends Activity {
         release();root.removeAllViews();rows.clear();root.setBackgroundColor(config.backgroundColor);
         View probe=getLayoutInflater().inflate(R.layout.item_app,root,false);typeface=((TextView)probe.findViewById(R.id.name)).getTypeface();
         ink=ProfileStore.preferences(this).getBoolean(HomePolish.HEADER,false)?PolishPolicy.textInk(ProfileStore.preferences(this).getInt(HomePolish.INK,0),config.backgroundColor):0xfff5f7fa;
-        wallpaper=new WallpaperPlayer(this,root,config);
+        wallpaper=HomeSurfaceStyle.coversWallpaper(this)?null:new WallpaperPlayer(this,root,config);
         ThemeLibrary.Entry theme=ThemeLibrary.active();
-        if(!ProductFeatures.playlistEnabled(this)&&config.wallpaperEnabled&&theme!=null&&ThemeLibrary.liveAllowed()&&ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE,false)&&LiveVideo.supported(this,config.reducedMotion)){
+        if(!HomeSurfaceStyle.coversWallpaper(this)&&!ProductFeatures.playlistEnabled(this)&&config.wallpaperEnabled&&theme!=null&&ThemeLibrary.liveAllowed()&&ProfileStore.preferences(this).getBoolean(ThemeLibrary.LIVE,false)&&LiveVideo.supported(this,config.reducedMotion)){
             File file=new File(theme.directory,"video.mp4");if(file.isFile()){video=new LiveVideo(this,file,config.wallpaperDim);root.addView(video.view(),Math.min(1,root.getChildCount()),new FrameLayout.LayoutParams(-1,-1));}
         }
+        surfaceIndex=root.getChildCount();
         View scrim=new View(this);scrim.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);scrim.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x90000000,0x00000000,0x70000000}));root.addView(scrim,new FrameLayout.LayoutParams(-1,-1));
         LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(dp(40),dp(22),dp(40),dp(12));content.setLayoutDirection(getResources().getBoolean(R.bool.rtl_menu_bar)?View.LAYOUT_DIRECTION_RTL:View.LAYOUT_DIRECTION_LTR);root.addView(content,new FrameLayout.LayoutParams(-1,-1));
         header=new LinearLayout(this);header.setOrientation(LinearLayout.HORIZONTAL);header.setGravity(Gravity.CENTER_VERTICAL);content.addView(header,new LinearLayout.LayoutParams(-1,-2));
@@ -76,6 +78,8 @@ public final class CategoryHomeActivity extends Activity {
         if(rows.isEmpty()){TextView empty=text("No apps are available in these rows. Open Settings → Apps & rows → Categories to choose apps, or return to your existing layout.",18);empty.setPadding(0,dp(24),0,dp(24));body.addView(empty);settings.requestFocus();}
         else if(preview&&state.rows.isEmpty()){TextView hint=text("Create named rows in Settings → Apps & rows → Categories. Favorites above are your existing apps.",16);hint.setPadding(0,dp(12),0,dp(12));body.addView(hint);}
         rendered=ProfileStore.id()+"\n"+ProfileStore.preferences(this).getString(HomeCategories.KEY,"");
+        surface=HomeSurfaceStyle.attach(this,root,surfaceIndex,rows.isEmpty()?null:rows.get(0).list);
+        if(surface!=null)for(int i=1;i<rows.size();i++)surface.addDock(rows.get(i).list);
         if(wallpaper!=null)wallpaper.start();if(video!=null)video.start();timer.removeCallbacks(tick);timer.post(tick);
         body.post(()->{RowView desired=null;for(RowView row:rows)if(row.id.equals(lastRow))desired=row;if(desired==null&&!rows.isEmpty())desired=rows.get(0);if(desired!=null)desired.focus(selections.get(desired.id),0);armIdle();if(getIntent().getBooleanExtra(IDLE_PREVIEW,false)){getIntent().removeExtra(IDLE_PREVIEW);timer.removeCallbacks(idleTimeout);idle.quiet=true;fadeChrome();}});
     }
@@ -159,7 +163,7 @@ public final class CategoryHomeActivity extends Activity {
         if(action==android.view.MotionEvent.ACTION_DOWN)armIdle();return super.dispatchTouchEvent(event);
     }
     @Override protected void onResume(){super.onResume();resumed=true;render();ProductFeatures.resumed(this);}
-    @Override protected void onPause(){resumed=false;ProductFeatures.paused(this);timer.removeCallbacks(tick);timer.removeCallbacks(idleTimeout);idle.stop();touchWake=false;restoreChrome(false);if(wallpaper!=null)wallpaper.stop();if(video!=null)video.stop();super.onPause();}
+    @Override protected void onPause(){resumed=false;if(surface!=null){surface.close();surface=null;}ProductFeatures.paused(this);timer.removeCallbacks(tick);timer.removeCallbacks(idleTimeout);idle.stop();touchWake=false;restoreChrome(false);if(wallpaper!=null)wallpaper.stop();if(video!=null)video.stop();super.onPause();}
     @Override public void onTrimMemory(int level){super.onTrimMemory(level);ProductFeatures.trimArtwork(level);}
     @Override protected void onDestroy(){release();timer.removeCallbacksAndMessages(null);super.onDestroy();}
     @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(!focused)timer.removeCallbacks(idleTimeout);else if(resumed){armIdle();String current=ProfileStore.id()+"\n"+ProfileStore.preferences(this).getString(HomeCategories.KEY,"");if(!current.equals(rendered))root.post(()->{if(resumed&&hasWindowFocus())render();});}}

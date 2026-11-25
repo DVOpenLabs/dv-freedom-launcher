@@ -1,7 +1,8 @@
 # Developer guide
 
 DV Freedom is an independent CleanYourTV derivative. Start with the [project README](../README.md)
-for current features, screenshots, platform limits and source setup.
+for current features, screenshots, platform limits and source setup. The current 1.0.0-rc1
+candidates have platform-specific capabilities and hardware acceptance limits; they are not general stable releases.
 
 | Guide | Purpose |
 | --- | --- |
