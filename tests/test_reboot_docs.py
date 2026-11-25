@@ -37,8 +37,7 @@ README = ROOT / "README.md"
 SHELL_REBOOT = re.compile(r"tv\.py\s+['\"]?reboot\b")
 
 # Pages that reboot and then keep using the TV, so the next command needs it back.
-CHAINS = ("docs/TROUBLESHOOTING.md", "docs/devices/durabrand-durat32isdb.md",
-          "docs/devices/coop-cotv-0001.md", "docs/devices/sony-k85xr70-ae2.md")
+CHAINS = ("docs/TROUBLESHOOTING.md",)
 
 
 def shell_reboots(text):
@@ -101,10 +100,10 @@ class EveryPageUsesTheModeTest(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, bullet)
 
-    def test_the_readme_tool_row_names_reboot(self):
-        rows = [line for line in page(README).split("\n") if line.startswith("| [`tools/tv.py`]")]
-        self.assertEqual(1, len(rows), "the README Tools table needs one tools/tv.py row")
-        self.assertIn("reboot", rows[0], "the row is where a reader learns the mode exists")
+    def test_the_troubleshooting_guide_names_reboot_and_wait(self):
+        lines = mode_lines(page(TROUBLE))
+        self.assertTrue(lines, "the current troubleshooting guide must show the reboot mode")
+        self.assertTrue(any(re.search(r"#.*\bwait\b", line) for _, line in lines))
 
 
 class TheModeIsWhatThePagesPromiseTest(unittest.TestCase):

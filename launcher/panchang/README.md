@@ -1,6 +1,6 @@
 # DV Freedom Panchang
 
-Optional offline Android TV calendar, adapted from CleanYourTV `addons/hindu-calendar` at
+Optional offline Android TV calendar, adapted from the CleanYourTV Hindu Calendar add-on at
 `7b7666ad05a3a62ba25768c51fbf06e9c4e67da5` (MIT, Gathin; see LICENSE). The astronomy,
 regional calendar and upstream tests are retained. Build as the `:panchang` module with the launcher
 Gradle wrapper; the release configuration uses the same signing convention as the other optional apps.

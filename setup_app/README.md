@@ -1,10 +1,11 @@
-# DV Freedom Setup — private release candidate
+# DV Freedom Setup
 
 One local Windows GUI for Android TV/Google TV, native LG/Samsung pilots, experimental hosted
 VIDAA/Vizio editions and a Roku ambient-app builder. Each path explains its own requirements and
 limits before proceeding; these are not equivalent full-Home replacements. See
-[all-platform setup](ALL-PLATFORMS.md). The package includes Python, UI and a verified offline Android
-APK. No AI account is required. The setup browser connects to loopback; an optional, separately
+[all-platform setup](ALL-PLATFORMS.md). The public Setup ZIP includes the GUI, a signed Android TV
+launcher and 24 optional add-ons. On Windows, install Python 3.12 with the Windows Python launcher,
+extract the ZIP and open **Start Setup.cmd**. No AI account is required. The setup browser connects to loopback; an optional, separately
 reviewed hosted Home listener binds one selected LAN address for its paired TV. Records stay local.
 
 ## What it does
@@ -56,6 +57,10 @@ personal media import and AI-provider calls are not part of this installer.
 
 ## Run from source
 
+For the public Windows test, extract the Setup ZIP and open **Start Setup.cmd** with Python
+3.12 installed. It starts the local GUI and uses the bundled signed TV release and add-on
+catalogue. The separate phone application has its own distribution requirements.
+
 The Android bundle is built from the current full product. VIDAA and Vizio now have separate experimental hosted
 setup paths; Roku has an ambient-package builder with official manual-sideload instructions.
 **Other smart TV** remains a manual privacy-guide path. Native LG/Samsung pilots are retained;
@@ -82,8 +87,8 @@ Use JDK 17, SDK 34/build-tools 34.0.0, and a project-local Python environment fr
 `requirements-build-lock.txt`. Read the deliberate [identity/signing plan](../product/RELEASE-IDENTITY.md).
 
 ```sh
-python -m setup_app.build_release --key-dir <private-directory-outside-repository> --init-keys
-python -m setup_app.build_release --key-dir <same-private-directory> --channel release-candidate
+python -m setup_app.build_release --key-dir <private-directory-outside-repository> --init-keys --channel stable
+python -m setup_app.build_release --key-dir <same-private-directory> --channel stable
 ```
 
 Use `--init-keys` only for the first build; it explicitly creates persistent release/catalog keys.
@@ -179,7 +184,7 @@ APK/recovery data is ignored by Git; do not commit binaries, private connection 
 
 ## Optional features
 
-The 1.0.0-rc1 launcher includes folders, Simple/All settings, Control Center, Wallpaper Studio
+The 1.0.0 launcher includes folders, Simple/All settings, Control Center, Wallpaper Studio
 and offline setup help. Add-on Center’s **DV Freedom Companions** entry also explains Discover,
 Immich/WebDAV photos and explicitly reviewed Gemini drafts. Bring your own credentials in the private
 TV forms; installing or opening the panel never enables a connection. Phone Remote’s optional setup/

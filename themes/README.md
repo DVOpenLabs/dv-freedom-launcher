@@ -51,6 +51,15 @@ A new key needs one there in the same pull request.
 
 | Key | Type | Meaning |
 |---|---|---|
+| `home_style_picker` | bool | Enables the Home style chooser; false by default. A saved choice takes precedence when enabled. |
+| `local_profiles` | bool | Enables local profile support; false by default. Profiles contain launcher preferences, not streaming accounts. |
+| `theme_library` | bool | Enables the theme library; false by default. |
+| `live_wallpapers` | bool | Enables optional live wallpaper support; false by default. |
+| `appearance_controls` | bool | Enables appearance controls, including saved tile spacing; false by default. |
+| `tile_gap` | 0 to 32 | Default spacing between tiles; 0 by default. A valid saved spacing takes precedence when appearance controls are enabled. |
+| `input_visibility_choice` | bool | Enables the saved HDMI visibility choice; false by default. |
+| `hide_inactive_hdmi` | bool | Default for hiding inactive HDMI inputs; false by default. A saved choice takes precedence when input visibility choice is enabled. |
+| `tv_button_picker` | bool | Enables the TV-button action picker; false by default. |
 | `dock_apps` | list of package names | The dock row, in order; missing apps are skipped |
 | `fill_dock` | bool | Fill the dock slots `dock_apps` leaves free with the first grid apps (true by default); false leaves them empty |
 | `hidden_apps` | list of package names | Never shown as tiles |

@@ -70,7 +70,7 @@ class CheckCommandLineTest(unittest.TestCase):
         self.state_path.write_text(json.dumps(state))
 
     def run_check(self, *args):
-        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home),
+        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home), USERPROFILE=str(self.home),
                    FAKE_TV_STATE=str(self.state_path))
         return subprocess.run(
             [sys.executable, str(self.repo / "tools" / "check.py"), *args],

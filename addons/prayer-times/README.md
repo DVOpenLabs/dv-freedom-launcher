@@ -21,3 +21,7 @@ shortcut, change system time or configure a source. From source, use JDK17/SDK34
 
 The module metadata is retained for compatible launchers; DV Freedom also opens it as an ordinary
 optional app. Original authorship and MIT licensing remain in the source and root notices.
+
+## Permissions
+
+`INTERNET` supports the configured Aladhan request. No location permission, overlays, alarms or boot service.

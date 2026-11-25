@@ -127,7 +127,7 @@ class CheckExitCodeTest(unittest.TestCase):
         self.state_path.write_text(json.dumps(state))
 
     def run_check(self, *args, host="192.168.1.50"):
-        env = dict(os.environ, HOME=str(self.home), FAKE_TV_STATE=str(self.state_path))
+        env = dict(os.environ, HOME=str(self.home), USERPROFILE=str(self.home), FAKE_TV_STATE=str(self.state_path))
         env.pop("TV_HOST", None)
         if host is not None:
             env["TV_HOST"] = host

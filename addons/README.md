@@ -1,9 +1,8 @@
 # Add-ons
 
-DV Freedom Setup's **Add-on Center** offers ten signed optional packages: Weather, Sleep Timer,
-World Clock, Quiet Hours, DV Freedom Companions, Phone Remote, TV Inspector, Bluetooth Connect,
-Digital Rain and News/RSS. They are reviewed and installed individually; permissions, connections and
-system screensaver selection are separate choices. Other entries below remain source-only options.
+DV Freedom Setup's **Add-on Centre** offers individually reviewed optional packages when their signed
+artifacts are included. Permissions, connections and system screensaver selection are separate choices.
+See the [Add-on Centre guide](../product/ADDONS.md) for available package definitions and limitations.
 
 Small, optional Android TV apps that plug into the launcher as a **module card**, kept in this repo
 so they are easy to find, build and review. The launcher in [`launcher/`](../launcher/) never
@@ -12,8 +11,15 @@ the core bigger or change how it behaves. You install an add-on only if you want
 
 ## Add-ons
 
+Screenshots linked to upstream show the original add-on and do not establish DV Freedom device acceptance.
+
 | Add-on | What it does | Author | Tested on | Permissions | Screenshot |
 |---|---|---|---|---|---|
+| [Files Card](files-card/) | Opens a supported installed file manager | CleanYourTV contributors | Pending DV Freedom acceptance | None | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/d11bd68c9ac45b2fb38480941586d17930137e9d/addons/files-card/screenshot.jpg" width="240" alt="Upstream files-card screenshot"> |
+| [Koi Pond](koi-pond/) | Optional offline ambient scene | CleanYourTV contributors | Pending DV Freedom acceptance | None | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/d11bd68c9ac45b2fb38480941586d17930137e9d/addons/koi-pond/screenshot.jpg" width="240" alt="Upstream koi-pond screenshot"> |
+| [Neon Dream](neon-dream/) | Optional offline ambient scene | CleanYourTV contributors | Pending DV Freedom acceptance | None | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/d11bd68c9ac45b2fb38480941586d17930137e9d/addons/neon-dream/screenshot.jpg" width="240" alt="Upstream neon-dream screenshot"> |
+| [Nepali Calendar](nepali-calendar/) | Offline Bikram Sambat calendar and optional clock screensaver | CleanYourTV contributors | Upstream report; DV Freedom acceptance pending | None | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/d11bd68c9ac45b2fb38480941586d17930137e9d/addons/nepali-calendar/screenshot.jpg" width="240" alt="Upstream nepali-calendar screenshot"> |
+| [Tatami](tatami/) | Optional offline ambient scene | CleanYourTV contributors | Pending DV Freedom acceptance | None | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/d11bd68c9ac45b2fb38480941586d17930137e9d/addons/tatami/screenshot.jpg" width="240" alt="Upstream tatami screenshot"> |
 | [Jewish Calendar](jewish-calendar/) | Offline Hebrew and Gregorian dates, holiday/Shabbat greetings, and an optional clock screensaver | [lionlev21](https://github.com/lionlev21) | Android TV 12 (model private) | None | <img src="jewish-calendar/screenshot.jpg" width="240" alt="Jewish Calendar on a TV"> |
 | [Frigate Glance](frigate-glance/) | Frigate camera pop-ups over whatever is playing | [NickLD](https://github.com/NickLD) | TCL 65Q650G | overlay, accessibility (card keys), network, foreground service | <img src="frigate-glance/screenshot.jpg" width="240" alt="Frigate Glance on a TV"> |
 | [Capacity Stats](capacity-stats/) | Available/total and used/total RAM; available/total storage | [lionlev21](https://github.com/lionlev21) | Android TV 12 (model private) | None | <img src="capacity-stats/screenshot.jpg" width="240" alt="Capacity Stats on a TV"> |

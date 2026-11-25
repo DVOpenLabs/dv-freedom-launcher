@@ -120,7 +120,12 @@ class EmptyListTest(unittest.TestCase):
         for client in (self.tools / "venv" / "bin" / "python",
                        self.tools / "venv" / "Scripts" / "python.exe"):
             client.parent.mkdir(parents=True, exist_ok=True)
-            client.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
+            if os.name == "nt" and client.suffix == ".exe":
+                shutil.copy2(Path(sys.base_prefix) / "Lib" / "venv" / "scripts" / "nt" / "python.exe", client)
+                (client.parent.parent / "pyvenv.cfg").write_text(
+                    "home = " + sys.base_prefix + "\ninclude-system-site-packages = true\n")
+            else:
+                client.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
             client.chmod(0o755)
 
         self.home = self.base / "home"
@@ -147,7 +152,7 @@ class EmptyListTest(unittest.TestCase):
         return state
 
     def disable(self, entry):
-        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home),
+        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home), USERPROFILE=str(self.home),
                    FAKE_TV_STATE=str(self.state_path))
         if entry == "sh":
             if os.name != "posix" or not shutil.which("bash"):

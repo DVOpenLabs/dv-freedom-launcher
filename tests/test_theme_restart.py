@@ -296,6 +296,7 @@ class Recovery(unittest.TestCase):
 
 
 class RemoteCycle(unittest.TestCase):
+    @unittest.skipUnless(os.name == "posix", "requires a POSIX shell")
     def test_restore_runs_on_normal_exit_settings_failure_and_remote_termination(self):
         # Run the actual device-side command in a POSIX shell. The settings stub
         # writes files; TERM simulates a remote shell being torn down mid-cycle.
@@ -325,6 +326,7 @@ sleep() { :; }
 
 
 class ExitStatus(unittest.TestCase):
+    @unittest.skipUnless(os.name == "posix", "requires a POSIX shell")
     def test_real_posix_shell_marker_checks_nonzero_exit(self):
         class Local:
             def shell(self, command, **kwargs):

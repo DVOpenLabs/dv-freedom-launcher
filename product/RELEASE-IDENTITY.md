@@ -4,8 +4,8 @@ This guide documents package identity, signing and installation/recovery contrac
 
 ## New installations
 
-The full community product defaults to `com.dvopenlabs.freedomlauncher`, version code 32,
-`1.0.0-rc1`, minimum Android 8/API 26. The inherited reference variant keeps its identity,
+The full community product defaults to `com.dvopenlabs.freedomlauncher`, version code 33,
+`1.0.0`, minimum Android 8/API 26. The inherited reference variant keeps its identity,
 version and size gate. An existing installation requires the same application ID and compatible signer to preserve its data.
 
 `-PfreedomRelease=true` requires the standalone community identity and externally supplied PKCS12
@@ -43,9 +43,10 @@ separate app; a different signer cannot update existing private app data. Use ex
 when migrating between identities, and keep the original Home available until the new setup is accepted.
 Test preference changes in a separate local profile and retain a private recovery point.
 
-Fresh standalone install/update acceptance on a spare supported device, physical remote and protected
-playback, novice usability, Windows signing/distribution and native LG acceptance remain release gates.
-Source publication does not imply that a signed production binary is available.
+The standalone Android installer was exercised on Sony hardware with a fresh install, an RC1-to-1.0.0
+upgrade, timed reversion and recovery to the original Home. First-time Setup feedback remains open.
+The Windows executable still requires distribution signing. Native LG and other TV platforms have
+their own hardware acceptance paths.
 
 
 The Add-on Center uses a separate signed `addons/catalog.json` under the same pinned catalogue
@@ -63,6 +64,6 @@ rebuilt and verified before distributing updated companion binaries. Weather/Sle
 their earlier package/version contracts. New phone setup is an app-owned, same-signer provider opt-in;
 it adds no Internet permission to the launcher or automatic Accessibility/system grant.
 
-The separate native phone Setup candidate is code 3 / `1.0.0-rc1`. Both desktop and phone Setup reject
+The separate native phone Setup candidate is code 4 / `1.0.0-rc2`. Both desktop and phone Setup reject
 boot/setup/recovery placeholders as an original Home, including in saved recovery records. Select a
 working Home in TV settings before creating a new review if a previous record points to a placeholder.

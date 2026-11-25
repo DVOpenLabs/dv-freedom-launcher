@@ -134,7 +134,7 @@ class RecoveryRecordTest(unittest.TestCase):
     def run_script(self, script, *args):
         if os.name != "posix" or not shutil.which("bash"):
             raise unittest.SkipTest(f"{script} is a POSIX script; it needs bash")
-        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home),
+        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home), USERPROFILE=str(self.home),
                    FAKE_TV_STATE=str(self.state_path))
         return subprocess.run(
             ["bash", str(self.repo / "tools" / script), *args],
@@ -410,7 +410,7 @@ class RecoveryRecordTest(unittest.TestCase):
     # recovery.py, already answered the same typo with "cannot read the list: <path>".
 
     def run_recovery(self, *args):
-        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home),
+        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home), USERPROFILE=str(self.home),
                    FAKE_TV_STATE=str(self.state_path))
         return subprocess.run(
             [sys.executable, str(ROOT / "tools" / "recovery.py"), *args],

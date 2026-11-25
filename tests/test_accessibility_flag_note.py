@@ -142,9 +142,13 @@ class AccessibilityFlagNoteTest(unittest.TestCase):
                   if not target.startswith(("http://", "https://", "#"))
                   and not (TROUBLE.parent / target.split("#", 1)[0]).exists()]
         self.assertEqual(broken, [], "the bullet must not link a page that does not exist")
-        for target in LINK.findall(self.note):
-            if target.startswith(("http://", "https://")):
-                self.assertEqual(target, "https://github.com/Gathin23/cleanyourtv/issues/1047")
+        external = {target for target in LINK.findall(self.note)
+                    if target.startswith(("http://", "https://"))}
+        self.assertEqual(external, {
+            "https://github.com/Gathin23/cleanyourtv/issues/1047",
+            "https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/docs/devices/tcl-55c728-g05-4k-gb.md#further-g05-unit-startup-permission-with-stock-home-retained",
+            "https://github.com/DVOpenLabs/dv-freedom-launcher/blob/0bdae66430597529a86948976b18204e28ab6f3e/examples/tcl-55c725/README.md",
+        })
 
     def test_bullet_extraction_stops_at_the_next_bullet(self):
         sample = "\n".join([START + " one", "  two", "- **Next** three"])

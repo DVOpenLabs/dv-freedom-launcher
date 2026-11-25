@@ -145,7 +145,13 @@ def _stock_flag(declared):
 
 
 def problems(text):
-    return lines_problems(text, resolve_in_repo, param_block_of)
+    def resolve(token):
+        # This activation script is generated locally by the documented venv command.
+        if token.replace("\\", "/").lstrip("./") == ".venv/Scripts/Activate.ps1".lstrip("./"):
+            if re.search(r"\bpython(?:3)?\s+-m\s+venv\s+\.venv\b", text):
+                return [""]
+        return resolve_in_repo(token)
+    return lines_problems(text, resolve, param_block_of)
 
 
 def importable_files():
@@ -192,6 +198,11 @@ class WindowsCommandTest(unittest.TestCase):
 
 class ProblemReaderTest(unittest.TestCase):
     """The checks themselves, on documents written here."""
+
+    def test_generated_activation_requires_its_creation_step(self):
+        activation = r".venv\Scripts\Activate.ps1"
+        self.assertTrue(problems(activation))
+        self.assertEqual([], problems("python -m venv .venv\n" + activation))
 
     SCRIPTS = {
         "tools/restore.ps1": "param(\n    [Parameter(Mandatory = $true, Position = 0)][string]$List,\n"

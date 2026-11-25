@@ -55,7 +55,9 @@ class DebloatPathsTest(unittest.TestCase):
             'fi\n'
             # The read-back after the batch (#1376) answers nothing, so CAPTURE keeps the batch.
             'case "$*" in *"pm list packages -e"*) exit 0 ;; esac\n'
-            'cat > "$CAPTURE"\n'
+            'batch=$(cat)\n'
+            'case "$batch" in *"pm list packages -e --user 0"*) exit 0 ;; esac\n'
+            'printf "%s\\n" "$batch" > "$CAPTURE"\n'
         )
         client.chmod(0o755)
         home = repo.parent / "home"

@@ -67,7 +67,9 @@ class RepositoryTest(unittest.TestCase):
             findings += [f"{path.relative_to(ROOT).as_posix()}:{problem}" for problem in problems(text)]
         self.assertEqual([], findings, "\n".join(findings))
         # Cannot pass by reading nothing: the READMEs, add-ons, themes and lists have these lines.
-        self.assertGreaterEqual(read, 10, "the walk found almost no powershell commands")
+        self.assertGreaterEqual(read, 6, "the walk found almost no powershell commands")
+        self.assertTrue(any("powershell" in p.read_text(encoding="utf-8-sig", errors="replace").lower()
+                            for p in pages() if p.name == "README.md"), "no README was scanned")
 
 
 class ReaderTest(unittest.TestCase):

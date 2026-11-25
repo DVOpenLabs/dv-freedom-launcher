@@ -26,8 +26,8 @@ android {
         applicationId selectedId
         minSdk 26
         targetSdk 34
-        versionCode communityFeatures ? 32 : 13
-        versionName communityFeatures ? '1.0.0-rc1' : '3.0-community-alpha5'
+        versionCode communityFeatures ? 33 : 13
+        versionName communityFeatures ? '1.0.0' : '3.0-community-alpha5'
     }
 
     signingConfigs {
@@ -122,7 +122,68 @@ tasks.configureEach { task ->
             if (!communityFeatures) options += '--shorten-resource-paths'
             options += ['--resources-config-path', keep, '-o', temporary, archive]
             exec { commandLine options }
+
             java.nio.file.Files.move(temporary.toPath(), archive.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
+}
+
+// Reference-only lossless compression, before re-signing with the same debug identity.
+// Work in temporary files and replace the assembled APK only after payload and signer verification.
+if (!communityFeatures) {
+    tasks.configureEach { task ->
+        if (task.name == 'packageRelease') task.doLast {
+            def apk = new File(layout.buildDirectory.get().asFile, 'outputs/apk/release/app-release.apk')
+            if (!apk.isFile()) throw new GradleException('Missing reference APK')
+            def sdkTools = new File(android.sdkDirectory, 'build-tools/' + android.buildToolsVersion)
+            def windows = System.getProperty('os.name').toLowerCase().contains('windows')
+            def zipalign = new File(sdkTools, windows ? 'zipalign.exe' : 'zipalign')
+            def apksigner = new File(sdkTools, windows ? 'apksigner.bat' : 'apksigner')
+            def aligned = new File(apk.parentFile, 'reference-compressed.tmp')
+            def signed = new File(apk.parentFile, 'reference-signed.tmp')
+            def config = android.signingConfigs.debug
+            def payload = { File file ->
+                def result = [:]
+                def zip = new java.util.zip.ZipFile(file)
+                try {
+                    zip.entries().each { entry ->
+                        def n = entry.name
+                        if (!entry.directory && !(n == 'META-INF/MANIFEST.MF' || n ==~ /META-INF\/[^\/]+\.(SF|RSA|DSA|EC)/)) {
+                            def digest = java.security.MessageDigest.getInstance('SHA-256')
+                            zip.getInputStream(entry).withCloseable { input ->
+                                byte[] buffer = new byte[8192]
+                                for (int count = input.read(buffer); count != -1; count = input.read(buffer)) digest.update(buffer, 0, count)
+                            }
+                            if (result.put(n, digest.digest().encodeHex().toString()) != null) throw new GradleException("Duplicate APK entry: $n")
+                        }
+                    }
+                } finally { zip.close() }
+                result
+            }
+            def certificate = { File file ->
+                def output = new ByteArrayOutputStream()
+                exec { commandLine apksigner, 'verify', '--print-certs', file; standardOutput = output }
+                def line = output.toString('UTF-8').readLines().find { it.startsWith('Signer #1 certificate SHA-256 digest:') }
+                if (!line) throw new GradleException('Could not verify APK signer')
+                line
+            }
+            try {
+                aligned.delete(); signed.delete()
+                exec { commandLine zipalign, '-z', '-f', '4', apk, aligned }
+                exec {
+                    environment 'DV_REFERENCE_STORE_PASSWORD', config.storePassword
+                    environment 'DV_REFERENCE_KEY_PASSWORD', config.keyPassword
+                    commandLine apksigner, 'sign', '--ks', config.storeFile, '--ks-key-alias', config.keyAlias,
+                            '--ks-pass', 'env:DV_REFERENCE_STORE_PASSWORD', '--key-pass', 'env:DV_REFERENCE_KEY_PASSWORD',
+                            '--v4-signing-enabled', 'false', '--out', signed, aligned
+                }
+                exec { commandLine zipalign, '-c', '4', signed }
+                if (payload(apk) != payload(signed)) throw new GradleException('Reference compression changed APK payload')
+                if (certificate(apk) != certificate(signed)) throw new GradleException('Reference signer changed')
+                if (signed.length() > 589824) throw new GradleException('Reference APK exceeds the 589824-byte limit')
+                java.nio.file.Files.move(signed.toPath(), apk.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                        java.nio.file.StandardCopyOption.ATOMIC_MOVE)
+            } finally { aligned.delete(); signed.delete() }
         }
     }
 }

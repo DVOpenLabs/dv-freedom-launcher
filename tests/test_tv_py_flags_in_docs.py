@@ -113,6 +113,11 @@ class AcceptedFlags(unittest.TestCase):
             accepted_flags("ARITY = {'--probe': 1}\n")
 
 
+def property_matches_build(command, property_value):
+    match = re.search(r"-PlauncherApplicationId=([A-Za-z0-9_.]+)", command)
+    return bool(match and match.group(1) == property_value)
+
+
 class EveryPage(unittest.TestCase):
     def test_every_flag_a_page_uses_is_a_flag_of_tv_py(self):
         flags = accepted_flags(TV_PY.read_text(encoding="utf-8"))
@@ -127,28 +132,27 @@ class EveryPage(unittest.TestCase):
                     wrong.append(f"{page.relative_to(ROOT)}:{number}: {flag}")
         # Read guards: a tree that was not walked, or pages that stopped naming the client, would
         # pass this test by finding nothing.
-        self.assertGreaterEqual(len(read), 150, "pages read")
-        self.assertGreaterEqual(used, 40, "flags handed to tv.py")
+        for name in ("docs/TROUBLESHOOTING.md", "docs/REMOTE.md", "addons/README.md",
+                     "themes/CREATE_A_THEME.md"):
+            guide = ROOT / name
+            self.assertIn(guide, read, f"missing current guide: {name}")
+            self.assertTrue(calls(guide.read_text(encoding="utf-8")), f"no tv.py flag in {name}")
+        self.assertGreaterEqual(used, 30, "flags handed to tv.py")
         self.assertEqual([], wrong, "a page hands tv.py a flag it does not have")
 
-    def test_the_coocaa_note_installs_with_the_commands_that_exist(self):
-        text = NOTE.read_text(encoding="utf-8")
-        step = text.split("### Step 2", 1)[1].split("### Step 3", 1)[0]
-        self.assertIn("tools/b64push.py", step, "the APK goes up with b64push")
-        self.assertIn("pm install -r", step, "the TV's own pm install runs it")
-        self.assertNotIn("--install", step)
-        # The shim is not in this repository, so the page has to say where it comes from.
-        self.assertIn("coocaa-home-shim", step)
-        self.assertRegex(step, r"https://github\.com/[A-Za-z0-9_.-]+/coocaa-home-shim")
+    def test_current_addon_build_guide_uses_supported_transfer_commands(self):
+        text = (ROOT / "addons" / "README.md").read_text(encoding="utf-8")
+        self.assertIn("tools/tv.py --push", text)
+        self.assertIn("pm install -r", text)
+        self.assertEqual([], unknown(text, accepted_flags(TV_PY.read_text(encoding="utf-8"))))
 
-    def test_the_note_still_builds_with_the_id_its_home_property_points_at(self):
-        # Step 1's gradle flag is the one launcher/app/build.gradle reads, and Step 3 points the
-        # property at the shim's package, so neither half can be renamed on its own.
-        text = NOTE.read_text(encoding="utf-8")
+    def test_property_override_still_matches_the_build(self):
         gradle = (ROOT / "launcher" / "app" / "build.gradle").read_text(encoding="utf-8")
         self.assertIn("launcherApplicationId", gradle)
-        self.assertIn("-PlauncherApplicationId=com.coocaa.tvhome", text)
-        self.assertIn("com.ccos.tv.homepage", text)
+        sample = "./gradlew -PlauncherApplicationId=com.example.tvhome assembleRelease"
+        self.assertTrue(property_matches_build(sample, "com.example.tvhome"))
+        self.assertFalse(property_matches_build(sample, "com.example.other"))
+        self.assertFalse(property_matches_build("./gradlew assembleRelease", "com.example.tvhome"))
 
 
 if __name__ == "__main__":

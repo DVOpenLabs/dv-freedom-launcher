@@ -4,4 +4,6 @@ Optional Android app adapted from [CleanYourTV](https://github.com/Gathin23/clea
 
 Build from this directory with `../../launcher/gradlew.bat testReleaseUnitTest lintRelease assembleRelease` (JDK 17, SDK 34). It is packaged separately from the launcher. Install through the reviewed Add-on Centre; installing does not select Home, enable a schedule or select a screensaver.
 
+## Permissions
+
 Weekly wake/sleep schedules start off. Exact alarms, draw-over-apps and standby Accessibility are separate choices. Wake locks and boot/time-change receivers only support an enabled schedule. Hardware wake and HDMI-CEC behavior vary; no automatic grants.

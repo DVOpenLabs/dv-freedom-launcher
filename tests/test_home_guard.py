@@ -129,7 +129,7 @@ class HomeGuardTest(unittest.TestCase):
                        self.tools / "venv" / "Scripts" / "python.exe"):
             client.parent.mkdir(parents=True, exist_ok=True)
             if os.name == 'nt' and client.suffix == '.exe':
-                shutil.copy2(sys.executable, client)
+                shutil.copy2(Path(sys.base_prefix) / "Lib" / "venv" / "scripts" / "nt" / "python.exe", client)
                 (client.parent.parent / 'pyvenv.cfg').write_text('home = '+sys.base_prefix+'\ninclude-system-site-packages = true\n')
             else:
                 client.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
@@ -159,7 +159,7 @@ class HomeGuardTest(unittest.TestCase):
         self.state_path.write_text(json.dumps(state))
 
     def disable(self, entry, extra_env=None, list_path=None):
-        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home),
+        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home), USERPROFILE=str(self.home),
                    FAKE_TV_STATE=str(self.state_path), **(extra_env or {}))
         if entry == "sh":
             if os.name != "posix" or not shutil.which("bash"):

@@ -42,7 +42,7 @@ class AddressChangeWarningTest(unittest.TestCase):
     def run_script(self, script, host, list_path=None):
         if os.name != "posix" or not shutil.which("bash"):
             raise unittest.SkipTest(f"{script} is a POSIX script; it needs bash")
-        env = dict(os.environ, TV_HOST=host, HOME=str(self.home), FAKE_TV_STATE=str(self.state_path))
+        env = dict(os.environ, TV_HOST=host, HOME=str(self.home), USERPROFILE=str(self.home), FAKE_TV_STATE=str(self.state_path))
         env.pop("TV_PORT", None)
         return subprocess.run(["bash", str(self.repo / "tools" / script), str(list_path or self.list_path)],
                               cwd=self.repo, env=env, capture_output=True, text=True, timeout=120)

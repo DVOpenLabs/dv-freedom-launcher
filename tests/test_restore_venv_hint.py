@@ -78,7 +78,7 @@ class RestoreVenvHintTest(unittest.TestCase):
         client.chmod(0o755)
 
     def run_script(self, script):
-        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home),
+        env = dict(os.environ, TV_HOST="192.168.1.50", HOME=str(self.home), USERPROFILE=str(self.home),
                    FAKE_TV_STATE=str(self.state_path))
         if script.endswith(".sh"):
             if os.name != "posix" or not shutil.which("bash"):

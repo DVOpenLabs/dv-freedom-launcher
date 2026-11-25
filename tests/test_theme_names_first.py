@@ -7,12 +7,11 @@ nothing said the theme had half applied. A name the check let through but b64pus
 path with ".." in it ("sunset..jpg"), stopped the same way with b64push's exit 2. Both are now
 refused in one pass next to the JSON check, before the first command reaches the TV.
 
-theme.ps1's clear also listed only lower- and upper-case extensions, so without the launcher's
-ThemeProvider it left c.JpG or e.PnG behind, which the launcher still shows (WallpaperRotation
-lower-cases the name). It now uses theme.sh's bracket globs.
+theme.ps1 now delegates collection deletion to ThemeProvider through provider_io; an unconfirmed
+delete fails closed before new images are sent. The provider boundary has its own integration tests.
 
-theme.sh runs against the fake TV of tests/test_theme_push_ownership.py. theme.ps1 cannot run here:
-its clear string runs through /bin/sh, and the order of its checks is pinned as text.
+theme.sh runs against the fake TV of tests/test_theme_push_ownership.py. The Windows script's shared
+provider route and the order of its checks are also pinned here.
 
 Run from the repository root: python3 -m unittest discover -s tests -v
 """
@@ -83,30 +82,18 @@ class ThemeNamesFirstTest(unittest.TestCase):
         self.assertEqual(sorted(p.name for p in (self.device / "wallpapers").iterdir()), sorted(names))
         self.assertEqual((self.device / "config.json").read_bytes(), self.config)
 
-    def test_the_windows_clear_removes_every_spelling_without_the_provider(self):
-        if os.name != "posix":
-            raise unittest.SkipTest("the clear runs in the TV's shell; this test needs /bin/sh")
+    def test_windows_clear_requires_confirmed_provider_deletion(self):
+        # The current transfer contract refuses to continue if collection deletion fails.
         script = (TOOLS / "theme.ps1").read_text(encoding="utf-8")
-        line = next(line for line in script.splitlines() if line.startswith("$clearWallpapers = "))
-        clear = line[len('$clearWallpapers = "'):-1]
-        self.assertNotIn("`", clear, "PowerShell escapes would make this differ from what the TV runs")
-        base = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, base, ignore_errors=True)
-        device = base / "files"
-        bin_dir = base / "bin"
-        bin_dir.mkdir()
-        content = bin_dir / "content"
-        content.write_text("#!/bin/sh\nexit 1\n")   # firmware or a launcher without the ThemeProvider
-        content.chmod(0o755)
-        command = clear.replace("$dir", str(device)).replace("$uri", URI)
-        self.assertNotIn("$", command, command)
-        (device / "wallpapers").mkdir(parents=True)
-        for name in ("a.jpg", "b.JPG", "c.JpG", "d.Jpeg", "e.PnG", "f.WebP", "g.webp", "captions.txt"):
-            (device / "wallpapers" / name).write_bytes(b"\x89picture")
-        result = subprocess.run(["/bin/sh", "-c", command], capture_output=True, text=True, timeout=60,
-                                env={**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"})
-        self.assertEqual(sorted(p.name for p in (device / "wallpapers").iterdir()), ["captions.txt"],
-                         "the launcher shows a mixed-case picture left in the folder: " + result.stderr)
+        self.assertIn('function Clear-Collection { Invoke-Tv provider_io.py delete --uri "$uri/wallpapers" }', script)
+        self.assertIn("if ($LASTEXITCODE -ne 0) { throw", script)
+        self.assertGreaterEqual(len(re.findall(r"^\s*Clear-Collection\s*$", script, re.M)), 2)
+        sys.path.insert(0, str(TOOLS))
+        import provider_io
+        command, marker = provider_io.command("delete", URI + "/wallpapers", marker="DV_IO_TEST")
+        self.assertIn("content delete", command)
+        self.assertIn(marker, command)
+        self.assertNotIn("rm -", command)
 
     def test_the_windows_script_checks_every_name_before_the_tv(self):
         """theme.ps1 cannot run here, so pin that its name check comes before its first call to tv.py."""

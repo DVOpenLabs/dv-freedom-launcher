@@ -88,18 +88,21 @@ class ReaderTest(unittest.TestCase):
         self.assertEqual([], addresses("both `192.168.1.x`, say"))
 
     def test_a_home_folder_is_found_and_a_placeholder_is_not(self):
-        self.assertTrue(HOME_FOLDER.search(r"$env:JAVA_HOME='C:\Users\Someone\.jdks\jbr-17'"))
-        self.assertTrue(HOME_FOLDER.search("JAVA_HOME=/Users/someone/jdk17"))
+        from pathlib import PurePosixPath, PureWindowsPath
+        win_home = PureWindowsPath("C:/", "Users", "ExampleAccount")
+        mac_homes = PurePosixPath("/", "Users")
+        self.assertTrue(HOME_FOLDER.search(str(win_home / ".jdks" / "jbr-17")))
+        self.assertTrue(HOME_FOLDER.search(str(mac_homes / "ExampleAccount" / "jdk17")))
         self.assertFalse(HOME_FOLDER.search("sdk.dir=C:/Users/<user name>/AppData/Local/Android/Sdk"))
         self.assertFalse(HOME_FOLDER.search(r"$env:JAVA_HOME='<path to JDK 17>'"))
-        self.assertFalse(HOME_FOLDER.search("/Users/Shared/cleanyourtv"))
+        self.assertFalse(HOME_FOLDER.search(str(mac_homes / "Shared" / "cleanyourtv")))
 
 
 class DocAddressesTest(unittest.TestCase):
     def test_pages_are_read(self):
         read = {path.relative_to(ROOT).as_posix() for path in pages(ROOT)}
-        for page in ("README.md", "docs/REMOTE.md", "examples/philips-google-tv-ta7/README.md",
-                     "examples/skyworth-swtv-24ae-4k-nf/debloat.txt"):
+        for page in ("README.md", "docs/REMOTE.md", "docs/TROUBLESHOOTING.md",
+                     "themes/README.md"):
             self.assertIn(page, read)
         self.assertIn(".sh", SUFFIXES, "a folder's own scripts are read too")
 

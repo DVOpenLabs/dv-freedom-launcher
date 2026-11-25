@@ -46,7 +46,7 @@ class RecordPerLanAddressTest(unittest.TestCase):
     def run_script(self, script, host, port=None):
         if os.name != "posix":
             raise unittest.SkipTest("The recovery shell fixture needs POSIX Python and Bash")
-        env = dict(os.environ, TV_HOST=host, HOME=str(self.home), FAKE_TV_STATE=str(self.state_path))
+        env = dict(os.environ, TV_HOST=host, HOME=str(self.home), USERPROFILE=str(self.home), FAKE_TV_STATE=str(self.state_path))
         env.pop("TV_PORT", None)
         if port:
             env["TV_PORT"] = port

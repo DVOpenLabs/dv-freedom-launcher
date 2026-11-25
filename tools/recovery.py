@@ -233,10 +233,6 @@ def find_record(list_path, host):
         # the first sorted match chose one for the owner when two spellings had each written one.
         found = list(dict.fromkeys([*found, *(other for name in names
                                    for other in same_list_records(name, list_path))]))
-        if len(found) == 1:
-            sys.stderr.write(f"using {found[0]}, the record taken for this list under another spelling "
-                             "of its path.\n")
-            return found[0]
     if not found:
         return path
     if len(found) > 1:
@@ -246,7 +242,10 @@ def find_record(list_path, host):
                          "address in turn,\nor may be records taken for this list under two spellings of "
                          "its path.\nMove the one that is not this TV's state from before cleanup aside "
                          "deliberately, then run this again.\nNothing was changed on the TV.")
-    if found[0] != path:
+    if found[0] not in names:
+        sys.stderr.write(f"using {found[0]}, the record taken for this list under another spelling "
+                         "of its path.\n")
+    elif found[0] != path:
         sys.stderr.write(f"using {found[0]}, the name an older version gave this TV's record.\n")
     return found[0]
 

@@ -6,10 +6,14 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
-**Development status:** **1.0.0-rc1 release candidates** for Android TV/Google TV, native LG/webOS,
-Samsung/Tizen, hosted VIDAA/Vizio and Roku Ambient. Candidate does not mean certified stable on every
-TV. Native and hosted editions retain their own capabilities, signing requirements and hardware checks.
-See [platform candidates](platforms/CANDIDATES.md). The Windows candidate is unsigned.
+**Download DV Freedom for Android TV and Google TV.** The public 1.0.0 test release includes the
+signed TV launcher and a desktop Setup bundle. Choose **Setup** for a guided installation with a
+recovery point. Choose **Android TV** if you already sideload apps. The release page lists checksums
+and the hardware tested. [Download version 1.0.0](https://github.com/DVOpenLabs/dv-freedom-launcher/releases/tag/v1.0.0)
+
+The Android launcher uses version code 33. LG webOS, Samsung Tizen, hosted VIDAA/Vizio and Roku
+Ambient have separate RC1 packages and hardware requirements. Samsung requires a signing profile.
+Roku runs as an ambient channel. [Platform guide](platforms/CANDIDATES.md)
 
 **Latest update — 25 November 2026:** Personalisation Studio adds optional **Atmosphere** controls:
 Onyx, Orba and Midnight calm looks, a cached soft glass dock, wallpaper-derived dock/focus colours,
@@ -117,7 +121,6 @@ artwork downloads. They do not select Android’s screensaver or change the Home
 The candidate also retains appearance presets, compatibility/recovery guidance, Storage/USB access and
 slower Classic-grid arrows. See the [feature guide](product/ANDROID-COMMUNITY.md) and
 [Companions guide](product/ANDROID-COMPANION.md#seasonal-ambient-looks) for limits.
-Source publication does not publish a new downloadable binary release.
 
 ## One setup, a clear path for each device
 
@@ -242,6 +245,12 @@ additional features; the platform editions do not have identical menus.*
 
 ## Try the Setup GUI
 
+**Windows users testing the release:** install Python 3.12 with the Windows Python launcher,
+download the **Setup** ZIP from Releases, extract it, and double-click **Start Setup.cmd**.
+On first use it prepares a local Python environment and downloads dependencies. Choose
+**Try a preview** to explore the interface, or **Connect my TV** to review an installation.
+The ZIP includes the signed TV package and the optional add-on catalogue.
+
 For source testing, use **Python 3.12** and Git. No TV is needed to explore the example journey.
 
 ```sh
@@ -275,7 +284,7 @@ platform. The primary packaged target is Windows; other desktop environments nee
 **A source checkout does not include the verified Android release bundle.** The example journey and
 read-only checks work without it; Android installation remains unavailable until a valid signed
 bundle is supplied. Developers can follow the [build/signing instructions](setup_app/README.md).
-The Windows EXE is an unsigned private release candidate; source publication does not publish a binary download.
+The public Setup ZIP runs from Python source. The standalone Windows EXE is awaiting distribution signing.
 
 Local records, keys and recovery folders stay private. See [Setup behavior and recovery](setup_app/README.md)
 and [installer prerequisites](setup_app/README.md). Closing only the browser tab leaves the
@@ -301,9 +310,9 @@ not included. Check identity, certificate and backup before installing over an e
 
 <a id="alpha-limitations"></a>
 
-## Release candidate limitations
+## Release and hardware limits
 
-This is a release candidate, not a general stable release. Model-specific remote keys, HDMI/CEC,
+First-time user feedback is open. Model-specific remote keys, HDMI/CEC,
 streaming playback, file-picker support and private-service integrations need testing on the actual
 device. A browser preview or successful app launch does not establish TV compatibility or playback.
 Expanded settings help still has English fallbacks. Native LG/Samsung and hosted/ambient editions
@@ -314,6 +323,9 @@ internal research, work plans, debug captures and test-session logs remain local
 inputs. Share a redacted issue report when reporting a reproducible product problem.
 
 ## Find your way around
+
+The optional [privacy audit guide](tools/privacy.md) explains how to review TV package and
+permission information locally.
 
 | Location | Purpose |
 | --- | --- |

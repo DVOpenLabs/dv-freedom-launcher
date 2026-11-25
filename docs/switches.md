@@ -20,6 +20,8 @@ repo that shows the key at work also counts) and add a row below:
 `tests/test_switches.py` checks that every new key has a row here with an image that exists and
 fits the rules; keys from before the rule sit on its wanted list until a screenshot arrives.
 
+Upstream screenshots `inputs_connected_only` and `icon_tiles` are from CleanYourTV revision `1684678064aa7bbb4881e6069e4cfbd4b5fc9df7`; they do not establish DV Freedom device acceptance.
+
 ## Screenshots
 
 | Key | Screenshot |
@@ -54,5 +56,14 @@ fits the rules; keys from before the rule sit on its wanted list until a screens
 | `home_long_press_home` | <img src="switches/home_long_press_home.jpg" width="320" alt="home_long_press_home on a TV"> |
 | `vpn_pill` | <img src="switches/vpn_pill.jpg" width="320" alt="vpn_pill on a TV"> |
 | `power_on_home_always` | <img src="switches/power_on_home_always.jpg" width="320" alt="power_on_home_always on a TV"> |
-| `inputs_connected_only` | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/1684678064aa7bbb4881e6069e4cfbd4b5fc9df7/docs/switches/inputs_connected_only.jpg" width="320" alt="inputs_connected_only on a TV"> |
-| `icon_tiles` | <img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/1684678064aa7bbb4881e6069e4cfbd4b5fc9df7/docs/switches/icon_tiles.jpg" width="320" alt="icon_tiles: an app drawn from its icon in the grid on a TV"> |
+| `inputs_connected_only` | <img src="switches/inputs_connected_only.jpg" width="320" alt="inputs_connected_only on a TV"> |
+| `icon_tiles` | <img src="switches/icon_tiles.jpg" width="320" alt="icon_tiles: an app drawn from its icon in the grid on a TV"> |
+| `appearance_controls` | <img src="switches/appearance_controls.jpg" width="320" alt="Focus outline control enabled by the theme"> |
+| `home_style_picker` | <img src="switches/home_style_picker.jpg" width="320" alt="Home style picker"> |
+| `input_visibility_choice` | <img src="switches/input_visibility_choice.jpg" width="320" alt="Input visibility control"> |
+| `hide_inactive_hdmi` | <img src="switches/input_visibility_choice.jpg" width="320" alt="Input visibility set to hide inactive bare ports"> |
+| `live_wallpapers` | <img src="switches/live_wallpapers.jpg" width="320" alt="Silent live wallpaper switch"> |
+| `local_profiles` | <img src="switches/local_profiles.jpg" width="320" alt="Launcher profiles control"> |
+| `theme_library` | <img src="switches/theme_library.jpg" width="320" alt="Manage offline themes control"> |
+| `tile_gap` | <img src="switches/tile_gap.jpg" width="320" alt="App spacing options with the theme value selected"> |
+| `tv_button_picker` | <img src="switches/tv_button_picker.jpg" width="320" alt="TV button destination control"> |
