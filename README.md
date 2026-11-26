@@ -18,6 +18,20 @@ The Android launcher uses version code 33. LG webOS, Samsung Tizen, hosted VIDAA
 Ambient have separate RC1 packages and hardware requirements. Samsung requires a signing profile.
 Roku runs as an ambient channel. [Platform guide](platforms/CANDIDATES.md)
 
+## Freedom Showcase on two TVs
+
+**The Hobbit on Sony BRAVIA.** Move the lantern through the Shire gallery and press OK to explore the round door.
+
+![The round green door in the Shire gallery, with remote controls along the bottom](docs/screenshots/sony-hobbit.png)
+
+**Harry Potter on Google TV Streamer.** Browse the candlelit library with the remote. The selected film turns face-out, and OK opens its movie options.
+
+![Prisoner of Azkaban facing forward among eight Harry Potter films on a candlelit bookshelf](docs/screenshots/streamer-harry-potter.png)
+
+Both images were captured from the launcher running on the named devices with imported theme artwork.
+
+## Launcher updates
+
 **Latest update — 25 November 2026:** Personalisation Studio adds optional **Atmosphere** controls:
 Onyx, Orba and Midnight calm looks, a cached soft glass dock, wallpaper-derived dock/focus colours,
 weather scenery from an approved fresh local cache, and a flowing clock with a separate draft preview.
@@ -357,8 +371,8 @@ Useful small fixes can still be proposed separately to CleanYourTV.
 
 The original [MIT licence](LICENSE), font licences and integrated-source notices remain included.
 Projectivy is a design/research reference; its proprietary code and artwork are not bundled. Personal
-anime wallpapers and generated videos are not part of the source distribution. README screenshots
-use only demo apps and the project's original coast illustration; [capture details](docs/screenshots/README.md).
+anime wallpapers and generated videos are not part of the source distribution. See the
+[screenshot credits](docs/screenshots/README.md) for the device captures and browser previews.
 
 DV Freedom is independent and is not an official CleanYourTV, Google, LG, Samsung, Apple, Roku or
 Projectivy release. Required source and licence attribution remains included.
