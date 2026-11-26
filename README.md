@@ -20,6 +20,18 @@ Roku runs as an ambient channel. [Platform guide](platforms/CANDIDATES.md)
 
 ## Freedom Showcase on two TVs
 
+### What you see when you press Home
+
+**The Hobbit on Sony BRAVIA.** The app row uses green emblems against the Shire hillside. The selected app's name appears below its icon.
+
+![Sony BRAVIA Home with green app icons, StbEmu (Pro) selected and a round hobbit door behind the row](docs/screenshots/sony-hobbit-home.png)
+
+**Harry Potter on Google TV Streamer.** Gold app icons sit below a moonlit Hogwarts. A snowy owl marks the selected app.
+
+![Google TV Streamer Home with Hogwarts, a snowy owl above the selected app and a row of gold icons](docs/screenshots/streamer-harry-potter-home.png)
+
+### Inside the gallery and library
+
 **The Hobbit on Sony BRAVIA.** Move the lantern through the Shire gallery and press OK to explore the round door.
 
 ![The round green door in the Shire gallery, with remote controls along the bottom](docs/screenshots/sony-hobbit.png)
@@ -28,7 +40,7 @@ Roku runs as an ambient channel. [Platform guide](platforms/CANDIDATES.md)
 
 ![Prisoner of Azkaban facing forward among eight Harry Potter films on a candlelit bookshelf](docs/screenshots/streamer-harry-potter.png)
 
-Both images were captured from the launcher running on the named devices with imported theme artwork.
+All four screenshots were captured from the launcher running on the named devices with imported theme artwork.
 
 ## Launcher updates
 
