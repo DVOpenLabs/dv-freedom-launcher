@@ -6,12 +6,13 @@ A personal TV Home with clear remote navigation, flexible app layouts, local pro
 silent live wallpapers. Developed by DVOpenLabs, independently derived from
 [CleanYourTV](https://github.com/Gathin23/cleanyourtv), with its history and MIT attribution retained.
 
+**DV Freedom Launcher 1.0.0 is stable for Android TV and Google TV (Android 8+).** [Release notes and downloads](https://github.com/DVOpenLabs/dv-freedom-launcher/releases/tag/v1.0.0)
+
 **[Download Windows Setup for x64 PCs (.exe, unsigned preview)](https://github.com/DVOpenLabs/dv-freedom-launcher/releases/download/v1.0.0/DV-Freedom-Setup-Windows-x64-1.0.0.exe)**
 
 Double-click the EXE to open the guided setup. Python is included. Choose **Try a preview** to explore
 before connecting a TV. Windows may show an unknown-publisher warning because this preview is unsigned.
 The signed Android TV APK, source-based Setup ZIP, platform builds and checksums are also available.
-[All 1.0.0 downloads](https://github.com/DVOpenLabs/dv-freedom-launcher/releases/tag/v1.0.0)
 
 The Android launcher uses version code 33. LG webOS, Samsung Tizen, hosted VIDAA/Vizio and Roku
 Ambient have separate RC1 packages and hardware requirements. Samsung requires a signing profile.
@@ -99,7 +100,7 @@ restricted modes start off. See the guides for requirements and testing limits.
 [Feature guide](product/ANDROID-COMMUNITY.md) ·
 [Report feedback](https://github.com/DVOpenLabs/dv-freedom-launcher/issues/new/choose)
 
-## New in the Android candidate
+## New in Android 1.0.0
 
 **Appearance → Cinema Studio** adds an optional logo dock, coordinated gold/silver/ember emblems,
 user-written taglines, personal poster/book/character collections, a local mood picker and procedural
@@ -120,7 +121,7 @@ power saving. It does not animate characters, hair or auras.
 tide, with preview/Apply, an expiry date and optional drifting clock. Scenes draw locally without
 artwork downloads. They do not select Android’s screensaver or change the Home wallpaper.
 
-The candidate also retains appearance presets, compatibility/recovery guidance, Storage/USB access and
+The launcher also includes appearance presets, compatibility/recovery guidance, Storage/USB access and
 slower Classic-grid arrows. See the [feature guide](product/ANDROID-COMMUNITY.md) and
 [Companions guide](product/ANDROID-COMPANION.md#seasonal-ambient-looks) for limits.
 
@@ -140,7 +141,7 @@ steps and recovery limits; they do not inherit Android installation guarantees.
 
 | System | What you can try now | Requirements and limits |
 | --- | --- | --- |
-| **Android TV / Google TV** | Native launcher and optional companion apps. | Android 8+ for the full product. Authorized debugging for setup. This candidate is not certified for every device or firmware. [Android guide](product/ANDROID-COMMUNITY.md). |
+| **Android TV / Google TV** | Stable native launcher and optional companion apps. | Android 8+ for the full product. Authorized debugging for setup. Tested on Sony Android TV and Google TV Streamer. [Android guide](product/ANDROID-COMMUNITY.md). |
 | **LG webOS** | Separate manual-launch Home app and guided first-install/helper preparation. | LG developer tools and Developer Mode. Legacy full-screen startup/layout checked; full physical acceptance pending. No automatic LG Home takeover. [Native setup](setup_app/NATIVE-SETUP.md). |
 | **Samsung Tizen** | Manual-launch pilot with app discovery, local profiles, layouts and silent media. | Samsung SDK, Developer Mode and your signing certificate. Source/browser/mock checked; signing and physical TV acceptance pending. No Home override or automatic startup. [Samsung guide](platforms/tizen/README.md). |
 | **Hisense VIDAA** | Experimental hosted Home and guided app selection. | Existing authorized MQTT profile and a computer that stays on. Vendor debug-tile installation is manual; fresh pairing is not provided. Hardware acceptance pending. [Hosted guide](platforms/hosted/README.md). |
